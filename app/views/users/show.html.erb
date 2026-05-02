@@ -68,7 +68,7 @@
     <% if @user.signature.present? %>
       <div style="background:#242424; border:1px solid #444; padding:8px 10px; margin-bottom:8px;">
         <div style="font-size:10px; color:#666; margin-bottom:4px;">Signature:</div>
-        <div style="font-size:11px; color:#888;"><%= @user.signature %></div>
+        <div style="font-size:11px; color:#888;"><%= simple_format(h(@user.signature)) %></div>
       </div>
     <% end %>
 

@@ -97,8 +97,6 @@
           <span><%= rep_power_dots(post.user) %> <%= post.user.rep_power %></span>
         </div>
 
-        <div class="uc-rep-desc"><%= reputation_description(post.user) %></div>
-
         <div class="uc-section">
           <div class="uc-progress-row">
             <span>Points: <%= user_points(post.user) %>, Level: <%= user_level(post.user) %></span>
@@ -163,7 +161,7 @@
         </div>
 
         <% if post.user.signature.present? %>
-          <div class="uc-post-sig"><%= post.user.signature %></div>
+          <div class="uc-post-sig"><%= simple_format(h(post.user.signature)) %></div>
         <% end %>
 
         <div class="uc-post-footer">

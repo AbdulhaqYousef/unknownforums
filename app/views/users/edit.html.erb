@@ -49,6 +49,12 @@
           <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Signature:</label>
           <%= f.text_area :signature, rows: 3, style: "width:100%; resize:vertical;", maxlength: 300 %>
           <div style="font-size:10px; color:#666; margin-top:2px;">Max 300 characters.</div>
+          <% if @user.signature.present? %>
+            <div style="margin-top:6px; background:#1e1e1e; border:1px solid #333; padding:6px 8px;">
+              <div style="font-size:10px; color:#666; margin-bottom:3px;">Current signature preview:</div>
+              <div style="font-size:11px; color:#888;"><%= simple_format(h(@user.signature)) %></div>
+            </div>
+          <% end %>
         </div>
         <div style="border-top:1px solid #333; padding-top:10px; margin-top:10px; margin-bottom:10px;">
           <div style="font-size:11px; color:#888; margin-bottom:8px;">Change Password (leave blank to keep current):</div>
