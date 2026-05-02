@@ -68,6 +68,14 @@ class Rack::Attack
     normalized_ip(req) if req.path.start_with?("/password") && req.post?
   end
 
+  throttle("email-otp/ip", limit: 10, period: 10.minutes) do |req|
+    normalized_ip(req) if req.path.start_with?("/email-otp") && req.post?
+  end
+
+  throttle("email-otp-resend/ip", limit: 5, period: 1.hour) do |req|
+    normalized_ip(req) if req.path == "/email-otp/resend" && req.post?
+  end
+
   # Posting: enough for active users, low enough to stop spam floods.
   throttle("posts/ip", limit: 20, period: 5.minutes) do |req|
     normalized_ip(req) if req.path.match?(%r{/threads/.*/posts}) && req.post?

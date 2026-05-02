@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_02_200400) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_02_215000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -164,6 +164,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_02_200400) do
     t.boolean "banned", default: false, null: false
     t.datetime "created_at", null: false
     t.string "email"
+    t.integer "email_otp_attempts", default: 0, null: false
+    t.string "email_otp_digest"
+    t.datetime "email_otp_expires_at"
+    t.string "email_otp_purpose"
+    t.datetime "email_otp_sent_at"
+    t.datetime "email_verified_at"
     t.integer "failed_login_attempts", default: 0, null: false
     t.text "flag_reason"
     t.boolean "flagged", default: false, null: false
@@ -180,6 +186,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_02_200400) do
     t.string "username", null: false
     t.index ["banned"], name: "index_users_on_banned"
     t.index ["email"], name: "index_users_on_email", unique: true, where: "(email IS NOT NULL)"
+    t.index ["email_otp_expires_at"], name: "index_users_on_email_otp_expires_at"
+    t.index ["email_verified_at"], name: "index_users_on_email_verified_at"
     t.index ["flagged"], name: "index_users_on_flagged"
     t.index ["previous_usernames"], name: "index_users_on_previous_usernames", using: :gin
     t.index ["role"], name: "index_users_on_role"

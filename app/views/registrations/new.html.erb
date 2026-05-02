@@ -29,8 +29,9 @@
           <% end %>
         </div>
         <div style="margin-bottom:10px;">
-          <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Email: <span style="color:#666;">(optional)</span></label>
+          <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Email: <span style="color:#f08080;">*</span></label>
           <%= f.email_field :email, style: "width:100%;", autocomplete: "email" %>
+          <div style="font-size:10px; color:#666; margin-top:2px;">A verification code will be sent to this address.</div>
           <% if @user.errors[:email].any? %>
             <ul class="error-list"><% @user.errors[:email].each do |err| %><li><%= err %></li><% end %></ul>
           <% end %>

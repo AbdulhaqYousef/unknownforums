@@ -6,6 +6,7 @@ class SessionsController < ApplicationController
 
   def create
     user = User.find_by("LOWER(username) = ?", params[:username].to_s.downcase.strip)
+    return_to = session[:return_to].presence || root_path
 
     if user&.locked?
       flash.now[:alert] = "Account locked. Try again in #{user.lockout_remaining} minutes."
@@ -13,10 +14,17 @@ class SessionsController < ApplicationController
     end
 
     if user&.authenticate(params[:password])
-      user.register_successful_login!(ip: request.remote_ip)
+      unless user.email.present?
+        flash.now[:alert] = "This account needs an email address before it can use email 2FA."
+        return render :new, status: :unprocessable_entity
+      end
+
       reset_session
-      session[:user_id] = user.id
-      redirect_to session.delete(:return_to) || root_path, notice: "Welcome back, #{user.username}!"
+      send_email_otp!(user)
+      session[:pending_email_otp_user_id] = user.id
+      session[:pending_email_otp_purpose] = "login"
+      session[:return_to_after_email_otp] = return_to
+      redirect_to email_otp_path, notice: "We sent a login code to #{user.email}."
     else
       user&.register_failed_login!
       remaining = User::MAX_LOGIN_ATTEMPTS - (user&.failed_login_attempts || 0)
@@ -26,10 +34,20 @@ class SessionsController < ApplicationController
       flash.now[:alert] = alert_msg
       render :new, status: :unprocessable_entity
     end
+  rescue EmailOtpSender::DeliveryDisabled, Net::SMTPError, IOError, Timeout::Error, SocketError => error
+    Rails.logger.warn("Login email OTP delivery failed: #{error.class}: #{error.message}")
+    flash.now[:alert] = "We could not send your login code. Please try again."
+    render :new, status: :unprocessable_entity
   end
 
   def destroy
     reset_session
     redirect_to root_path, notice: "You have been logged out."
+  end
+
+  private
+
+  def send_email_otp!(user)
+    EmailOtpSender.call(user: user, purpose: :login)
   end
 end

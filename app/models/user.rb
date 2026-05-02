@@ -17,17 +17,21 @@ class User < ApplicationRecord
   AVATAR_MAX_SIZE = 10.megabytes
   MAX_LOGIN_ATTEMPTS = 5
   LOCKOUT_DURATION = 15.minutes
+  EMAIL_OTP_EXPIRATION = 10.minutes
+  EMAIL_OTP_RESEND_COOLDOWN = 60.seconds
+  EMAIL_OTP_MAX_ATTEMPTS = 5
 
   validates :username, presence: true, uniqueness: { case_sensitive: false },
             length: { minimum: 3, maximum: 30 },
             format: { with: /\A[a-zA-Z0-9_\-]+\z/, message: "only allows letters, numbers, underscores and dashes" }
-  validates :email, uniqueness: { case_sensitive: false }, allow_blank: true,
-            format: { with: URI::MailTo::EMAIL_REGEXP }, if: -> { email.present? }
+  validates :email, presence: true, uniqueness: { case_sensitive: false }
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: -> { email.present? }
   validates :reputation, numericality: { only_integer: true }
   validates :password, length: { minimum: 8 }, if: -> { password.present? }
   validate :password_complexity, if: -> { password.present? }
   validate :avatar_format, if: -> { avatar.attached? }
   before_validation :normalize_registration_fields
+  before_update :clear_email_verification_on_email_change, if: :will_save_change_to_email?
   before_update :track_previous_username, if: :will_save_change_to_username?
 
   def can_moderate?
@@ -97,11 +101,79 @@ class User < ApplicationRecord
     ((locked_until - Time.current) / 60).ceil
   end
 
+  def email_verified?
+    email_verified_at.present?
+  end
+
+  def generate_email_otp!(purpose:)
+    code = format("%06d", SecureRandom.random_number(1_000_000))
+    now = Time.current
+    update_columns(
+      email_otp_digest: BCrypt::Password.create(code),
+      email_otp_sent_at: now,
+      email_otp_expires_at: now + EMAIL_OTP_EXPIRATION,
+      email_otp_attempts: 0,
+      email_otp_purpose: purpose.to_s,
+      updated_at: now
+    )
+    code
+  end
+
+  def verify_email_otp(code, purpose:)
+    return false unless email_otp_valid_for?(purpose)
+    return false if email_otp_attempts >= EMAIL_OTP_MAX_ATTEMPTS
+
+    normalized_code = code.to_s.gsub(/\D/, "")
+    if BCrypt::Password.new(email_otp_digest).is_password?(normalized_code)
+      now = Time.current
+      update_columns(
+        email_verified_at: now,
+        email_otp_digest: nil,
+        email_otp_sent_at: nil,
+        email_otp_expires_at: nil,
+        email_otp_attempts: 0,
+        email_otp_purpose: nil,
+        updated_at: now
+      )
+      true
+    else
+      update_columns(email_otp_attempts: email_otp_attempts + 1, updated_at: Time.current)
+      false
+    end
+  rescue BCrypt::Errors::InvalidHash
+    false
+  end
+
+  def email_otp_valid_for?(purpose)
+    email_otp_digest.present? &&
+      email_otp_purpose == purpose.to_s &&
+      email_otp_expires_at.present? &&
+      email_otp_expires_at.future?
+  end
+
+  def email_otp_resend_wait
+    return 0 if email_otp_sent_at.blank?
+    [(email_otp_sent_at + EMAIL_OTP_RESEND_COOLDOWN - Time.current).ceil, 0].max
+  end
+
+  def email_otp_resend_allowed?
+    email_otp_resend_wait.zero?
+  end
+
   private
 
   def normalize_registration_fields
     self.username = username.to_s.strip if username.present?
     self.email = email.to_s.strip.downcase.presence
+  end
+
+  def clear_email_verification_on_email_change
+    self.email_verified_at = nil
+    self.email_otp_digest = nil
+    self.email_otp_sent_at = nil
+    self.email_otp_expires_at = nil
+    self.email_otp_attempts = 0
+    self.email_otp_purpose = nil
   end
 
   def track_previous_username

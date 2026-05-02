@@ -9,6 +9,9 @@ Rails.application.routes.draw do
   get    "login",    to: "sessions#new",         as: :login
   post   "login",    to: "sessions#create"
   delete "logout",   to: "sessions#destroy",     as: :logout
+  get    "email-otp", to: "email_otps#show",      as: :email_otp
+  post   "email-otp", to: "email_otps#create"
+  post   "email-otp/resend", to: "email_otps#resend", as: :resend_email_otp
 
   # Forum
   get "downloads", to: "downloads#index", as: :downloads
