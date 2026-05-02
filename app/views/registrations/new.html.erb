@@ -24,18 +24,31 @@
           <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Username: <span style="color:#f08080;">*</span></label>
           <%= f.text_field :username, style: "width:100%;", autocomplete: "username" %>
           <div style="font-size:10px; color:#666; margin-top:2px;">3–30 chars. Letters, numbers, underscores, dashes only.</div>
+          <% if @user.errors[:username].any? %>
+            <ul class="error-list"><% @user.errors[:username].each do |err| %><li><%= err %></li><% end %></ul>
+          <% end %>
         </div>
         <div style="margin-bottom:10px;">
           <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Email: <span style="color:#666;">(optional)</span></label>
           <%= f.email_field :email, style: "width:100%;", autocomplete: "email" %>
+          <% if @user.errors[:email].any? %>
+            <ul class="error-list"><% @user.errors[:email].each do |err| %><li><%= err %></li><% end %></ul>
+          <% end %>
         </div>
         <div style="margin-bottom:10px;">
           <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Password: <span style="color:#f08080;">*</span></label>
           <%= f.password_field :password, style: "width:100%;", autocomplete: "new-password" %>
+          <div style="font-size:10px; color:#666; margin-top:2px;">At least 8 characters, with lowercase, uppercase, and a number.</div>
+          <% if @user.errors[:password].any? %>
+            <ul class="error-list"><% @user.errors[:password].each do |err| %><li><%= err %></li><% end %></ul>
+          <% end %>
         </div>
         <div style="margin-bottom:14px;">
           <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Confirm Password: <span style="color:#f08080;">*</span></label>
           <%= f.password_field :password_confirmation, style: "width:100%;", autocomplete: "new-password" %>
+          <% if @user.errors[:password_confirmation].any? %>
+            <ul class="error-list"><% @user.errors[:password_confirmation].each do |err| %><li><%= err %></li><% end %></ul>
+          <% end %>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <%= f.submit "Register", class: "btn btn-primary", style: "padding:4px 20px;" %>

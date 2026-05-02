@@ -27,6 +27,7 @@ class User < ApplicationRecord
   validates :password, length: { minimum: 8 }, if: -> { password.present? }
   validate :password_complexity, if: -> { password.present? }
   validate :avatar_format, if: -> { avatar.attached? }
+  before_validation :normalize_registration_fields
   before_update :track_previous_username, if: :will_save_change_to_username?
 
   def can_moderate?
@@ -97,6 +98,11 @@ class User < ApplicationRecord
   end
 
   private
+
+  def normalize_registration_fields
+    self.username = username.to_s.strip if username.present?
+    self.email = email.to_s.strip.downcase.presence
+  end
 
   def track_previous_username
     old_username = username_in_database
