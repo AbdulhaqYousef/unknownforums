@@ -70,7 +70,7 @@
         <div class="uc-username">
           <a href="<%= user_path(post.user) %>"><%= post.user.username %></a>
         </div>
-        <div class="uc-rank"><%= post.user.reputation_rank %></div>
+        <div class="uc-rank"><%= role_badge(post.user) %></div>
 
         <div class="uc-avatar">
           <% if post.user.avatar.attached? %>

@@ -1,5 +1,5 @@
 <% content_for :title, @user.username %>
-<% meta_description "#{@user.username} — #{@user.reputation_rank}. #{@user.post_count} posts, #{@user.forum_threads.count} threads. Member since #{@user.created_at.strftime('%B %Y')}." %>
+<% meta_description "#{@user.username} — #{@user.role.capitalize}. #{@user.post_count} posts, #{@user.forum_threads.count} threads. Member since #{@user.created_at.strftime('%B %Y')}." %>
 <% canonical_url user_url(@user) %>
 <% og_type "profile" %>
 <% content_for :structured_data do %>
@@ -31,7 +31,7 @@
           <% end %>
         </div>
         <div style="font-size:11px; color:#888; margin-bottom:4px;"><%= role_badge(@user) %></div>
-        <div style="font-size:11px; color:#888; margin-bottom:4px;"><%= @user.reputation_rank %></div>
+        <div style="font-size:11px; color:#888; margin-bottom:4px;">Reputation Rank: <%= @user.reputation_rank %></div>
         <div style="font-size:12px; margin-bottom:6px;">
           Rep: <%= rep_label(@user.reputation) %>
         </div>

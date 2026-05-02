@@ -8,7 +8,13 @@ module ApplicationHelper
   end
 
   def role_badge(user)
-    klass = user.admin? ? "badge badge-pin" : "badge"
+    klass = if user.admin?
+      "badge badge-admin"
+    elsif user.moderator?
+      "badge badge-moderator"
+    else
+      "badge"
+    end
     content_tag(:span, user.role.capitalize, class: klass)
   end
 
