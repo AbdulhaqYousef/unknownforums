@@ -1,9 +1,10 @@
 puts "Seeding database..."
 
-# Use existing terminator account as the author, fall back to any admin
-admin = User.find_by(username: "terminator") || User.where(role: :admin).first
-raise "No admin user found! Create your account first, then run seeds." unless admin
-puts "Using '#{admin.username}' as seed author"
+# Use the real site owner account as the author for official seeded posts.
+admin = User.find_by(id: 1)
+raise "Seed author missing: expected user ID 1 to exist and be username 'terminator'." unless admin
+raise "Seed author mismatch: expected user ID 1 to be username 'terminator', got '#{admin.username}'." unless admin.username == "terminator"
+puts "Using user ##{admin.id} '#{admin.username}' as seed author"
 
 # Categories and subforums
 general = Category.find_or_create_by!(name: "General") do |c|
