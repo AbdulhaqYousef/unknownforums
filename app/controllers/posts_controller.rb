@@ -9,6 +9,7 @@ class PostsController < ApplicationController
 
     if @post
       AttachmentCreator.attach(attachable: @post, user: current_user, files: params[:files])
+      broadcast_post
       redirect_to forum_thread_path(@thread, anchor: "post-#{@post.id}"), notice: "Reply posted."
     else
       redirect_to forum_thread_path(@thread), alert: service.errors.join(", ")
@@ -47,6 +48,22 @@ class PostsController < ApplicationController
 
   def post_params
     params.require(:post).permit(:body, :quote_post_id)
+  end
+
+  def broadcast_post
+    Turbo::StreamsChannel.broadcast_append_later_to(
+      @thread,
+      :posts,
+      target: "posts",
+      partial: "posts/post",
+      locals: {
+        post: @post,
+        thread: @thread,
+        post_number: nil,
+        viewer: nil,
+        can_moderate: false
+      }
+    )
   end
 
   def authorize_post!

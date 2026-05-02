@@ -1,0 +1,27 @@
+<% mailbox ||= :inbox %>
+<% row_index ||= 0 %>
+<% unread = mailbox.to_sym == :inbox && !message.read? %>
+
+<tr id="private-message-<%= message.id %>" style="background:<%= row_index.even? ? '#242424' : '#202020' %>; border-top:1px solid #333; font-weight:<%= unread ? 'bold' : 'normal' %>;">
+  <% if mailbox.to_sym == :inbox %>
+    <td style="padding:5px 10px; text-align:center;">
+      <% if unread %>
+        <span style="color:#f0a060; font-size:14px;">&#9679;</span>
+      <% end %>
+    </td>
+  <% end %>
+  <td style="padding:5px 10px; font-size:12px;">
+    <a href="<%= private_message_path(message) %>" style="color:<%= unread ? '#a8d0f8' : '#7aabde' %>;">
+      <%= message.subject %>
+    </a>
+  </td>
+  <td style="padding:5px 10px; font-size:11px;">
+    <% other_user = mailbox.to_sym == :sent ? message.recipient : message.sender %>
+    <a href="<%= user_path(other_user) %>"><%= other_user.username %></a>
+  </td>
+  <td style="padding:5px 10px; font-size:11px; color:#888;"><%= message.created_at.strftime("%m/%d/%Y %I:%M %p") %></td>
+  <td style="padding:5px 10px; text-align:center;">
+    <%= button_to "Delete", private_message_path(message), method: :delete, class: "btn btn-danger btn-sm",
+      data: { turbo_confirm: "Delete this message?" } %>
+  </td>
+</tr>

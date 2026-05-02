@@ -66,20 +66,30 @@ Rails.application.configure do
     protocol: "https"
   }
   config.action_mailer.default_options = {
-    from: ENV.fetch("MAIL_FROM", "UnknownForums <noreply@unknowncheat.fun>")
+    from: ENV.fetch("MAIL_FROM", "UnknownForums <noreply@unknownforums.fun>")
   }
-  config.action_mailer.delivery_method = :smtp
-  config.action_mailer.perform_deliveries = true
-  config.action_mailer.raise_delivery_errors = true
-  config.action_mailer.smtp_settings = {
-    address: ENV.fetch("SMTP_ADDRESS"),
-    port: ENV.fetch("SMTP_PORT", 587).to_i,
-    domain: ENV.fetch("SMTP_DOMAIN", "unknowncheat.fun"),
-    user_name: ENV.fetch("SMTP_USERNAME"),
-    password: ENV.fetch("SMTP_PASSWORD"),
-    authentication: ENV.fetch("SMTP_AUTHENTICATION", "plain").to_sym,
-    enable_starttls_auto: ActiveModel::Type::Boolean.new.cast(ENV.fetch("SMTP_ENABLE_STARTTLS_AUTO", "true"))
-  }
+  if ENV["SMTP_ADDRESS"].present? && ENV["SMTP_USERNAME"].present? && ENV["SMTP_PASSWORD"].present?
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.perform_deliveries = true
+    config.action_mailer.raise_delivery_errors = true
+    config.action_mailer.smtp_settings = {
+      address: ENV.fetch("SMTP_ADDRESS"),
+      port: ENV.fetch("SMTP_PORT", 587).to_i,
+      domain: ENV.fetch("SMTP_DOMAIN", "unknownforums.fun"),
+      user_name: ENV.fetch("SMTP_USERNAME"),
+      password: ENV.fetch("SMTP_PASSWORD"),
+      authentication: ENV.fetch("SMTP_AUTHENTICATION", "plain").to_sym,
+      enable_starttls_auto: ActiveModel::Type::Boolean.new.cast(ENV.fetch("SMTP_ENABLE_STARTTLS_AUTO", "true")),
+      ssl: ActiveModel::Type::Boolean.new.cast(ENV.fetch("SMTP_SSL", ENV.fetch("SMTP_PORT", "587") == "465" ? "true" : "false"))
+    }
+  else
+    config.action_mailer.perform_deliveries = false
+  end
+  config.action_cable.url = "wss://#{ENV.fetch('APP_HOST', 'unknownforums.fun')}/cable"
+  config.action_cable.allowed_request_origins = [
+    "https://unknownforums.fun",
+    "https://www.unknownforums.fun"
+  ]
 
   # Enable DNS rebinding protection and other `Host` header attacks.
   config.hosts = [

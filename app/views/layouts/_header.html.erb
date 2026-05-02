@@ -1,4 +1,7 @@
 <div style="background:#242424; border-bottom:2px solid #444; padding:0;">
+  <% if logged_in? %>
+    <%= turbo_stream_from current_user, :message_badge %>
+  <% end %>
   <!-- Forum banner -->
   <div class="site-banner">
     <a href="<%= root_path %>">
@@ -29,10 +32,7 @@
         <% if logged_in? %>
           <span>Logged in as <a href="<%= user_path(current_user) %>" style="color:#7aabde;"><strong><%= current_user.username %></strong></a></span>
           <a href="<%= private_messages_path %>">Messages
-            <% unread = current_user.unread_messages_count %>
-            <% if unread > 0 %>
-              <span style="color:#f0a060; font-weight:bold;">(<%= unread %>)</span>
-            <% end %>
+            <%= render "private_messages/message_badge", user: current_user %>
           </a>
           <a href="<%= user_path(current_user) %>">Profile</a>
           <% if current_user.can_moderate? %>

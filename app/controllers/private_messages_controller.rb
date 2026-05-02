@@ -11,8 +11,11 @@ class PrivateMessagesController < ApplicationController
   end
 
   def show
-    @message.update!(read: true) if @message.recipient == current_user && !@message.read?
     authorize_message!
+    if @message.recipient == current_user && !@message.read?
+      @message.update!(read: true)
+      broadcast_message_badge(current_user)
+    end
   end
 
   def new
@@ -31,6 +34,8 @@ class PrivateMessagesController < ApplicationController
     @message = PrivateMessage.new(message_params.merge(sender: current_user, recipient: recipient))
     if @message.save
       AttachmentCreator.attach(attachable: @message, user: current_user, files: params[:files])
+      broadcast_message
+      broadcast_message_badge(recipient)
       redirect_to private_messages_path, notice: "Message sent."
     else
       render :new, status: :unprocessable_entity
@@ -42,6 +47,7 @@ class PrivateMessagesController < ApplicationController
       @message.update!(sender_deleted: true)
     elsif @message.recipient == current_user
       @message.update!(recipient_deleted: true)
+      broadcast_message_badge(current_user)
     end
     redirect_to private_messages_path, notice: "Message deleted."
   end
@@ -60,5 +66,35 @@ class PrivateMessagesController < ApplicationController
 
   def message_params
     params.require(:private_message).permit(:subject, :body)
+  end
+
+  def broadcast_message
+    Turbo::StreamsChannel.broadcast_remove_to(@message.recipient, :inbox, target: "empty-inbox")
+    Turbo::StreamsChannel.broadcast_prepend_later_to(
+      @message.recipient,
+      :inbox,
+      target: "inbox-messages",
+      partial: "private_messages/message_row",
+      locals: { message: @message, mailbox: :inbox, row_index: 0 }
+    )
+
+    Turbo::StreamsChannel.broadcast_remove_to(@message.sender, :sent_messages, target: "empty-sent")
+    Turbo::StreamsChannel.broadcast_prepend_later_to(
+      @message.sender,
+      :sent_messages,
+      target: "sent-messages",
+      partial: "private_messages/message_row",
+      locals: { message: @message, mailbox: :sent, row_index: 0 }
+    )
+  end
+
+  def broadcast_message_badge(user)
+    Turbo::StreamsChannel.broadcast_replace_later_to(
+      user,
+      :message_badge,
+      target: "message-badge",
+      partial: "private_messages/message_badge",
+      locals: { user: user }
+    )
   end
 end
