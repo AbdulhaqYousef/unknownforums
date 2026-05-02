@@ -1,0 +1,141 @@
+<% content_for :title, "Forum Structure" %>
+
+<div style="font-size:11px; color:#888; margin-bottom:8px;">
+  <a href="<%= admin_root_path %>">Admin</a> &raquo; Forum Structure
+</div>
+
+<div class="panel" style="margin-bottom:10px;">
+  <div class="panel-body">
+    <%= form_with url: admin_forums_path, method: :get, class: "admin-search-form" do |f| %>
+      <div class="admin-search-field grow">
+        <label>Search Forum Structure</label>
+        <%= f.text_field :q, value: params[:q], placeholder: "Category or subforum name/description...", style: "width:100%;" %>
+      </div>
+      <div class="admin-search-actions">
+        <%= f.submit "Search", class: "btn btn-primary" %>
+        <a href="<%= admin_forums_path %>" class="btn">Reset</a>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div style="display:flex; gap:12px; align-items:flex-start;">
+
+  <!-- Left: live structure -->
+  <div style="flex:2;">
+    <div class="panel" style="margin-bottom:10px;">
+      <div class="panel-header">
+        <span>Forum Structure</span>
+        <div class="action-group">
+          <a href="<%= new_admin_category_path %>" class="btn btn-primary btn-sm">+ Category</a>
+          <a href="<%= new_admin_subforum_path %>" class="btn btn-sm">+ Subforum</a>
+        </div>
+      </div>
+
+      <% if @categories.empty? %>
+        <div style="padding:20px; text-align:center; color:#666; font-size:12px;">No categories yet. Create one to get started.</div>
+      <% end %>
+
+      <% @categories.each do |cat| %>
+        <div style="border-bottom:1px solid #333;">
+          <!-- Category row -->
+          <div style="background:#2a2a2a; padding:6px 10px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <span style="font-size:13px; font-weight:bold; color:#e0e0e0;">&#128193; <%= cat.name %></span>
+              <% if cat.description.present? %>
+                <span style="font-size:10px; color:#666; margin-left:8px;"><%= cat.description %></span>
+              <% end %>
+              <span style="font-size:10px; color:#555; margin-left:8px;">pos: <%= cat.position %></span>
+            </div>
+            <div class="action-group">
+              <a href="<%= edit_admin_category_path(cat) %>" class="btn btn-sm">Edit</a>
+              <%= button_to "Delete", admin_category_path(cat), method: :delete, class: "btn btn-danger btn-sm",
+                data: { turbo_confirm: "Delete \"#{cat.name}\" and all its subforums?" } %>
+            </div>
+          </div>
+
+          <!-- Subforums under this category -->
+          <% if cat.subforums.empty? %>
+            <div style="padding:6px 24px; font-size:11px; color:#555; font-style:italic;">No subforums — <a href="<%= new_admin_subforum_path(category_id: cat.id) %>">add one</a></div>
+          <% end %>
+
+          <% cat.subforums.each do |sf| %>
+            <div style="background:<%= '#222' %>; padding:5px 10px 5px 28px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #2a2a2a;">
+              <div>
+                <span style="color:#555; margin-right:4px;">└</span>
+                <a href="<%= subforum_path(sf) %>" style="font-size:12px; color:#a8c8f0;"><%= sf.name %></a>
+                <span style="font-size:10px; color:#555; margin-left:6px;"><%= sf.threads_count %> threads &middot; pos: <%= sf.position %></span>
+              </div>
+              <div class="action-group">
+                <a href="<%= edit_admin_subforum_path(sf) %>" class="btn btn-sm">Edit</a>
+                <%= button_to "Delete", admin_subforum_path(sf), method: :delete, class: "btn btn-danger btn-sm",
+                  data: { turbo_confirm: "Delete \"#{sf.name}\" and all its threads?" } %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Right: quick-create panels -->
+  <div style="flex:1; min-width:240px;">
+
+    <!-- Quick create category -->
+    <div class="panel" style="margin-bottom:10px;">
+      <div class="panel-header">
+        New Category
+      </div>
+      <div class="panel-body">
+        <%= form_with url: admin_categories_path, method: :post do |f| %>
+          <div class="form-row">
+            <label>Name:</label>
+            <%= f.text_field :name, name: "category[name]", style: "width:100%; font-size:11px;", placeholder: "Category name" %>
+          </div>
+          <div class="form-row">
+            <label>Description:</label>
+            <%= f.text_area :description, name: "category[description]", rows: 2, style: "width:100%; font-size:11px; resize:none;" %>
+          </div>
+          <div class="form-row">
+            <label>Position:</label>
+            <input type="number" name="category[position]" value="0" min="0" style="width:60px; font-size:11px;">
+          </div>
+          <%= f.submit "Create Category", class: "btn btn-primary btn-sm btn-block" %>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Quick create subforum -->
+    <div class="panel">
+      <div class="panel-header">
+        New Subforum
+      </div>
+      <div class="panel-body">
+        <%= form_with url: admin_subforums_path, method: :post do |f| %>
+          <div class="form-row">
+            <label>Category:</label>
+            <select name="subforum[category_id]" style="width:100%; font-size:11px;">
+              <% @categories.each do |cat| %>
+                <option value="<%= cat.id %>"><%= cat.name %></option>
+              <% end %>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Name:</label>
+            <%= f.text_field :name, name: "subforum[name]", style: "width:100%; font-size:11px;", placeholder: "Subforum name" %>
+          </div>
+          <div class="form-row">
+            <label>Description:</label>
+            <%= f.text_area :description, name: "subforum[description]", rows: 2, style: "width:100%; font-size:11px; resize:none;" %>
+          </div>
+          <div class="form-row">
+            <label>Position:</label>
+            <input type="number" name="subforum[position]" value="0" min="0" style="width:60px; font-size:11px;">
+          </div>
+          <%= f.submit "Create Subforum", class: "btn btn-primary btn-sm btn-block" %>
+        <% end %>
+      </div>
+    </div>
+
+  </div>
+</div>

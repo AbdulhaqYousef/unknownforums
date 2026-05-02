@@ -1,0 +1,38 @@
+<div class="admin-summary">
+  <div class="toolbar" style="margin-bottom:8px;">
+    <span><strong style="color:#e0e0e0;">Admin Dashboard</strong></span>
+  </div>
+
+  <div class="admin-stats">
+    <div class="admin-stat-card">
+      <div class="admin-stat-value"><%= @admin_summary[:users] %></div>
+      <div class="admin-stat-label">Users</div>
+    </div>
+    <div class="admin-stat-card">
+      <div class="admin-stat-value"><%= @admin_summary[:threads] %></div>
+      <div class="admin-stat-label">Threads</div>
+    </div>
+    <div class="admin-stat-card">
+      <div class="admin-stat-value"><%= @admin_summary[:posts] %></div>
+      <div class="admin-stat-label">Posts</div>
+    </div>
+    <div class="admin-stat-card">
+      <div class="admin-stat-value" style="color:<%= @admin_summary[:pending_reports] > 0 ? '#f08080' : '#80c080' %>;"><%= @admin_summary[:pending_reports] %></div>
+      <div class="admin-stat-label">Pending Reports</div>
+    </div>
+    <div class="admin-stat-card">
+      <div class="admin-stat-value"><%= @admin_summary[:files] %></div>
+      <div class="admin-stat-label">Files</div>
+    </div>
+  </div>
+
+  <% active_admin_section = controller_path == "downloads" ? "downloads" : controller_name %>
+  <div class="admin-quick-links">
+    <a href="<%= admin_forums_path %>" class="btn <%= active_admin_section == 'forums' ? 'btn-primary' : '' %>">&#128193; Forum Structure</a>
+    <a href="<%= admin_categories_path %>" class="btn <%= active_admin_section == 'categories' ? 'btn-primary' : '' %>">Categories</a>
+    <a href="<%= admin_subforums_path %>" class="btn <%= active_admin_section == 'subforums' ? 'btn-primary' : '' %>">Subforums</a>
+    <a href="<%= downloads_path %>" class="btn <%= active_admin_section == 'downloads' ? 'btn-primary' : '' %>">Downloads</a>
+    <a href="<%= admin_users_path %>" class="btn <%= active_admin_section == 'users' ? 'btn-primary' : '' %>">Manage Users</a>
+    <a href="<%= admin_reports_path %>" class="btn <%= active_admin_section == 'reports' ? 'btn-primary' : (@admin_summary[:pending_reports] > 0 ? 'btn-danger' : '') %>">Reports</a>
+  </div>
+</div>

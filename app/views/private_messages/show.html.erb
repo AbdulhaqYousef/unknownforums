@@ -1,0 +1,36 @@
+<% content_for :title, @message.subject %>
+
+<div style="font-size:11px; color:#888; margin-bottom:6px;">
+  <a href="<%= private_messages_path %>">← Inbox</a>
+</div>
+
+<div style="background:#242424; border:1px solid #444;">
+  <div style="background:#303030; border-bottom:1px solid #444; padding:6px 10px; font-size:13px; font-weight:bold; color:#e0e0e0;">
+    <%= @message.subject %>
+  </div>
+  <div style="background:#222; border-bottom:1px solid #333; padding:5px 10px; font-size:11px; color:#888;">
+    <span>From: <a href="<%= user_path(@message.sender) %>"><strong><%= @message.sender.username %></strong></a></span>
+    &nbsp;&nbsp;
+    <span>To: <a href="<%= user_path(@message.recipient) %>"><strong><%= @message.recipient.username %></strong></a></span>
+    &nbsp;&nbsp;
+    <span><%= @message.created_at.strftime("%m/%d/%Y %I:%M %p") %></span>
+  </div>
+  <div style="padding:12px; font-size:12px; line-height:1.7;">
+    <%= simple_format(h(@message.body)) %>
+  </div>
+  <% if @message.attachments.any? %>
+    <div style="border-top:1px solid #333; padding:8px 10px;">
+      <div style="font-size:10px; color:#666; margin-bottom:6px; text-transform:uppercase;">Attachments</div>
+      <% @message.attachments.each do |attachment| %>
+        <%= render "attachments/attachment", attachment: attachment %>
+      <% end %>
+    </div>
+  <% end %>
+  <div style="border-top:1px solid #333; padding:8px 10px; display:flex; gap:6px;">
+    <% if logged_in? && current_user == @message.recipient %>
+      <a href="<%= new_private_message_path(recipient_id: @message.sender.id) %>" class="btn btn-primary btn-sm">Reply</a>
+    <% end %>
+    <%= button_to "Delete", private_message_path(@message), method: :delete, class: "btn btn-danger btn-sm" %>
+    <a href="<%= private_messages_path %>" class="btn btn-sm">Back to Inbox</a>
+  </div>
+</div>

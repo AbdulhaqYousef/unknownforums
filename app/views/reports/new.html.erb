@@ -1,0 +1,44 @@
+<% content_for :title, "Report" %>
+<% noindex_page %>
+
+<div style="max-width:500px;">
+  <div style="background:#242424; border:1px solid #444;">
+    <div style="background:#303030; border-bottom:1px solid #444; padding:6px 10px; font-size:13px; font-weight:bold; color:#e0e0e0;">
+      Submit Report
+    </div>
+    <div style="padding:14px;">
+      <% if @reportable_type.present? %>
+        <div style="font-size:11px; color:#888; margin-bottom:10px; padding:6px 8px; background:#1e1e1e; border:1px solid #333;">
+          Reporting: <strong style="color:#cfcfcf;"><%= @reportable_type %> #<%= @reportable_id %></strong>
+        </div>
+      <% end %>
+
+      <% if @report.errors.any? %>
+        <div style="background:#3a1a1a; border:1px solid #6a2a2a; padding:8px 10px; margin-bottom:12px;">
+          <ul class="error-list">
+            <% @report.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <%= form_with model: @report, url: reports_path, multipart: true do |f| %>
+        <%= f.hidden_field :reportable_type, value: @reportable_type %>
+        <%= f.hidden_field :reportable_id, value: @reportable_id %>
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Reason for report:</label>
+          <%= f.text_area :reason, rows: 5, style: "width:100%; resize:vertical;", placeholder: "Describe why you are reporting this content..." %>
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Screenshots (optional):</label>
+          <%= f.file_field :screenshots, multiple: true, accept: "image/jpeg,image/png,image/gif,image/webp",
+            style: "font-size:11px; color:#888;" %>
+          <div style="font-size:10px; color:#666; margin-top:3px;">JPEG, PNG, GIF or WebP &mdash; max 10MB each. You can select multiple files.</div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <%= f.submit "Submit Report", class: "btn btn-primary" %>
+          <a href="javascript:history.back()" class="btn">Cancel</a>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,39 @@
+<% content_for :title, "Admin Dashboard" %>
+
+<div style="display:flex; gap:12px;">
+  <!-- Recent users -->
+  <div style="flex:1;">
+    <div style="background:#242424; border:1px solid #444;">
+      <div style="background:#303030; border-bottom:1px solid #444; padding:5px 10px; font-size:12px; font-weight:bold; color:#e0e0e0;">Recent Users</div>
+      <table>
+        <% @recent_users.each_with_index do |user, i| %>
+          <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
+            <td style="padding:4px 10px; font-size:11px;">
+              <a href="<%= admin_user_path(user) %>"><%= user.username %></a>
+              <% if user.banned? %><span style="color:#f08080; font-size:9px; margin-left:4px;">BANNED</span><% end %>
+            </td>
+            <td style="padding:4px 10px; font-size:10px; color:#666;"><%= user.role %></td>
+            <td style="padding:4px 10px; font-size:10px; color:#666;"><%= user.created_at.strftime("%m/%d/%Y") %></td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent threads -->
+  <div style="flex:1;">
+    <div style="background:#242424; border:1px solid #444;">
+      <div style="background:#303030; border-bottom:1px solid #444; padding:5px 10px; font-size:12px; font-weight:bold; color:#e0e0e0;">Recent Threads</div>
+      <table>
+        <% @recent_threads.each_with_index do |thread, i| %>
+          <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
+            <td style="padding:4px 10px; font-size:11px;">
+              <a href="<%= forum_thread_path(thread) %>"><%= truncate(thread.title, length:40) %></a>
+            </td>
+            <td style="padding:4px 10px; font-size:10px; color:#666;"><%= thread.subforum.name %></td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
+  </div>
+</div>

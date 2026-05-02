@@ -1,0 +1,49 @@
+<div style="background:#242424; border-bottom:2px solid #444; padding:0;">
+  <!-- Forum banner -->
+  <div class="site-banner">
+    <a href="<%= root_path %>">
+      <%= image_tag "unknown-forums-banner.png", alt: "Forums" %>
+    </a>
+  </div>
+
+  <!-- Navigation tabs -->
+  <div class="header-inner">
+    <div class="nav-tabs">
+      <a href="<%= root_path %>">Home</a>
+      <a href="<%= root_path %>">Forum</a>
+      <a href="<%= downloads_path %>">Downloads</a>
+      <% if logged_in? %>
+        <a href="<%= private_messages_path %>">Messages</a>
+        <a href="<%= user_path(current_user) %>">Profile</a>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- User toolbar -->
+  <div class="user-toolbar">
+    <div class="header-inner user-toolbar-row">
+      <span style="color:#666; font-size:10px;">
+        <%= Time.current.strftime("%A, %B %d, %Y %H:%M") %> UTC
+      </span>
+      <div class="top-links">
+        <% if logged_in? %>
+          <span>Logged in as <a href="<%= user_path(current_user) %>" style="color:#7aabde;"><strong><%= current_user.username %></strong></a></span>
+          <a href="<%= private_messages_path %>">Messages
+            <% unread = current_user.unread_messages_count %>
+            <% if unread > 0 %>
+              <span style="color:#f0a060; font-weight:bold;">(<%= unread %>)</span>
+            <% end %>
+          </a>
+          <a href="<%= user_path(current_user) %>">Profile</a>
+          <% if current_user.can_moderate? %>
+            <a href="<%= admin_root_path %>" style="color:#f0c060;">Admin Panel</a>
+          <% end %>
+          <%= button_to "Logout", logout_path, method: :delete, class: "btn btn-muted btn-sm" %>
+        <% else %>
+          <a href="<%= login_path %>">Login</a>
+          <a href="<%= register_path %>">Register</a>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

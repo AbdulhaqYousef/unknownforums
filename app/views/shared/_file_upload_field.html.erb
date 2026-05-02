@@ -1,0 +1,59 @@
+<div style="background:#1e1e1e; border:1px solid #333; padding:8px 10px;">
+  <div style="font-size:10px; color:#666; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">
+    Attach Files
+  </div>
+  <div style="display:flex; align-items:center; gap:8px;">
+    <label style="cursor:pointer; display:inline-block;">
+      <span class="btn btn-sm" style="font-size:10px;">Browse...</span>
+      <input type="file" name="files[]" multiple
+        accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,application/pdf,text/plain,application/zip"
+        style="display:none;"
+        onchange="updateFileList(this)">
+    </label>
+    <span id="file-list-label" style="font-size:10px; color:#666;">No files selected</span>
+  </div>
+  <div id="file-preview-list" style="margin-top:6px;"></div>
+  <div style="font-size:10px; color:#555; margin-top:4px;">
+    Images, videos (MP4/WebM), PDF, ZIP &mdash; max 100MB per file
+  </div>
+</div>
+
+<script>
+function updateFileList(input) {
+  const label = document.getElementById('file-list-label');
+  const preview = document.getElementById('file-preview-list');
+  const files = input.files;
+
+  if (!files.length) {
+    label.textContent = 'No files selected';
+    preview.innerHTML = '';
+    return;
+  }
+
+  label.textContent = files.length + ' file' + (files.length > 1 ? 's' : '') + ' selected';
+  preview.innerHTML = '';
+
+  Array.from(files).forEach(function(file) {
+    const row = document.createElement('div');
+    row.style.cssText = 'font-size:10px; color:#888; padding:2px 0; display:flex; align-items:center; gap:6px;';
+
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+    const icon = isImage ? '🖼' : isVideo ? '🎬' : '📎';
+    const size = file.size > 1048576
+      ? (file.size / 1048576).toFixed(1) + ' MB'
+      : (file.size / 1024).toFixed(0) + ' KB';
+
+    row.innerHTML = '<span>' + icon + '</span><span style="color:#a8c8f0;">' + file.name + '</span><span style="color:#555;">(' + size + ')</span>';
+
+    if (isImage) {
+      const img = document.createElement('img');
+      img.style.cssText = 'height:40px; width:auto; border:1px solid #333; margin-left:4px; vertical-align:middle;';
+      img.src = URL.createObjectURL(file);
+      row.appendChild(img);
+    }
+
+    preview.appendChild(row);
+  });
+}
+</script>

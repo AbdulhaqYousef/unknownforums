@@ -1,0 +1,55 @@
+<% content_for :title, "Inbox" %>
+
+<div style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
+  <a href="<%= private_messages_path %>" class="btn btn-primary" style="font-size:11px;">Inbox</a>
+  <a href="<%= sent_private_messages_path %>" class="btn" style="font-size:11px;">Sent</a>
+  <a href="<%= new_private_message_path %>" class="btn" style="font-size:11px; margin-left:auto;">+ New Message</a>
+</div>
+
+<div style="background:#242424; border:1px solid #444;">
+  <div style="background:#303030; border-bottom:1px solid #444; padding:5px 10px; font-size:12px; font-weight:bold; color:#e0e0e0;">
+    Inbox
+  </div>
+  <table>
+    <tr style="background:#222; font-size:10px; color:#666; text-transform:uppercase;">
+      <th style="padding:3px 10px; text-align:left; width:5%;"></th>
+      <th style="padding:3px 10px; text-align:left; width:40%;">Subject</th>
+      <th style="padding:3px 10px; text-align:left; width:20%;">From</th>
+      <th style="padding:3px 10px; text-align:left; width:20%;">Date</th>
+      <th style="padding:3px 10px; text-align:center; width:15%;">Actions</th>
+    </tr>
+    <% if @messages.empty? %>
+      <tr><td colspan="5" style="padding:20px; text-align:center; color:#666; font-size:12px;">Your inbox is empty.</td></tr>
+    <% end %>
+    <% @messages.each_with_index do |msg, i| %>
+      <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333; font-weight:<%= msg.read? ? 'normal' : 'bold' %>;">
+        <td style="padding:5px 10px; text-align:center;">
+          <% unless msg.read? %>
+            <span style="color:#f0a060; font-size:14px;">&#9679;</span>
+          <% end %>
+        </td>
+        <td style="padding:5px 10px; font-size:12px;">
+          <a href="<%= private_message_path(msg) %>" style="color:<%= msg.read? ? '#7aabde' : '#a8d0f8' %>;">
+            <%= msg.subject %>
+          </a>
+        </td>
+        <td style="padding:5px 10px; font-size:11px;">
+          <a href="<%= user_path(msg.sender) %>"><%= msg.sender.username %></a>
+        </td>
+        <td style="padding:5px 10px; font-size:11px; color:#888;"><%= msg.created_at.strftime("%m/%d/%Y %I:%M %p") %></td>
+        <td style="padding:5px 10px; text-align:center;">
+          <%= button_to "Delete", private_message_path(msg), method: :delete, class: "btn btn-danger btn-sm",
+            data: { turbo_confirm: "Delete this message?" } %>
+        </td>
+      </tr>
+    <% end %>
+  </table>
+</div>
+
+<div style="margin-top:6px; font-size:11px; color:#888; display:flex; justify-content:space-between; align-items:center;">
+  <span>Page <%= @messages.current_page %> of <%= @messages.total_pages %></span>
+  <div>
+    <%= link_to_prev_page @messages, "← Prev", class: "btn btn-sm" %>
+    <%= link_to_next_page @messages, "Next →", class: "btn btn-sm" %>
+  </div>
+</div>

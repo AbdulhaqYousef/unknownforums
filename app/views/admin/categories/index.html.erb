@@ -1,0 +1,49 @@
+<% content_for :title, "Manage Categories" %>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+  <span style="font-size:13px; font-weight:bold; color:#e0e0e0;">Categories</span>
+  <a href="<%= new_admin_category_path %>" class="btn btn-primary">+ New Category</a>
+</div>
+
+<div class="panel" style="margin-bottom:10px;">
+  <div class="panel-body">
+    <%= form_with url: admin_categories_path, method: :get, class: "admin-search-form" do |f| %>
+      <div class="admin-search-field grow">
+        <label>Search Categories</label>
+        <%= f.text_field :q, value: params[:q], placeholder: "Name or description...", style: "width:100%;" %>
+      </div>
+      <div class="admin-search-actions">
+        <%= f.submit "Search", class: "btn btn-primary" %>
+        <a href="<%= admin_categories_path %>" class="btn">Reset</a>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div style="background:#242424; border:1px solid #444;">
+  <table>
+    <tr style="background:#222; font-size:10px; color:#666; text-transform:uppercase;">
+      <th style="padding:3px 10px; text-align:left;">Name</th>
+      <th style="padding:3px 10px; text-align:center;">Position</th>
+      <th style="padding:3px 10px; text-align:center;">Subforums</th>
+      <th style="padding:3px 10px; text-align:center;">Actions</th>
+    </tr>
+    <% if @categories.empty? %>
+      <tr><td colspan="4" style="padding:20px; text-align:center; color:#666; font-size:12px;">No categories matched your search.</td></tr>
+    <% end %>
+    <% @categories.each_with_index do |cat, i| %>
+      <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
+        <td style="padding:5px 10px; font-size:12px;"><%= cat.name %></td>
+        <td style="padding:5px 10px; text-align:center; font-size:12px;"><%= cat.position %></td>
+        <td style="padding:5px 10px; text-align:center; font-size:12px;"><%= cat.subforums.count %></td>
+        <td style="padding:5px 10px; text-align:center;">
+          <div class="action-group" style="justify-content:center;">
+            <a href="<%= edit_admin_category_path(cat) %>" class="btn btn-sm">Edit</a>
+            <%= button_to "Delete", admin_category_path(cat), method: :delete, class: "btn btn-danger btn-sm",
+              data: { turbo_confirm: "Delete category and all its subforums?" } %>
+          </div>
+        </td>
+      </tr>
+    <% end %>
+  </table>
+</div>

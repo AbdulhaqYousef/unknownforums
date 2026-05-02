@@ -1,0 +1,42 @@
+<% content_for :title, "New Message" %>
+
+<div style="max-width:600px;">
+  <div style="background:#242424; border:1px solid #444;">
+    <div style="background:#303030; border-bottom:1px solid #444; padding:6px 10px; font-size:13px; font-weight:bold; color:#e0e0e0;">
+      New Private Message
+    </div>
+    <div style="padding:14px;">
+      <% if @message.errors.any? %>
+        <div style="background:#3a1a1a; border:1px solid #6a2a2a; padding:8px 10px; margin-bottom:12px;">
+          <ul class="error-list">
+            <% @message.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <%= form_with model: @message, url: private_messages_path, multipart: true do |f| %>
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">To (username):</label>
+          <input type="text" name="private_message[recipient_username]"
+            value="<%= @message.recipient&.username %>"
+            style="width:100%; max-width:300px;" autocomplete="off">
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Subject:</label>
+          <%= f.text_field :subject, style: "width:100%;" %>
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Message:</label>
+          <%= f.text_area :body, rows: 10, style: "width:100%; resize:vertical;" %>
+        </div>
+        <div style="margin-bottom:10px;">
+          <%= render "shared/file_upload_field" %>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <%= f.submit "Send Message", class: "btn btn-primary" %>
+          <a href="<%= private_messages_path %>" class="btn">Cancel</a>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

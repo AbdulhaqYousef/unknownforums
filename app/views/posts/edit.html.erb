@@ -1,0 +1,41 @@
+<% content_for :title, "Edit Post" %>
+
+<div style="font-size:11px; color:#888; margin-bottom:6px;">
+  <a href="<%= forum_thread_path(@thread) %>">← Back to thread</a>
+</div>
+
+<div style="background:#242424; border:1px solid #444;">
+  <div style="background:#303030; border-bottom:1px solid #444; padding:6px 10px; font-size:13px; font-weight:bold; color:#e0e0e0;">
+    Edit Post
+  </div>
+  <div style="padding:12px;">
+    <%= form_with model: [@thread, @post], method: :patch, multipart: true do |f| %>
+      <div style="margin-bottom:10px;">
+        <%= f.text_area :body, rows: 12, style: "width:100%; resize:vertical;" %>
+        <% if @post.errors[:body].any? %>
+          <ul class="error-list">
+            <% @post.errors[:body].each do |err| %><li><%= err %></li><% end %>
+          </ul>
+        <% end %>
+      </div>
+
+      <% if @post.attachments.any? %>
+        <div style="border:1px solid #333; padding:8px; margin-bottom:10px;">
+          <div style="font-size:10px; color:#888; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Current Attachments:</div>
+          <% @post.attachments.each do |attachment| %>
+            <%= render "attachments/attachment", attachment: attachment %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <div style="margin-bottom:12px;">
+        <%= render "shared/file_upload_field" %>
+      </div>
+
+      <div style="display:flex; gap:8px;">
+        <%= f.submit "Save Changes", class: "btn btn-primary" %>
+        <a href="<%= forum_thread_path(@thread, anchor: "post-#{@post.id}") %>" class="btn">Cancel</a>
+      </div>
+    <% end %>
+  </div>
+</div>

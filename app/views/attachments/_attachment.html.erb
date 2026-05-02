@@ -1,0 +1,70 @@
+<div style="background:#1e1e1e; border:1px solid #333; padding:6px 8px; margin-bottom:4px; display:flex; align-items:center; gap:8px;">
+  <% if attachment.approved? %>
+    <span style="display:inline-block; width:8px; height:8px; background:#60c060; border-radius:50%; flex-shrink:0;" title="Approved"></span>
+  <% else %>
+    <span style="display:inline-block; width:8px; height:8px; background:#c06060; border-radius:50%; flex-shrink:0;" title="Not Approved"></span>
+  <% end %>
+
+  <% if attachment.video? %>
+    <div style="width:100%;">
+      <video controls style="max-width:100%; max-height:400px; background:#000;">
+        <%= tag.source src: rails_blob_url(attachment.file), type: attachment.content_type %>
+        Your browser does not support the video tag.
+      </video>
+      <div style="font-size:10px; color:#666; margin-top:4px;">
+        <%= attachment.filename %> (<%= attachment.human_size %>)
+        <% if attachment.approved? %>
+          <span style="color:#60c060; font-weight:bold; margin-left:4px;">&#10003; Verified</span>
+        <% else %>
+          <span style="color:#e0a030; font-weight:bold; margin-left:4px;">&#9888; Not verified &mdash; may not be secure</span>
+        <% end %>
+      </div>
+    </div>
+  <% elsif attachment.image? %>
+    <div>
+      <%= image_tag rails_blob_url(attachment.file), style: "max-width:400px; max-height:300px; border:1px solid #333;", loading: "lazy" %>
+      <div style="font-size:10px; color:#666; margin-top:2px;">
+        <%= attachment.filename %> (<%= attachment.human_size %>)
+        <% if attachment.approved? %>
+          <span style="color:#60c060; font-weight:bold; margin-left:4px;">&#10003; Verified</span>
+        <% else %>
+          <span style="color:#e0a030; font-weight:bold; margin-left:4px;">&#9888; Not verified &mdash; may not be secure</span>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <span style="font-size:18px; color:#888;">&#128196;</span>
+    <div style="flex:1; min-width:0;">
+      <div>
+        <a href="<%= download_attachment_path(attachment) %>" style="font-size:12px; color:#7aabde;"><%= attachment.filename %></a>
+        <% if attachment.approved? %>
+          <span style="color:#60c060; font-size:9px; font-weight:bold; margin-left:4px;">&#10003; VERIFIED</span>
+        <% else %>
+          <span style="color:#e0a030; font-size:9px; font-weight:bold; margin-left:4px;">&#9888; NOT VERIFIED</span>
+        <% end %>
+      </div>
+      <div style="font-size:10px; color:#666;">
+        <%= attachment.human_size %> &mdash; <%= attachment.download_count %> downloads
+        <% unless attachment.approved? %>
+          <span style="color:#e0a030;">&mdash; this file may not be secure</span>
+        <% end %>
+      </div>
+    </div>
+    <a href="<%= download_attachment_path(attachment) %>" class="btn btn-sm">Download</a>
+  <% end %>
+
+  <div style="display:flex; gap:3px; flex-shrink:0;">
+    <% if logged_in? && moderator_or_admin? %>
+      <% if attachment.approved? %>
+        <%= button_to "Revoke", unapprove_attachment_path(attachment), method: :patch, class: "btn btn-sm", style: "padding:2px 5px;", data: { turbo_confirm: "Revoke approval?" } %>
+      <% else %>
+        <%= button_to "Approve", approve_attachment_path(attachment), method: :patch, class: "btn btn-success btn-sm", style: "padding:2px 5px;" %>
+      <% end %>
+    <% end %>
+    <% if logged_in? && (current_user == attachment.user || moderator_or_admin?) %>
+      <%= button_to "✕", attachment_path(attachment), method: :delete, class: "btn btn-danger btn-sm",
+        style: "padding:2px 5px;",
+        data: { turbo_confirm: "Delete this attachment?" } %>
+    <% end %>
+  </div>
+</div>

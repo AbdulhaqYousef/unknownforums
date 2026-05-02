@@ -1,0 +1,50 @@
+<% content_for :title, "New Thread" %>
+
+<div style="font-size:11px; color:#888; margin-bottom:6px;">
+  <a href="<%= root_path %>">Forum</a> &raquo;
+  <a href="<%= subforum_path(@subforum) %>"><%= @subforum.name %></a> &raquo;
+  New Thread
+</div>
+
+<div style="background:#242424; border:1px solid #444;">
+  <div style="background:#303030; border-bottom:1px solid #444; padding:6px 10px; font-size:13px; font-weight:bold; color:#e0e0e0;">
+    Post New Thread &mdash; <%= @subforum.name %>
+  </div>
+  <div style="padding:12px;">
+    <%= form_with url: subforum_forum_threads_path(@subforum), multipart: true do |f| %>
+      <!-- Thread title -->
+      <div style="margin-bottom:10px;">
+        <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Thread Title:</label>
+        <input type="text" name="forum_thread[title]" value="<%= @thread.title %>"
+          style="width:100%; max-width:600px;" placeholder="Enter thread title...">
+        <% if @thread.errors[:title].any? %>
+          <ul class="error-list">
+            <% @thread.errors[:title].each do |err| %><li><%= err %></li><% end %>
+          </ul>
+        <% end %>
+      </div>
+
+      <!-- Post body -->
+      <div style="margin-bottom:10px;">
+        <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Message:</label>
+        <textarea name="post[body]" rows="12" style="width:100%; resize:vertical;"
+          placeholder="Write your post here..."><%= @post.body %></textarea>
+        <% if @post.errors[:body].any? %>
+          <ul class="error-list">
+            <% @post.errors[:body].each do |err| %><li><%= err %></li><% end %>
+          </ul>
+        <% end %>
+      </div>
+
+      <!-- File attachments -->
+      <div style="margin-bottom:12px;">
+        <%= render "shared/file_upload_field" %>
+      </div>
+
+      <div style="display:flex; gap:8px; align-items:center;">
+        <%= f.submit "Post Thread", class: "btn btn-primary" %>
+        <a href="<%= subforum_path(@subforum) %>" class="btn">Cancel</a>
+      </div>
+    <% end %>
+  </div>
+</div>

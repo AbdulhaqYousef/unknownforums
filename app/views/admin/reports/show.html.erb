@@ -1,0 +1,46 @@
+<% content_for :title, "Report ##{@report.id}" %>
+
+<div style="font-size:11px; color:#888; margin-bottom:6px;">
+  <a href="<%= admin_reports_path %>">← Reports</a>
+</div>
+
+<div style="max-width:600px;">
+  <div style="background:#242424; border:1px solid #444; margin-bottom:10px;">
+    <div style="background:#303030; border-bottom:1px solid #444; padding:6px 10px; font-size:13px; font-weight:bold; color:#e0e0e0;">
+      Report #<%= @report.id %> — <%= @report.reportable_type %>
+    </div>
+    <div style="padding:12px;">
+      <table style="font-size:12px; width:100%;">
+        <tr><td style="padding:3px 0; color:#888; width:120px;">Reporter:</td><td><a href="<%= user_path(@report.reporter) %>"><%= @report.reporter.username %></a></td></tr>
+        <tr><td style="padding:3px 0; color:#888;">Type:</td><td><%= @report.reportable_type %> #<%= @report.reportable_id %></td></tr>
+        <tr><td style="padding:3px 0; color:#888;">Status:</td><td><%= @report.status %></td></tr>
+        <tr><td style="padding:3px 0; color:#888;">Date:</td><td><%= @report.created_at.strftime("%m/%d/%Y %I:%M %p") %></td></tr>
+      </table>
+      <div style="margin-top:10px;">
+        <div style="font-size:11px; color:#888; margin-bottom:4px;">Reason:</div>
+        <div style="background:#1e1e1e; border:1px solid #333; padding:8px; font-size:12px;"><%= @report.reason %></div>
+      </div>
+      <% if @report.screenshots.attached? %>
+        <div style="margin-top:10px;">
+          <div style="font-size:11px; color:#888; margin-bottom:6px;">Screenshots (<%= @report.screenshots.count %>):</div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <% @report.screenshots.each do |screenshot| %>
+              <a href="<%= rails_blob_path(screenshot, only_path: true) %>" target="_blank" style="display:block; border:1px solid #444;">
+                <%= image_tag rails_blob_path(screenshot, only_path: true), style: "max-width:200px; max-height:150px; display:block;" %>
+              </a>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div style="background:#242424; border:1px solid #444; padding:10px;">
+    <div style="font-size:11px; color:#888; margin-bottom:8px;">Update Status:</div>
+    <div style="display:flex; gap:6px;">
+      <%= button_to "Mark Reviewed", admin_report_path(@report, status: :reviewed), method: :patch, class: "btn btn-sm" %>
+      <%= button_to "Mark Resolved", admin_report_path(@report, status: :resolved), method: :patch, class: "btn btn-sm", style: "background:#1a3a1a; border-color:#2a5a2a; color:#80c080;" %>
+      <%= button_to "Dismiss", admin_report_path(@report, status: :dismissed), method: :patch, class: "btn btn-danger btn-sm" %>
+    </div>
+  </div>
+</div>

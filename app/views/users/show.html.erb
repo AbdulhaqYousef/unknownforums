@@ -1,0 +1,95 @@
+<% content_for :title, @user.username %>
+<% meta_description "#{@user.username} — #{@user.reputation_rank}. #{@user.post_count} posts, #{@user.forum_threads.count} threads. Member since #{@user.created_at.strftime('%B %Y')}." %>
+<% canonical_url user_url(@user) %>
+<% og_type "profile" %>
+<% content_for :structured_data do %>
+  <script type="application/ld+json"><%= {
+    "@context" => "https://schema.org",
+    "@type" => "ProfilePage",
+    "mainEntity" => {
+      "@type" => "Person",
+      "name" => @user.username,
+      "url" => user_url(@user),
+      "memberOf" => { "@type" => "Organization", "name" => forum_name }
+    }
+  }.to_json.html_safe %></script>
+<% end %>
+
+<div style="display:flex; gap:12px; align-items:flex-start;">
+  <!-- User card -->
+  <div style="width:200px; flex-shrink:0;">
+    <div style="background:#242424; border:1px solid #444;">
+      <div style="background:#303030; border-bottom:1px solid #444; padding:5px 8px; font-size:12px; font-weight:bold; color:#e0e0e0; text-align:center;">
+        <%= @user.username %>
+      </div>
+      <div style="padding:10px; text-align:center;">
+        <div style="width:80px; height:80px; background:#303030; border:1px solid #444; margin:0 auto 8px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+          <% if @user.avatar.attached? %>
+            <%= avatar_image_tag @user, size: 80 %>
+          <% else %>
+            <span style="font-size:36px; color:#555;">&#128100;</span>
+          <% end %>
+        </div>
+        <div style="font-size:11px; color:#888; margin-bottom:4px;"><%= role_badge(@user) %></div>
+        <div style="font-size:11px; color:#888; margin-bottom:4px;"><%= @user.reputation_rank %></div>
+        <div style="font-size:12px; margin-bottom:6px;">
+          Rep: <%= rep_label(@user.reputation) %>
+        </div>
+        <table style="font-size:10px; color:#666; width:100%; text-align:left;">
+          <tr><td>Posts:</td><td><strong><%= @user.post_count %></strong></td></tr>
+          <tr><td>Threads:</td><td><strong><%= @user.forum_threads.count %></strong></td></tr>
+          <tr><td>Rep Power:</td><td><strong><%= @user.rep_power %></strong></td></tr>
+          <tr><td>Files:</td><td><strong><%= @user.uploaded_files_count %></strong></td></tr>
+          <tr><td>Downloads:</td><td><strong><%= @user.downloaded_files_count %></strong></td></tr>
+          <tr><td>Joined:</td><td><strong><%= @user.created_at.strftime("%m/%d/%Y") %></strong></td></tr>
+        </table>
+      </div>
+      <div class="action-stack" style="border-top:1px solid #333; padding:8px;">
+        <% if logged_in? && current_user != @user %>
+          <a href="<%= new_private_message_path(recipient_id: @user.id) %>" class="btn btn-block">Send Message</a>
+          <a href="<%= new_report_path(reportable_type: 'User', reportable_id: @user.id) %>" class="btn btn-block" style="color:#c08080;">Report User</a>
+        <% end %>
+        <% if logged_in? && (current_user == @user || admin?) %>
+          <a href="<%= edit_user_path(@user) %>" class="btn btn-block">Edit Profile</a>
+        <% end %>
+        <% if admin? && current_user != @user %>
+          <% if @user.banned? %>
+            <%= button_to "Unban User", unban_user_path(@user), method: :patch, class: "btn btn-block" %>
+          <% else %>
+            <%= button_to "Ban User", ban_user_path(@user), method: :patch, class: "btn btn-danger btn-block", data: { turbo_confirm: "Ban this user?" } %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity -->
+  <div style="flex:1;">
+    <% if @user.signature.present? %>
+      <div style="background:#242424; border:1px solid #444; padding:8px 10px; margin-bottom:8px;">
+        <div style="font-size:10px; color:#666; margin-bottom:4px;">Signature:</div>
+        <div style="font-size:11px; color:#888;"><%= @user.signature %></div>
+      </div>
+    <% end %>
+
+    <div style="background:#242424; border:1px solid #444;">
+      <div style="background:#303030; border-bottom:1px solid #444; padding:5px 10px; font-size:12px; font-weight:bold; color:#e0e0e0;">
+        Recent Threads
+      </div>
+      <table>
+        <% if @threads.empty? %>
+          <tr><td style="padding:10px; color:#666; font-size:12px;">No threads yet.</td></tr>
+        <% end %>
+        <% @threads.each_with_index do |thread, i| %>
+          <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
+            <td style="padding:5px 10px;">
+              <a href="<%= forum_thread_path(thread) %>" style="font-size:12px; color:#a8c8f0;"><%= thread.title %></a>
+              <span style="font-size:10px; color:#666; margin-left:6px;">in <%= thread.subforum.name %></span>
+            </td>
+            <td style="font-size:10px; color:#666; white-space:nowrap; padding:5px 10px;"><%= thread.created_at.strftime("%m/%d/%Y") %></td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
+  </div>
+</div>

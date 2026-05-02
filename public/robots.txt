@@ -1,0 +1,18 @@
+# Robots.txt
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /login
+Disallow: /register
+Disallow: /logout
+Disallow: /messages/
+Disallow: /reports/
+Disallow: /users/*/edit
+Disallow: /attachments/*/approve
+Disallow: /attachments/*/unapprove
+
+# Crawl-delay for polite bots
+Crawl-delay: 2
+
+# Sitemap
+Sitemap: https://unknownforums.fun/sitemap.xml

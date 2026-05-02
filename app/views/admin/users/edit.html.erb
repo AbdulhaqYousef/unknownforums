@@ -1,0 +1,45 @@
+<% content_for :title, "Edit User" %>
+
+<div style="font-size:11px; color:#888; margin-bottom:6px;">
+  <a href="<%= admin_users_path %>">← Users</a>
+</div>
+
+<div style="max-width:400px;">
+  <div style="background:#242424; border:1px solid #444;">
+    <div style="background:#303030; border-bottom:1px solid #444; padding:6px 10px; font-size:13px; font-weight:bold; color:#e0e0e0;">
+      Edit User: <%= @user.username %>
+    </div>
+    <div style="padding:14px;">
+      <%= form_with model: @user, url: admin_user_path(@user), method: :patch do |f| %>
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Role:</label>
+          <%= f.select :role, User.roles.keys.map { |r| [r.capitalize, r] }, {}, style: "width:100%;" %>
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Reputation:</label>
+          <%= f.number_field :reputation, style: "width:100px;" %>
+        </div>
+        <div style="margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+          <%= f.check_box :banned, style: "width:14px; height:14px;" %>
+          <label style="font-size:11px; color:#888;">Banned</label>
+        </div>
+        <div style="margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+          <%= f.check_box :flagged, style: "width:14px; height:14px;" %>
+          <label style="font-size:11px; color:#888;">Flagged for review</label>
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Flag reason:</label>
+          <%= f.text_area :flag_reason, rows: 3, style: "width:100%;" %>
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Moderation note:</label>
+          <%= f.text_area :moderation_note, rows: 4, style: "width:100%;" %>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <%= f.submit "Save", class: "btn btn-primary" %>
+          <a href="<%= admin_users_path %>" class="btn">Cancel</a>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

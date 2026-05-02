@@ -1,0 +1,71 @@
+<% content_for :title, "Edit Profile" %>
+<% noindex_page %>
+
+<div style="max-width:500px;">
+  <div style="background:#242424; border:1px solid #444;">
+    <div style="background:#303030; border-bottom:1px solid #444; padding:6px 10px; font-size:13px; font-weight:bold; color:#e0e0e0;">
+      Edit Profile
+    </div>
+    <div style="padding:14px;">
+      <% if @user.errors.any? %>
+        <div style="background:#3a1a1a; border:1px solid #6a2a2a; padding:8px 10px; margin-bottom:12px;">
+          <ul class="error-list">
+            <% @user.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <%= form_with model: @user, url: user_path(@user), method: :patch, multipart: true do |f| %>
+        <!-- Avatar section -->
+        <div style="margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #333;">
+          <label style="display:block; font-size:11px; color:#888; margin-bottom:6px;">Profile Picture:</label>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:70px; height:70px; background:#303030; border:1px solid #444; flex-shrink:0; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+              <% if @user.avatar.attached? %>
+                <%= avatar_image_tag @user, size: 70 %>
+              <% else %>
+                <span style="font-size:30px; color:#555;">&#128100;</span>
+              <% end %>
+            </div>
+            <div>
+              <%= f.file_field :avatar, accept: "image/jpeg,image/png,image/gif,image/webp",
+                style: "font-size:11px; color:#888;" %>
+              <div style="font-size:10px; color:#666; margin-top:3px;">JPEG, PNG, GIF or WebP &mdash; max 10MB</div>
+              <% if @user.avatar.attached? %>
+                <label style="display:flex; align-items:center; gap:4px; margin-top:6px; font-size:11px; color:#c08080; cursor:pointer;">
+                  <input type="checkbox" name="user[remove_avatar]" value="1" style="width:12px; height:12px;">
+                  Remove current picture
+                </label>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Email:</label>
+          <%= f.email_field :email, style: "width:100%;" %>
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Signature:</label>
+          <%= f.text_area :signature, rows: 3, style: "width:100%; resize:vertical;", maxlength: 300 %>
+          <div style="font-size:10px; color:#666; margin-top:2px;">Max 300 characters.</div>
+        </div>
+        <div style="border-top:1px solid #333; padding-top:10px; margin-top:10px; margin-bottom:10px;">
+          <div style="font-size:11px; color:#888; margin-bottom:8px;">Change Password (leave blank to keep current):</div>
+          <div style="margin-bottom:8px;">
+            <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">New Password:</label>
+            <%= f.password_field :password, style: "width:100%;", autocomplete: "new-password" %>
+          </div>
+          <div>
+            <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Confirm New Password:</label>
+            <%= f.password_field :password_confirmation, style: "width:100%;", autocomplete: "new-password" %>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <%= f.submit "Save Profile", class: "btn btn-primary" %>
+          <a href="<%= user_path(@user) %>" class="btn">Cancel</a>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

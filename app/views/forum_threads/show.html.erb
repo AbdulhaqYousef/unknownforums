@@ -1,0 +1,237 @@
+<% content_for :title, @thread.title %>
+<% first_post = @posts.first %>
+<% meta_description "#{@thread.title} — posted by #{@thread.user.username} in #{@thread.subforum.name}. #{first_post ? truncate(strip_tags(first_post.body.to_s), length: 120) : ''}" %>
+<% meta_keywords [@thread.title, @thread.subforum.name, @thread.subforum.category.name, @thread.user.username, "forum", "thread"] %>
+<% canonical_url forum_thread_url(@thread) %>
+<% og_type "article" %>
+<% og_description first_post ? strip_tags(first_post.body.to_s) : @thread.title %>
+<% content_for :structured_data do %>
+  <script type="application/ld+json"><%= breadcrumb_jsonld([
+    { name: forum_name, url: root_url },
+    { name: @thread.subforum.category.name, url: root_url },
+    { name: @thread.subforum.name, url: subforum_url(@thread.subforum) },
+    { name: @thread.title, url: forum_thread_url(@thread) }
+  ]) %></script>
+  <script type="application/ld+json"><%= discussion_jsonld(@thread, @posts) %></script>
+<% end %>
+
+<!-- Breadcrumb -->
+<div style="font-size:11px; color:#888; margin-bottom:6px;">
+  <a href="<%= root_path %>">Forum</a> &raquo;
+  <a href="<%= root_path %>"><%= @thread.subforum.category.name %></a> &raquo;
+  <a href="<%= subforum_path(@thread.subforum) %>"><%= @thread.subforum.name %></a> &raquo;
+  <span style="color:#cfcfcf;"><%= truncate(@thread.title, length: 60) %></span>
+</div>
+
+<!-- Thread header -->
+<div class="panel-header" style="border:1px solid #444; border-bottom:none;">
+  <span style="font-size:13px; font-weight:bold; color:#e0e0e0;">
+    <%= @thread.title %>
+    <% if @thread.locked? %>
+      <span class="badge">LOCKED</span>
+    <% end %>
+    <% if @thread.pinned? %>
+      <span class="badge badge-pin">PINNED</span>
+    <% end %>
+  </span>
+  <div class="action-group">
+    <!-- Thread tools for mods -->
+    <% if moderator_or_admin? %>
+      <% if @thread.locked? %>
+        <%= button_to "Unlock", unlock_forum_thread_path(@thread), method: :patch, class: "btn btn-sm" %>
+      <% else %>
+        <%= button_to "Lock", lock_forum_thread_path(@thread), method: :patch, class: "btn btn-sm" %>
+      <% end %>
+      <% if @thread.pinned? %>
+        <%= button_to "Unpin", unpin_forum_thread_path(@thread), method: :patch, class: "btn btn-sm" %>
+      <% else %>
+        <%= button_to "Pin", pin_forum_thread_path(@thread), method: :patch, class: "btn btn-sm" %>
+      <% end %>
+      <%= button_to "Delete", forum_thread_path(@thread), method: :delete, class: "btn btn-danger btn-sm", data: { turbo_confirm: "Delete this thread?" } %>
+    <% end %>
+  </div>
+</div>
+
+<!-- Pagination top -->
+<div class="toolbar" style="border-top:none; border-bottom:none;">
+  <span>Page <%= @posts.current_page %> of <%= @posts.total_pages %></span>
+  <div class="action-group">
+    <%= link_to_prev_page @posts, "← Prev", class: "btn btn-sm" %>
+    <%= link_to_next_page @posts, "Next →", class: "btn btn-sm" %>
+  </div>
+</div>
+
+<!-- Posts -->
+<div style="border:1px solid #444; border-top:none;">
+  <% @posts.each_with_index do |post, i| %>
+    <div id="post-<%= post.id %>" class="uc-post">
+      <!-- User sidebar -->
+      <div class="uc-post-user">
+        <div class="uc-username">
+          <a href="<%= user_path(post.user) %>"><%= post.user.username %></a>
+        </div>
+        <div class="uc-rank"><%= post.user.reputation_rank %></div>
+
+        <div class="uc-avatar">
+          <% if post.user.avatar.attached? %>
+            <%= avatar_image_tag post.user, size: 80 %>
+          <% else %>
+            <span style="color:#555; font-size:28px;">&#128100;</span>
+          <% end %>
+        </div>
+
+        <div class="uc-info-row">
+          <span class="uc-info-label">Join Date:</span>
+          <span><%= post.user.created_at.strftime("%b %Y") %></span>
+        </div>
+        <div class="uc-info-row">
+          <span class="uc-info-label">Posts:</span>
+          <span><%= post.user.post_count %></span>
+        </div>
+        <div class="uc-info-row">
+          <span class="uc-info-label">Reputation:</span>
+          <span><%= rep_label(post.user.reputation) %></span>
+        </div>
+        <div class="uc-info-row">
+          <span class="uc-info-label">Rep Power:</span>
+          <span><%= rep_power_dots(post.user) %> <%= post.user.rep_power %></span>
+        </div>
+
+        <div class="uc-rep-desc"><%= reputation_description(post.user) %></div>
+
+        <div class="uc-section">
+          <div class="uc-progress-row">
+            <span>Points: <%= user_points(post.user) %>, Level: <%= user_level(post.user) %></span>
+          </div>
+          <div class="uc-progress-row">
+            <span>Level up: <%= level_progress(post.user) %>%</span>
+            <div class="uc-progress-bar"><div class="uc-progress-fill" style="width:<%= level_progress(post.user) %>%"></div></div>
+          </div>
+          <div class="uc-progress-row" style="margin-top:4px;">
+            <span>Activity: <%= user_activity(post.user) %>%</span>
+            <div class="uc-progress-bar"><div class="uc-progress-fill activity" style="width:<%= user_activity(post.user) %>%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Post content -->
+      <div class="uc-post-content">
+        <div class="uc-post-header">
+          <span>
+            #<%= (@posts.current_page - 1) * 20 + i + 1 %>
+            &mdash;
+            <a href="#post-<%= post.id %>" style="color:#666;"><%= post.created_at.strftime("%m/%d/%Y %I:%M %p") %></a>
+          </span>
+          <span class="post-actions">
+            <% if logged_in? && !@thread.locked? %>
+              <a href="<%= new_subforum_forum_thread_path(@thread.subforum, quote_post_id: post.id) %>" onclick="quotePost(<%= post.id %>); return false;">Quote</a>
+            <% end %>
+            <% if logged_in? && (current_user == post.user || moderator_or_admin?) %>
+              <a href="<%= edit_forum_thread_post_path(@thread, post) %>">Edit</a>
+            <% end %>
+            <% if moderator_or_admin? %>
+              <%= button_to "Del", forum_thread_post_path(@thread, post), method: :delete,
+                class: "btn btn-danger btn-sm",
+                data: { turbo_confirm: "Delete this post?" } %>
+            <% end %>
+            <% if logged_in? && current_user != post.user %>
+              <a href="<%= new_report_path(reportable_type: 'Post', reportable_id: post.id) %>">Report</a>
+            <% end %>
+          </span>
+        </div>
+
+        <div class="uc-post-body">
+          <% if post.quote_post %>
+            <div class="uc-quote">
+              <div class="uc-quote-header">
+                Originally posted by <strong><%= post.quote_post.user.username %></strong>:
+              </div>
+              <%= truncate(post.quote_post.body, length: 300) %>
+            </div>
+          <% end %>
+
+          <%= simple_format(h(post.body)) %>
+
+          <% if post.attachments.any? %>
+            <div style="border-top:1px solid #333; margin-top:8px; padding-top:6px;">
+              <div style="font-size:10px; color:#666; margin-bottom:4px;">Attachments:</div>
+              <% post.attachments.each do |attachment| %>
+                <%= render "attachments/attachment", attachment: attachment %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <% if post.user.signature.present? %>
+          <div class="uc-post-sig"><%= post.user.signature %></div>
+        <% end %>
+
+        <div class="uc-post-footer">
+          <span style="font-size:10px; color:#555;"><%= post.user.username %> is offline</span>
+          <% if logged_in? && current_user != post.user %>
+            <div class="action-group">
+              <%= button_to "+Rep", reputations_path(post_id: post.id, value: 1), method: :post,
+                class: "btn btn-success btn-sm" %>
+              <%= button_to "-Rep", reputations_path(post_id: post.id, value: -1), method: :post,
+                class: "btn btn-danger btn-sm" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Pagination bottom -->
+<div class="toolbar" style="border-top:none; margin-bottom:12px;">
+  <span>Page <%= @posts.current_page %> of <%= @posts.total_pages %></span>
+  <div class="action-group">
+    <%= link_to_prev_page @posts, "← Prev", class: "btn btn-sm" %>
+    <%= link_to_next_page @posts, "Next →", class: "btn btn-sm" %>
+  </div>
+</div>
+
+<!-- Reply form -->
+<% if logged_in? && !@thread.locked? %>
+  <div class="panel">
+    <div class="panel-header">
+      Reply to Thread
+    </div>
+    <div class="panel-body">
+      <%= form_with model: @post, url: forum_thread_posts_path(@thread), id: "reply-form", multipart: true do |f| %>
+        <%= f.hidden_field :quote_post_id, id: "quote_post_id_field" %>
+        <div id="quote-preview" style="display:none; background:#1e1e1e; border-left:3px solid #444; padding:6px 8px; margin-bottom:8px; font-size:11px; color:#888;"></div>
+        <%= f.text_area :body, rows: 8, style: "width:100%; resize:vertical;", placeholder: "Write your reply here..." %>
+        <div style="margin-top:8px;">
+          <%= render "shared/file_upload_field" %>
+        </div>
+        <div style="margin-top:8px; display:flex; gap:8px; align-items:center; justify-content:space-between;">
+          <%= f.submit "Post Reply", class: "btn btn-primary" %>
+          <span style="font-size:10px; color:#666;">Be respectful and follow forum rules.</span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% elsif @thread.locked? %>
+  <div style="background:#2a2a2a; border:1px solid #444; padding:10px; text-align:center; color:#888; font-size:12px;">
+    &#128274; This thread is locked and cannot be replied to.
+  </div>
+<% elsif !logged_in? %>
+  <div style="background:#242424; border:1px solid #444; padding:10px; text-align:center; font-size:12px; color:#888;">
+    <a href="<%= login_path %>">Login</a> or <a href="<%= register_path %>">Register</a> to reply.
+  </div>
+<% end %>
+
+<script>
+function quotePost(postId) {
+  const postEl = document.getElementById('post-' + postId);
+  const body = postEl ? postEl.querySelector('[data-post-body]') : null;
+  document.getElementById('quote_post_id_field').value = postId;
+
+  const preview = document.getElementById('quote-preview');
+  preview.style.display = 'block';
+  preview.textContent = 'Quoting post #' + postId;
+
+  document.getElementById('reply-form').scrollIntoView({ behavior: 'smooth' });
+}
+</script>

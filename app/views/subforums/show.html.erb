@@ -1,0 +1,87 @@
+<% content_for :title, @subforum.name %>
+<% meta_description "#{@subforum.name} — #{@subforum.description.presence || 'Browse threads in this subforum.'}  #{@threads.total_count} threads." %>
+<% meta_keywords [@subforum.name, @subforum.category.name, "forum", "threads"] %>
+<% canonical_url subforum_url(@subforum) %>
+<% og_type "website" %>
+<% content_for :structured_data do %>
+  <script type="application/ld+json"><%= breadcrumb_jsonld([
+    { name: forum_name, url: root_url },
+    { name: @subforum.category.name, url: root_url },
+    { name: @subforum.name, url: subforum_url(@subforum) }
+  ]) %></script>
+<% end %>
+
+<!-- Breadcrumb -->
+<div style="font-size:11px; color:#888; margin-bottom:6px;">
+  <a href="<%= root_path %>">Forum</a> &raquo;
+  <a href="<%= root_path %>#category-<%= @subforum.category.id %>"><%= @subforum.category.name %></a> &raquo;
+  <strong style="color:#cfcfcf;"><%= @subforum.name %></strong>
+</div>
+
+<!-- Subforum header -->
+<div style="background:#303030; border:1px solid #444; border-bottom:none; padding:6px 10px; display:flex; justify-content:space-between; align-items:center;">
+  <span style="font-size:13px; font-weight:bold; color:#e0e0e0;"><%= @subforum.name %></span>
+  <% if logged_in? %>
+    <a href="<%= new_subforum_forum_thread_path(@subforum) %>" class="btn btn-primary">+ New Thread</a>
+  <% end %>
+</div>
+
+<!-- Thread list table -->
+<table style="border:1px solid #444; margin-bottom:8px;">
+  <tr style="background:#222; font-size:10px; color:#666; text-transform:uppercase;">
+    <th style="width:60%; text-align:left; padding:3px 10px;">Thread</th>
+    <th style="width:8%; text-align:center;">Replies</th>
+    <th style="width:8%; text-align:center;">Views</th>
+    <th style="width:24%; text-align:left;">Last Post</th>
+  </tr>
+
+  <% if @threads.empty? %>
+    <tr>
+      <td colspan="4" style="text-align:center; padding:20px; color:#666;">No threads yet. Be the first to post!</td>
+    </tr>
+  <% end %>
+
+  <% @threads.each_with_index do |thread, i| %>
+    <% last_post = thread.last_post %>
+    <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
+      <td style="padding:7px 10px;">
+        <div style="display:flex; align-items:flex-start; gap:6px;">
+          <!-- Status icon -->
+          <span style="font-size:14px; color:<%= thread.pinned? ? '#f0c060' : thread.locked? ? '#888' : '#4a8fc0' %>; flex-shrink:0; margin-top:1px;">
+            <%= thread.pinned? ? "&#128204;" : thread.locked? ? "&#128274;" : "&#128196;" %>
+          </span>
+          <div style="min-width:0;">
+            <% if thread.pinned? %>
+              <span style="background:#4a3a00; border:1px solid #6a5a00; color:#f0c060; font-size:9px; padding:1px 4px; margin-right:4px;">PINNED</span>
+            <% end %>
+            <% if thread.locked? %>
+              <span style="background:#3a3a3a; border:1px solid #555; color:#888; font-size:9px; padding:1px 4px; margin-right:4px;">LOCKED</span>
+            <% end %>
+            <a href="<%= forum_thread_path(thread) %>" style="font-size:12px; font-weight:bold; color:#a8c8f0;"><%= thread.title %></a>
+            <div style="font-size:10px; color:#666; margin-top:2px;">
+              by <a href="<%= user_path(thread.user) %>"><%= thread.user.username %></a>
+              &mdash; <%= thread.created_at.strftime("%m/%d/%Y") %>
+            </div>
+          </div>
+        </div>
+      </td>
+      <td style="text-align:center; font-size:12px; color:#cfcfcf;"><%= [thread.posts_count - 1, 0].max %></td>
+      <td style="text-align:center; font-size:12px; color:#cfcfcf;"><%= thread.views_count %></td>
+      <td style="font-size:11px; color:#888; padding:7px 10px;">
+        <% if last_post %>
+          <div><a href="<%= user_path(last_post.user) %>"><%= last_post.user.username %></a></div>
+          <div><%= time_ago_in_words(last_post.created_at) %> ago</div>
+        <% end %>
+      </td>
+    </tr>
+  <% end %>
+</table>
+
+<!-- Pagination -->
+<div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#888;">
+  <span>Page <%= @threads.current_page %> of <%= @threads.total_pages %> &mdash; <%= @threads.total_count %> threads</span>
+  <div>
+    <%= link_to_prev_page @threads, "← Prev", class: "btn btn-sm" %>
+    <%= link_to_next_page @threads, "Next →", class: "btn btn-sm" %>
+  </div>
+</div>
