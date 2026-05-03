@@ -1,6 +1,10 @@
 class ForumController < ApplicationController
   def index
-    fresh_when(etag: "forum-index", last_modified: ForumThread.maximum(:updated_at) || Time.current, public: !logged_in?)
+    fresh_when(
+      etag: ["forum-index", current_user&.id || "guest"],
+      last_modified: ForumThread.maximum(:updated_at) || Time.current,
+      public: !logged_in?
+    )
     @categories = Category.includes(subforums: :category).order(:position, :name)
 
     subforum_ids = @categories.flat_map(&:subforums).map(&:id)
