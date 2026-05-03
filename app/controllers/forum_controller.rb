@@ -1,17 +1,20 @@
 class ForumController < ApplicationController
   def index
+    fresh_when(etag: "forum-index", last_modified: ForumThread.maximum(:updated_at) || Time.current, public: !logged_in?)
     @categories = Category.includes(subforums: :category).order(:position, :name)
 
     subforum_ids = @categories.flat_map(&:subforums).map(&:id)
     @last_post_by_subforum = last_post_per_subforum(subforum_ids)
 
-    @stats = {
-      threads:   ForumThread.count,
-      posts:     Post.where(deleted: false).count,
-      members:   User.count,
-      files:     Attachment.count,
-      downloads: Attachment.sum(:download_count)
-    }
+    @stats = Rails.cache.fetch("forum_stats", expires_in: 60.seconds) do
+      {
+        threads:   ForumThread.count,
+        posts:     Post.where(deleted: false).count,
+        members:   User.count,
+        files:     Attachment.count,
+        downloads: Attachment.sum(:download_count)
+      }
+    end
   end
 
   private

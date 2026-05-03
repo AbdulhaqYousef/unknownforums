@@ -15,9 +15,15 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  # For details on connection pooling, see Rails configuration guide
-  # https://guides.rubyonrails.org/configuring.html#database-pooling
-  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 }.to_i + 1 %>
+  checkout_timeout: 5
+  connect_timeout: 5
+  variables:
+    statement_timeout: 10000
+  keepalives: 1
+  keepalives_idle: 10
+  keepalives_interval: 5
+  keepalives_count: 3
 
 
 development:

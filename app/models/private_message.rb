@@ -9,5 +9,14 @@ class PrivateMessage < ApplicationRecord
   scope :inbox_for, ->(user) { where(recipient: user, recipient_deleted: false).order(created_at: :desc) }
   scope :sent_by, ->(user) { where(sender: user, sender_deleted: false).order(created_at: :desc) }
 
+  after_create  :bust_recipient_unread_cache
+  after_update  :bust_recipient_unread_cache
+
   paginates_per 25
+
+  private
+
+  def bust_recipient_unread_cache
+    recipient&.bust_unread_cache
+  end
 end

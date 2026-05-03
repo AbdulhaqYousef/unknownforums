@@ -44,11 +44,17 @@ class User < ApplicationRecord
   end
 
   def unread_messages_count
-    received_messages.where(read: false, recipient_deleted: false).count
+    Rails.cache.fetch("user_unread_#{id}", expires_in: 30.seconds) do
+      received_messages.where(read: false, recipient_deleted: false).count
+    end
+  end
+
+  def bust_unread_cache
+    Rails.cache.delete("user_unread_#{id}")
   end
 
   def post_count
-    posts.where(deleted: false).count
+    posts_count
   end
 
   def avatar_url
@@ -68,7 +74,7 @@ class User < ApplicationRecord
 
   def rep_power
     base = 1
-    base += post_count / 100
+    base += posts_count / 100
     base += reputation / 250 if reputation.positive?
     [base, 10].min
   end

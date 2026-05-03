@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_03_082000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_03_090100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -62,6 +62,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_082000) do
     t.datetime "vt_scanned_at"
     t.string "vt_status", default: "pending"
     t.index ["approved"], name: "index_attachments_on_approved"
+    t.index ["attachable_type", "attachable_id", "approved"], name: "idx_attachments_attachable_approved"
     t.index ["attachable_type", "attachable_id"], name: "index_attachments_on_attachable"
     t.index ["attachable_type", "attachable_id"], name: "index_attachments_on_attachable_type_and_attachable_id"
     t.index ["parent_attachment_id"], name: "index_attachments_on_parent_attachment_id"
@@ -76,6 +77,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_082000) do
     t.string "path"
     t.string "user_agent"
     t.index ["ip_address"], name: "index_attack_events_on_ip_address"
+    t.index ["occurred_at", "matched"], name: "idx_attack_events_occurred_matched"
     t.index ["occurred_at"], name: "index_attack_events_on_occurred_at"
   end
 
@@ -115,6 +117,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_082000) do
     t.bigint "user_id", null: false
     t.index ["deleted"], name: "index_posts_on_deleted"
     t.index ["forum_thread_id", "created_at"], name: "index_posts_on_forum_thread_id_and_created_at"
+    t.index ["forum_thread_id", "deleted", "created_at"], name: "idx_posts_thread_visible_created"
     t.index ["ip_address"], name: "index_posts_on_ip_address"
     t.index ["quote_post_id"], name: "index_posts_on_quote_post_id"
     t.index ["user_id"], name: "index_posts_on_user_id"
@@ -130,6 +133,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_082000) do
     t.bigint "sender_id", null: false
     t.string "subject", null: false
     t.datetime "updated_at", null: false
+    t.index ["recipient_id", "read", "recipient_deleted"], name: "idx_pm_recipient_unread", where: "((read = false) AND (recipient_deleted = false))"
     t.index ["recipient_id", "read"], name: "index_private_messages_on_recipient_id_and_read"
     t.index ["recipient_id"], name: "index_private_messages_on_recipient_id"
     t.index ["sender_id"], name: "index_private_messages_on_sender_id"
@@ -211,6 +215,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_082000) do
     t.bigint "user_id", null: false
     t.bigint "warned_by_id", null: false
     t.index ["acknowledged"], name: "index_user_warnings_on_acknowledged"
+    t.index ["user_id", "expires_at"], name: "idx_user_warnings_user_expires"
     t.index ["user_id"], name: "index_user_warnings_on_user_id"
     t.index ["warned_by_id"], name: "index_user_warnings_on_warned_by_id"
   end
@@ -236,6 +241,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_082000) do
     t.datetime "locked_until"
     t.text "moderation_note"
     t.string "password_digest", null: false
+    t.integer "posts_count", default: 0, null: false
     t.text "previous_usernames", default: [], null: false, array: true
     t.integer "reputation", default: 0, null: false
     t.integer "role", default: 0, null: false

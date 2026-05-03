@@ -12,8 +12,10 @@ class Post < ApplicationRecord
 
   paginates_per 20
 
-  after_create :increment_subforum_posts_count
+  after_create  :increment_subforum_posts_count
+  after_create  :increment_user_posts_count
   after_destroy :decrement_subforum_posts_count
+  after_destroy :decrement_user_posts_count
 
   def quoted_body
     return nil unless quote_post
@@ -28,5 +30,13 @@ class Post < ApplicationRecord
 
   def decrement_subforum_posts_count
     thread.subforum.decrement!(:posts_count)
+  end
+
+  def increment_user_posts_count
+    user.increment!(:posts_count) unless deleted?
+  end
+
+  def decrement_user_posts_count
+    user.decrement!(:posts_count) unless deleted?
   end
 end

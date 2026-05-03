@@ -5,7 +5,11 @@ class ForumThreadsController < ApplicationController
 
   def show
     @thread.increment_views!
-    @posts = @thread.posts.visible.includes(:user, :quote_post, attachments: :file_attachment).order(:created_at).page(params[:page])
+    @posts = @thread.posts.visible
+                    .includes(:user, :quote_post, attachments: [:file_attachment, :versions],
+                              user: { avatar_attachment: :blob })
+                    .order(:created_at)
+                    .page(params[:page])
     @post = Post.new
   end
 

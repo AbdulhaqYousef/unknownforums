@@ -1,13 +1,13 @@
 class SubforumsController < ApplicationController
   def show
     @subforum = Subforum.includes(:category).find(params[:id])
-    thread_ids = @subforum.forum_threads.pluck(:id)
-    @last_post_by_thread = last_post_per_thread(thread_ids)
 
     @threads = @subforum.forum_threads
                         .includes(:user)
                         .order(pinned: :desc, updated_at: :desc)
                         .page(params[:page])
+
+    @last_post_by_thread = last_post_per_thread(@threads.map(&:id))
   end
 
   private
