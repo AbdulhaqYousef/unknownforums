@@ -36,8 +36,12 @@
           Rep: <%= rep_label(@user.reputation) %>
         </div>
         <div style="font-size:11px; color:#888; margin-bottom:6px;">
-          <span class="<%= @user.online? ? 'uc-user-online' : 'uc-user-offline' %>"></span>
-          <%= @user.online? ? "Online" : "Offline" %>
+          <% if @user.show_presence? || current_user == @user || admin? %>
+            <span class="<%= @user.online? ? 'uc-user-online' : 'uc-user-offline' %>"></span>
+            <%= @user.online? ? "Online" : "Offline" %>
+          <% else %>
+            Presence hidden
+          <% end %>
         </div>
         <table style="font-size:10px; color:#666; width:100%; text-align:left;">
           <tr><td>Posts:</td><td><strong><%= @user.post_count %></strong></td></tr>

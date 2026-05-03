@@ -102,8 +102,12 @@
 
     <div class="uc-post-footer">
       <span style="font-size:10px; color:#555;">
-        <span class="<%= post.user.online? ? 'uc-user-online' : 'uc-user-offline' %>"></span>
-        <%= post.user.username %> is <%= post.user.online? ? "online" : "offline" %>
+        <% if post.user.show_presence? || viewer == post.user || viewer&.admin? %>
+          <span class="<%= post.user.online? ? 'uc-user-online' : 'uc-user-offline' %>"></span>
+          <%= post.user.username %> is <%= post.user.online? ? "online" : "offline" %>
+        <% else %>
+          <%= post.user.username %> has hidden presence
+        <% end %>
       </span>
       <% if viewer && viewer != post.user %>
         <div class="action-group">
