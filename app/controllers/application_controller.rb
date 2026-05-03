@@ -49,7 +49,7 @@ class ApplicationController < ActionController::Base
   end
 
   def show_admin_summary?
-    (controller_path.start_with?("admin/") || controller_path == "downloads") && moderator_or_admin?
+    controller_path.start_with?("admin/") && moderator_or_admin?
   end
 
   def set_admin_summary
