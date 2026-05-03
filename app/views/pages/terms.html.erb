@@ -13,8 +13,8 @@
     <div style="background:#303030; border-bottom:1px solid #444; padding:8px 14px; font-size:14px; font-weight:bold; color:#e0e0e0;">
       <%= @site_page.title %>
     </div>
-    <div style="padding:16px 20px; font-size:12px; line-height:1.8; color:#b0b0b0;">
-      <%= sanitize @site_page.rendered_body_html, tags: %w[p br strong em b i u a ul ol li h1 h2 h3 h4 h5 h6 div span blockquote code pre hr], attributes: %w[href style class] %>
+    <div class="markdown-body" style="padding:16px 20px; font-size:12px; line-height:1.8; color:#b0b0b0;">
+      <%= sanitize @site_page.rendered_body_html, tags: %w[p br strong em b i u a ul ol li h1 h2 h3 h4 h5 h6 div span blockquote code pre hr table thead tbody tr th td], attributes: %w[href title style class] %>
     </div>
   </div>
 </div>

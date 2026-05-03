@@ -93,11 +93,69 @@ module ApplicationHelper
   end
 
   def markdown_post_body(body)
-    html = Kramdown::Document.new(body.to_s, hard_wrap: true).to_html
+    markdown = normalize_markdown_tables(normalize_markdown_fences(body.to_s))
+    html = Kramdown::Document.new(markdown, hard_wrap: true, syntax_highlighter: nil).to_html
     html = html.gsub(/@([A-Za-z0-9_\-]{3,30})/) { "<strong>#{$&}</strong>" }
     sanitize html,
       tags: %w[p br strong em b i u a ul ol li blockquote code pre hr h1 h2 h3 h4 h5 h6 table thead tbody tr th td],
-      attributes: %w[href title]
+      attributes: %w[href title class]
+  end
+
+  def normalize_markdown_fences(markdown)
+    markdown.gsub(/^```([A-Za-z0-9_-]*)\s*$/) do
+      language = Regexp.last_match(1)
+      language.present? ? "~~~ #{language}" : "~~~"
+    end
+  end
+
+  def normalize_markdown_tables(markdown)
+    lines = markdown.lines
+    output = []
+    i = 0
+    in_fence = false
+
+    while i < lines.length
+      line = lines[i]
+      in_fence = !in_fence if line.match?(/^~~~\s*/)
+
+      if !in_fence && markdown_table_start?(lines, i)
+        table_lines = [lines[i].rstrip, lines[i + 1].rstrip]
+        i += 2
+        while i < lines.length && lines[i].include?("|") && lines[i].strip.present?
+          table_lines << lines[i].rstrip
+          i += 1
+        end
+        output << markdown_table_html(table_lines)
+        next
+      end
+
+      output << line
+      i += 1
+    end
+
+    output.join
+  end
+
+  def markdown_table_start?(lines, index)
+    return false unless lines[index]&.include?("|") && lines[index + 1]&.include?("|")
+
+    separator_cells = markdown_table_cells(lines[index + 1])
+    separator_cells.any? && separator_cells.all? { |cell| cell.match?(/\A:?-{3,}:?\z/) }
+  end
+
+  def markdown_table_html(lines)
+    headers = markdown_table_cells(lines[0])
+    rows = lines.drop(2).map { |line| markdown_table_cells(line) }
+    header_html = headers.map { |cell| "<th>#{ERB::Util.html_escape(cell)}</th>" }.join
+    rows_html = rows.map do |row|
+      "<tr>#{row.map { |cell| "<td>#{ERB::Util.html_escape(cell)}</td>" }.join}</tr>"
+    end.join
+
+    "<table><thead><tr>#{header_html}</tr></thead><tbody>#{rows_html}</tbody></table>\n"
+  end
+
+  def markdown_table_cells(line)
+    line.to_s.strip.sub(/\A\|/, "").sub(/\|\z/, "").split("|").map(&:strip)
   end
 
   def link_to_prev_page(collection, text, **opts)
