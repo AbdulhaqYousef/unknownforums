@@ -34,5 +34,8 @@
     <a href="<%= downloads_path %>" class="btn <%= active_admin_section == 'downloads' ? 'btn-primary' : '' %>">Downloads</a>
     <a href="<%= admin_users_path %>" class="btn <%= active_admin_section == 'users' ? 'btn-primary' : '' %>">Manage Users</a>
     <a href="<%= admin_reports_path %>" class="btn <%= active_admin_section == 'reports' ? 'btn-primary' : (@admin_summary[:pending_reports] > 0 ? 'btn-danger' : '') %>">Reports</a>
+    <a href="<%= admin_attack_events_path %>" class="btn <%= active_admin_section == 'attack_events' ? 'btn-primary' : '' %>">Attack Events</a>
+    <a href="<%= admin_file_leaderboard_path %>" class="btn <%= active_admin_section == 'file_leaderboard' ? 'btn-primary' : '' %>">File Leaderboard</a>
+    <a href="<%= admin_site_pages_path %>" class="btn <%= active_admin_section == 'site_pages' ? 'btn-primary' : '' %>">Edit Rules / Terms</a>
   </div>
 </div>
