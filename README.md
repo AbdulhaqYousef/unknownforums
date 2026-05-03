@@ -104,27 +104,29 @@ mkdir -p ~/unknownforums && cd ~/unknownforums
 ### 6. docker-compose.yml
 
 ```yaml
+x-app: &app
+  build: .
+  restart: always
+  env_file:
+    - .env
+  environment:
+    RAILS_ENV: production
+    PORT: "4251"
+    RAILS_SERVE_STATIC_FILES: "true"
+    FORUM_NAME: "UnknownForums"
+
 services:
   web:
-    build: .
-    restart: always
+    <<: *app
+    command: ./bin/rails server -p 4251 -b 0.0.0.0
     ports:
       - "127.0.0.1:4251:4251"
-    environment:
-      RAILS_ENV: production
-      PORT: "4251"
-      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
-      DATABASE_URL: ${DATABASE_URL}
-      APP_HOST: ${APP_HOST}
-      RESEND_API_KEY: ${RESEND_API_KEY}
-      MAIL_FROM: ${MAIL_FROM}
-      RAILS_SERVE_STATIC_FILES: "true"
-      FORUM_NAME: "UnknownForums"
-      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
-      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
-      R2_BUCKET: ${R2_BUCKET}
-      R2_ENDPOINT: ${R2_ENDPOINT}
-      VIRUSTOTAL_API_KEY: ${VIRUSTOTAL_API_KEY}
+
+  worker:
+    <<: *app
+    command: ./bin/jobs start
+    depends_on:
+      - web
 ```
 
 ### 7. .env
@@ -153,6 +155,9 @@ R2_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
 
 # VirusTotal (optional — file scanning)
 VIRUSTOTAL_API_KEY=your_vt_api_key_here
+
+# Background job worker
+JOB_CONCURRENCY=1
 ```
 
 ### 8. Deploy Code
@@ -175,6 +180,22 @@ rsync -avz --exclude='.git' --exclude='tmp' --exclude='log' \
 cd ~/unknownforums
 docker compose build
 docker compose up -d
+docker compose exec web bin/rails db:migrate
+```
+
+Uploads are scanned by the `worker` service through Solid Queue. Keep both containers running:
+
+```bash
+docker compose ps
+docker compose logs -f worker
+```
+
+If files stay stuck as `pending`, confirm:
+
+```bash
+docker compose exec web bin/rails runner 'puts ActiveJob::Base.queue_adapter.class'
+docker compose exec web bin/rails runner 'p Attachment.order(created_at: :desc).limit(5).pluck(:id, :filename, :vt_status, :vt_scanned_at)'
+docker compose logs --tail=100 worker
 ```
 
 ### 10. Verify
@@ -192,6 +213,7 @@ curl -I https://unknownforums.fun/
 ```bash
 # Logs
 docker compose logs -f web
+docker compose logs -f worker
 
 # Migrations
 docker compose exec web bin/rails db:migrate

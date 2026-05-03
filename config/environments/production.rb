@@ -49,6 +49,7 @@ Rails.application.configure do
 
   # Replace the default in-process memory cache store with a durable alternative.
   config.cache_store = :solid_cache_store
+  config.active_job.queue_adapter = :solid_queue
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
