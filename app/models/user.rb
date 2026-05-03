@@ -10,6 +10,10 @@ class User < ApplicationRecord
   has_many :sent_messages, class_name: "PrivateMessage", foreign_key: :sender_id, dependent: :destroy
   has_many :received_messages, class_name: "PrivateMessage", foreign_key: :recipient_id, dependent: :destroy
   has_many :reports, foreign_key: :reporter_id, dependent: :destroy
+  has_many :warnings, class_name: "UserWarning", dependent: :destroy
+  has_many :issued_warnings, class_name: "UserWarning", foreign_key: :warned_by_id, dependent: :nullify
+  has_many :staff_notes, dependent: :destroy
+  has_many :authored_staff_notes, class_name: "StaffNote", foreign_key: :author_id, dependent: :nullify
 
   has_one_attached :avatar
 

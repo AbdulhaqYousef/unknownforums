@@ -18,8 +18,22 @@ class Attachment < ApplicationRecord
   validates :byte_size, numericality: { less_than_or_equal_to: MAX_SIZE, message: "exceeds 100MB limit" }
   validate :extension_not_blocked
 
-  scope :approved, -> { where(approved: true) }
+  VT_STATUSES = %w[pending scanning clean suspicious malicious skipped].freeze
+
+  scope :approved,         -> { where(approved: true) }
   scope :pending_approval, -> { where(approved: false) }
+  scope :vt_pending,       -> { where(vt_status: "pending") }
+  scope :vt_malicious,     -> { where(vt_status: "malicious") }
+  scope :top_downloads,    -> { order(download_count: :desc) }
+
+  def vt_scannable?
+    %w[application/zip application/x-zip-compressed application/pdf
+       application/octet-stream text/plain].include?(content_type)
+  end
+
+  def vt_clean?()       vt_status == "clean"      end
+  def vt_malicious?()   vt_status == "malicious"  end
+  def vt_pending?()     vt_status == "pending"     end
 
   def video?
     content_type.start_with?("video/")

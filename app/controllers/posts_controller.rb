@@ -4,7 +4,7 @@ class PostsController < ApplicationController
   before_action :set_post, only: %i[edit update destroy]
 
   def create
-    service = PostCreator.new(thread: @thread, user: current_user, params: post_params)
+    service = PostCreator.new(thread: @thread, user: current_user, params: post_params, ip: request.ip)
     @post = service.call
 
     if @post

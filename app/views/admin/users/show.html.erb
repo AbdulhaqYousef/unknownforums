@@ -4,31 +4,150 @@
   <a href="<%= admin_users_path %>">← Users</a>
 </div>
 
-<div style="background:#242424; border:1px solid #444; padding:12px; max-width:500px;">
-  <table style="font-size:12px; width:100%;">
-    <tr><td style="padding:4px 0; color:#888; width:120px;">Username:</td><td><strong><%= @user.username %></strong></td></tr>
-    <tr><td style="padding:4px 0; color:#888;">Email:</td><td><%= @user.email || "—" %></td></tr>
-    <tr><td style="padding:4px 0; color:#888;">Role:</td><td><%= @user.role %></td></tr>
-    <tr><td style="padding:4px 0; color:#888;">Reputation:</td><td><%= @user.reputation %></td></tr>
-    <tr><td style="padding:4px 0; color:#888;">Posts:</td><td><%= @user.post_count %></td></tr>
-    <tr><td style="padding:4px 0; color:#888;">Old Names:</td><td><%= @user.previous_usernames.any? ? @user.previous_usernames.join(", ") : "—" %></td></tr>
-    <tr><td style="padding:4px 0; color:#888;">Status:</td><td><%= [(@user.banned? ? "Banned" : nil), (@user.flagged? ? "Flagged" : nil)].compact.presence&.join(", ") || "Active" %></td></tr>
-    <tr><td style="padding:4px 0; color:#888;">Flag reason:</td><td><%= @user.flag_reason.presence || "—" %></td></tr>
-    <tr><td style="padding:4px 0; color:#888;">Mod note:</td><td><%= @user.moderation_note.presence || "—" %></td></tr>
-    <tr><td style="padding:4px 0; color:#888;">Joined:</td><td><%= @user.created_at.strftime("%m/%d/%Y") %></td></tr>
-  </table>
-  <div class="action-group" style="margin-top:10px;">
-    <a href="<%= edit_admin_user_path(@user) %>" class="btn btn-primary btn-sm">Edit</a>
-    <a href="<%= user_path(@user) %>" class="btn btn-sm">View Profile</a>
-    <% if @user.banned? %>
-      <%= button_to "Unban", unban_admin_user_path(@user), method: :patch, class: "btn btn-success btn-sm" %>
+<div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start;">
+
+  <!-- User info card -->
+  <div style="background:#242424; border:1px solid #444; padding:12px; min-width:320px; flex:1;">
+    <table style="font-size:12px; width:100%;">
+      <tr><td style="padding:4px 0; color:#888; width:120px;">Username:</td><td><strong><%= @user.username %></strong></td></tr>
+      <tr><td style="padding:4px 0; color:#888;">Email:</td><td><%= @user.email || "—" %></td></tr>
+      <tr><td style="padding:4px 0; color:#888;">Role:</td><td><%= @user.role %></td></tr>
+      <tr><td style="padding:4px 0; color:#888;">Reputation:</td><td><%= @user.reputation %></td></tr>
+      <tr><td style="padding:4px 0; color:#888;">Posts:</td><td><%= @user.post_count %></td></tr>
+      <tr><td style="padding:4px 0; color:#888;">Old Names:</td><td><%= @user.previous_usernames.any? ? @user.previous_usernames.join(", ") : "—" %></td></tr>
+      <tr><td style="padding:4px 0; color:#888;">Status:</td><td><%= [(@user.banned? ? "Banned" : nil), (@user.flagged? ? "Flagged" : nil)].compact.presence&.join(", ") || "Active" %></td></tr>
+      <tr><td style="padding:4px 0; color:#888;">Flag reason:</td><td><%= @user.flag_reason.presence || "—" %></td></tr>
+      <tr><td style="padding:4px 0; color:#888;">Mod note:</td><td><%= @user.moderation_note.presence || "—" %></td></tr>
+      <tr><td style="padding:4px 0; color:#888;">Last login IP:</td><td style="font-family:monospace;"><%= @user.last_login_ip.presence || "—" %></td></tr>
+      <tr><td style="padding:4px 0; color:#888;">Joined:</td><td><%= @user.created_at.strftime("%m/%d/%Y") %></td></tr>
+    </table>
+    <div class="action-group" style="margin-top:10px;">
+      <a href="<%= edit_admin_user_path(@user) %>" class="btn btn-primary btn-sm">Edit</a>
+      <a href="<%= user_path(@user) %>" class="btn btn-sm">View Profile</a>
+      <% if @user.banned? %>
+        <%= button_to "Unban", unban_admin_user_path(@user), method: :patch, class: "btn btn-success btn-sm" %>
+      <% else %>
+        <%= button_to "Ban", ban_admin_user_path(@user), method: :patch, class: "btn btn-danger btn-sm", data: { turbo_confirm: "Ban #{@user.username}?" } %>
+      <% end %>
+      <% if @user.flagged? %>
+        <%= button_to "Unflag", unflag_admin_user_path(@user), method: :patch, class: "btn btn-sm" %>
+      <% else %>
+        <%= button_to "Flag", flag_admin_user_path(@user, flag_reason: "Needs admin review"), method: :patch, class: "btn btn-sm" %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- IP Addresses -->
+  <div style="background:#242424; border:1px solid #444; padding:12px; min-width:220px;">
+    <div style="font-size:11px; color:#888; font-weight:bold; margin-bottom:8px; text-transform:uppercase;">Post IPs</div>
+    <% if @post_ips.any? %>
+      <% @post_ips.each do |ip| %>
+        <div style="font-family:monospace; font-size:11px; color:#cfcfcf; margin-bottom:4px;">
+          <%= ip %>
+          <a href="https://www.abuseipdb.com/check/<%= ip %>" target="_blank" style="font-size:10px; color:#7aabde; margin-left:4px;">lookup</a>
+        </div>
+      <% end %>
     <% else %>
-      <%= button_to "Ban", ban_admin_user_path(@user), method: :patch, class: "btn btn-danger btn-sm", data: { turbo_confirm: "Ban #{@user.username}?" } %>
+      <span style="color:#555; font-size:11px;">No IPs recorded yet.</span>
     <% end %>
-    <% if @user.flagged? %>
-      <%= button_to "Unflag", unflag_admin_user_path(@user), method: :patch, class: "btn btn-sm" %>
+  </div>
+
+</div>
+
+<!-- Warnings -->
+<div class="panel" style="margin-top:14px;">
+  <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <span>Warnings (<%= @warnings.size %>)</span>
+  </div>
+  <div class="panel-body" style="padding:0;">
+    <% if @warnings.any? %>
+      <table>
+        <tr style="background:#222; font-size:10px; color:#666; text-transform:uppercase;">
+          <th style="text-align:left;">Severity</th>
+          <th style="text-align:left;">Reason</th>
+          <th style="text-align:left;">By</th>
+          <th style="text-align:left;">Issued</th>
+          <th style="text-align:left;">Expires</th>
+          <th></th>
+        </tr>
+        <% @warnings.each do |w| %>
+          <tr>
+            <td>
+              <span style="font-size:10px; padding:1px 5px; border-radius:2px;
+                background:<%= w.severe? ? '#4a1a1a' : w.moderate? ? '#4a3a00' : '#1a3a1a' %>;
+                color:<%= w.severe? ? '#f08080' : w.moderate? ? '#f0c060' : '#80c080' %>;">
+                <%= w.severity.upcase %>
+              </span>
+            </td>
+            <td style="font-size:12px;"><%= w.reason %></td>
+            <td style="font-size:11px; color:#888;"><%= w.warned_by&.username || "—" %></td>
+            <td style="font-size:11px; color:#888;"><%= w.created_at.strftime("%m/%d/%Y") %></td>
+            <td style="font-size:11px; color:#888;"><%= w.expires_at ? w.expires_at.strftime("%m/%d/%Y") : "Permanent" %></td>
+            <td>
+              <%= button_to "✕", admin_user_warning_path(@user, w), method: :delete,
+                    class: "btn btn-danger btn-sm", data: { turbo_confirm: "Remove this warning?" } %>
+            </td>
+          </tr>
+        <% end %>
+      </table>
     <% else %>
-      <%= button_to "Flag", flag_admin_user_path(@user, flag_reason: "Needs admin review"), method: :patch, class: "btn btn-sm" %>
+      <div style="padding:12px; color:#666; font-size:12px;">No warnings.</div>
+    <% end %>
+  </div>
+  <div class="panel-body" style="border-top:1px solid #333;">
+    <div style="font-size:11px; color:#888; margin-bottom:6px; font-weight:bold;">Issue Warning</div>
+    <%= form_with url: admin_user_user_warnings_path(@user), method: :post do |f| %>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end;">
+        <div>
+          <label style="font-size:10px; color:#888;">Severity</label><br>
+          <%= f.select :"user_warning[severity]", [["Minor","minor"],["Moderate","moderate"],["Severe","severe"]], {}, style: "width:120px;" %>
+        </div>
+        <div style="flex:1; min-width:200px;">
+          <label style="font-size:10px; color:#888;">Reason</label><br>
+          <%= f.text_field :"user_warning[reason]", style: "width:100%;", placeholder: "Reason for warning..." %>
+        </div>
+        <div>
+          <label style="font-size:10px; color:#888;">Expires (optional)</label><br>
+          <%= f.date_field :"user_warning[expires_at]", style: "width:140px;" %>
+        </div>
+        <div>
+          <%= f.submit "Issue Warning", class: "btn btn-danger btn-sm" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Staff Notes -->
+<div class="panel" style="margin-top:14px;">
+  <div class="panel-header">Staff Notes</div>
+  <div class="panel-body" style="padding:0;">
+    <% if @staff_notes.any? %>
+      <% @staff_notes.each do |note| %>
+        <div style="padding:10px 12px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <div style="font-size:12px; color:#cfcfcf; margin-bottom:4px;"><%= note.body %></div>
+            <div style="font-size:10px; color:#666;">
+              By <strong><%= note.author&.username || "staff" %></strong>
+              &mdash; <%= note.created_at.strftime("%m/%d/%Y %I:%M %p") %>
+            </div>
+          </div>
+          <%= button_to "✕", admin_user_staff_note_path(@user, note), method: :delete,
+                class: "btn btn-sm", style: "flex-shrink:0;", data: { turbo_confirm: "Delete this note?" } %>
+        </div>
+      <% end %>
+    <% else %>
+      <div style="padding:12px; color:#666; font-size:12px;">No notes yet.</div>
+    <% end %>
+  </div>
+  <div class="panel-body" style="border-top:1px solid #333;">
+    <%= form_with url: admin_user_staff_notes_path(@user), method: :post do |f| %>
+      <div style="display:flex; gap:8px; align-items:flex-end;">
+        <div style="flex:1;">
+          <%= f.text_area :"staff_note[body]", rows: 2, style: "width:100%; resize:vertical;", placeholder: "Add a private staff note..." %>
+        </div>
+        <%= f.submit "Add Note", class: "btn btn-sm" %>
+      </div>
     <% end %>
   </div>
 </div>

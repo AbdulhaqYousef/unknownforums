@@ -119,6 +119,29 @@ class Rack::Attack
   end
 
   ### --- Response ---
+  ### --- Attack event logging ---
+  ActiveSupport::Notifications.subscribe("throttle.rack_attack") do |_name, _start, _finish, _id, payload|
+    req     = payload[:request]
+    matched = req.env["rack.attack.matched"].to_s
+    begin
+      AttackEvent.log(req, matched)
+      if AttackEvent.spike?
+        Rails.logger.warn("[ATTACK WARNING] Rate-limit spike detected — #{matched} from #{req.ip}")
+      end
+    rescue => e
+      Rails.logger.error("AttackEvent logging failed: #{e.message}")
+    end
+  end
+
+  ActiveSupport::Notifications.subscribe("blocklist.rack_attack") do |_name, _start, _finish, _id, payload|
+    req = payload[:request]
+    begin
+      AttackEvent.log(req, "blocklist:#{req.env['rack.attack.matched']}")
+    rescue => e
+      Rails.logger.error("AttackEvent blocklist logging failed: #{e.message}")
+    end
+  end
+
   self.throttled_responder = lambda do |request|
     match_data = request.env["rack.attack.match_data"] || {}
     matched = request.env["rack.attack.matched"].to_s

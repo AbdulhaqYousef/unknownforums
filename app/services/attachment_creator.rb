@@ -11,7 +11,9 @@ class AttachmentCreator
         is_video: content_type.start_with?("video/")
       )
       attachment.file.attach(file)
-      attachment.save
+      if attachment.save
+        VirusTotalScanJob.perform_later(attachment.id) if attachment.vt_scannable?
+      end
     end
   end
 end

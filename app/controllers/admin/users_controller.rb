@@ -13,6 +13,12 @@ class Admin::UsersController < ApplicationController
   end
 
   def show
+    @warnings    = @user.warnings.includes(:warned_by).recent
+    @staff_notes = @user.staff_notes.includes(:author).recent
+    @post_ips    = @user.posts.where.not(ip_address: nil)
+                        .select(:ip_address)
+                        .distinct
+                        .pluck(:ip_address)
   end
 
   def edit

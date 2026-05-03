@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_03_073500) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_03_080400) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -55,10 +55,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_073500) do
     t.boolean "is_video", default: false, null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.jsonb "vt_report", default: {}
+    t.string "vt_scan_id"
+    t.datetime "vt_scanned_at"
+    t.string "vt_status", default: "pending"
     t.index ["approved"], name: "index_attachments_on_approved"
     t.index ["attachable_type", "attachable_id"], name: "index_attachments_on_attachable"
     t.index ["attachable_type", "attachable_id"], name: "index_attachments_on_attachable_type_and_attachable_id"
     t.index ["user_id"], name: "index_attachments_on_user_id"
+    t.index ["vt_status"], name: "index_attachments_on_vt_status"
+  end
+
+  create_table "attack_events", force: :cascade do |t|
+    t.string "ip_address", null: false
+    t.string "matched", null: false
+    t.datetime "occurred_at", null: false
+    t.string "path"
+    t.string "user_agent"
+    t.index ["ip_address"], name: "index_attack_events_on_ip_address"
+    t.index ["occurred_at"], name: "index_attack_events_on_occurred_at"
   end
 
   create_table "categories", force: :cascade do |t|
@@ -91,11 +106,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_073500) do
     t.datetime "created_at", null: false
     t.boolean "deleted", default: false, null: false
     t.bigint "forum_thread_id", null: false
+    t.string "ip_address"
     t.bigint "quote_post_id"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["deleted"], name: "index_posts_on_deleted"
     t.index ["forum_thread_id", "created_at"], name: "index_posts_on_forum_thread_id_and_created_at"
+    t.index ["ip_address"], name: "index_posts_on_ip_address"
     t.index ["quote_post_id"], name: "index_posts_on_quote_post_id"
     t.index ["user_id"], name: "index_posts_on_user_id"
   end
@@ -157,6 +174,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_073500) do
     t.index ["updated_by_id"], name: "index_site_pages_on_updated_by_id"
   end
 
+  create_table "staff_notes", force: :cascade do |t|
+    t.bigint "author_id", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["author_id"], name: "index_staff_notes_on_author_id"
+    t.index ["user_id"], name: "index_staff_notes_on_user_id"
+  end
+
   create_table "subforums", force: :cascade do |t|
     t.bigint "category_id", null: false
     t.datetime "created_at", null: false
@@ -169,6 +196,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_073500) do
     t.index ["category_id", "position"], name: "index_subforums_on_category_id_and_position"
     t.index ["category_id"], name: "index_subforums_on_category_id"
     t.index ["position"], name: "index_subforums_on_position"
+  end
+
+  create_table "user_warnings", force: :cascade do |t|
+    t.boolean "acknowledged", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "expires_at"
+    t.string "reason", null: false
+    t.integer "severity", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.bigint "warned_by_id", null: false
+    t.index ["acknowledged"], name: "index_user_warnings_on_acknowledged"
+    t.index ["user_id"], name: "index_user_warnings_on_user_id"
+    t.index ["warned_by_id"], name: "index_user_warnings_on_warned_by_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -227,5 +268,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_073500) do
   add_foreign_key "reputations", "users", column: "giver_id"
   add_foreign_key "reputations", "users", column: "receiver_id"
   add_foreign_key "site_pages", "users", column: "updated_by_id"
+  add_foreign_key "staff_notes", "users"
+  add_foreign_key "staff_notes", "users", column: "author_id"
   add_foreign_key "subforums", "categories"
+  add_foreign_key "user_warnings", "users"
+  add_foreign_key "user_warnings", "users", column: "warned_by_id"
 end

@@ -1,0 +1,91 @@
+<% content_for :title, "File Leaderboard" %>
+
+<div style="display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
+  <div style="background:#242424; border:1px solid #444; padding:10px 16px; font-size:12px;">
+    <div style="color:#888; font-size:10px; text-transform:uppercase;">Total Downloads</div>
+    <div style="font-size:20px; font-weight:bold; color:#e0e0e0;"><%= @total_dl %></div>
+  </div>
+  <div style="background:#242424; border:1px solid #4a2a2a; padding:10px 16px; font-size:12px;">
+    <div style="color:#888; font-size:10px; text-transform:uppercase;">Malicious Files</div>
+    <div style="font-size:20px; font-weight:bold; color:<%= @malicious.any? ? '#f08080' : '#80c080' %>;"><%= @malicious.size %></div>
+  </div>
+  <div style="background:#242424; border:1px solid #444; padding:10px 16px; font-size:12px;">
+    <div style="color:#888; font-size:10px; text-transform:uppercase;">Pending VT Scan</div>
+    <div style="font-size:20px; font-weight:bold; color:#f0c060;"><%= @pending_scan %></div>
+  </div>
+</div>
+
+<% if @malicious.any? %>
+  <div class="panel" style="margin-bottom:14px;">
+    <div class="panel-header" style="color:#f08080;">&#9888; Malicious Files Detected</div>
+    <div class="panel-body" style="padding:0;">
+      <table>
+        <tr style="background:#222; font-size:10px; color:#666; text-transform:uppercase;">
+          <th style="text-align:left;">File</th>
+          <th style="text-align:left;">Uploaded By</th>
+          <th style="text-align:left;">Date</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+        <% @malicious.each do |a| %>
+          <tr style="background:#2a1a1a;">
+            <td style="font-size:12px; color:#f08080;"><%= a.filename %></td>
+            <td><a href="<%= admin_user_path(a.user) %>"><%= a.user.username %></a></td>
+            <td style="font-size:11px; color:#888;"><%= a.created_at.strftime("%m/%d/%Y") %></td>
+            <td style="text-align:right;">
+              <%= button_to "Delete", attachment_path(a), method: :delete, class: "btn btn-danger btn-sm",
+                    data: { turbo_confirm: "Delete malicious file #{a.filename}?" } %>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
+  </div>
+<% end %>
+
+<div class="panel">
+  <div class="panel-header">Top Downloaded Files</div>
+  <div class="panel-body" style="padding:0;">
+    <table>
+      <tr style="background:#222; font-size:10px; color:#666; text-transform:uppercase;">
+        <th style="text-align:left;">#</th>
+        <th style="text-align:left;">File</th>
+        <th style="text-align:left;">Uploader</th>
+        <th style="text-align:left;">VT Status</th>
+        <th style="text-align:center;">Downloads</th>
+        <th style="text-align:left;">Date</th>
+      </tr>
+      <% @top_files.each_with_index do |a, i| %>
+        <tr style="background:<%= i.even? ? '#242424' : '#202020' %>;">
+          <td style="color:#555; font-size:11px;"><%= i + 1 %></td>
+          <td>
+            <a href="<%= download_attachment_path(a) %>" style="font-size:12px; color:#a8c8f0;"><%= a.filename %></a>
+            <span style="font-size:10px; color:#666;">&nbsp;<%= a.human_size %></span>
+          </td>
+          <td style="font-size:11px;"><a href="<%= admin_user_path(a.user) %>"><%= a.user.username %></a></td>
+          <td>
+            <span style="font-size:10px; padding:1px 5px;
+              background:<%= case a.vt_status
+                when 'clean'       then '#1a3a1a'
+                when 'malicious'   then '#4a1a1a'
+                when 'suspicious'  then '#4a3a00'
+                else '#2a2a2a'
+              end %>;
+              color:<%= case a.vt_status
+                when 'clean'       then '#80c080'
+                when 'malicious'   then '#f08080'
+                when 'suspicious'  then '#f0c060'
+                else '#888'
+              end %>;">
+              <%= a.vt_status&.upcase || 'N/A' %>
+            </span>
+          </td>
+          <td style="text-align:center; font-weight:bold; color:#cfcfcf;"><%= a.download_count %></td>
+          <td style="font-size:11px; color:#888;"><%= a.created_at.strftime("%m/%d/%Y") %></td>
+        </tr>
+      <% end %>
+    </table>
+    <% if @top_files.empty? %>
+      <div style="padding:20px; color:#555; text-align:center; font-size:12px;">No files uploaded yet.</div>
+    <% end %>
+  </div>
+</div>

@@ -67,10 +67,15 @@ Rails.application.routes.draw do
         patch :flag
         patch :unflag
       end
+      resources :user_warnings, only: %i[create destroy], shallow: true
+      resources :staff_notes,   only: %i[create destroy], shallow: true
     end
-    resources :reports, only: %i[index show update]
-    resources :site_pages, only: %i[index edit update]
+    resources :reports,       only: %i[index show update]
+    resources :site_pages,    only: %i[index edit update]
+    resources :attack_events, only: %i[index]
+    patch "bulk_threads", to: "bulk_threads#update", as: :bulk_threads
     get "forums", to: "forums#index", as: :forums
+    get "file_leaderboard", to: "file_leaderboard#index", as: :file_leaderboard
   end
 
   get "terms",   to: "pages#terms",   as: :terms

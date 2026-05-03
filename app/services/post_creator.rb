@@ -1,10 +1,11 @@
 class PostCreator
   attr_reader :errors, :post
 
-  def initialize(thread:, user:, params:)
+  def initialize(thread:, user:, params:, ip: nil)
     @thread = thread
     @user = user
     @params = params
+    @ip = ip
     @errors = []
   end
 
@@ -14,7 +15,7 @@ class PostCreator
       return nil
     end
 
-    @post = @thread.posts.build(@params.merge(user: @user))
+    @post = @thread.posts.build(@params.merge(user: @user, ip_address: @ip))
     if @post.save
       @post
     else
