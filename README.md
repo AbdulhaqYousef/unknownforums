@@ -124,6 +124,7 @@ services:
       R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
       R2_BUCKET: ${R2_BUCKET}
       R2_ENDPOINT: ${R2_ENDPOINT}
+      VIRUSTOTAL_API_KEY: ${VIRUSTOTAL_API_KEY}
 ```
 
 ### 7. .env
@@ -149,6 +150,9 @@ R2_ACCESS_KEY_ID=your_r2_key
 R2_SECRET_ACCESS_KEY=your_r2_secret
 R2_BUCKET=your_bucket_name
 R2_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
+
+# VirusTotal (optional — file scanning)
+VIRUSTOTAL_API_KEY=your_vt_api_key_here
 ```
 
 ### 8. Deploy Code
@@ -223,5 +227,6 @@ docker compose exec web bin/rails console
 | `WEB_CONCURRENCY` | Puma workers (default: 2) |
 | `RAILS_MAX_THREADS` | Puma threads (default: 3) |
 | `BLOCKED_IPS` | Comma-separated IPs to block |
+| `VIRUSTOTAL_API_KEY` | VirusTotal API key for automatic file scanning (optional) |
 
 Email delivery uses the Resend API directly. SMTP variables such as `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, and `SMTP_PASSWORD` are not used for OTP emails.

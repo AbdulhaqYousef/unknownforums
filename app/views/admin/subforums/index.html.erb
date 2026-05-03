@@ -40,6 +40,7 @@
         <td style="padding:5px 10px; text-align:center; font-size:12px;"><%= sf.threads_count %></td>
         <td style="padding:5px 10px; text-align:center;">
           <div class="action-group" style="justify-content:center;">
+            <a href="<%= admin_subforum_threads_path(sf) %>" class="btn btn-sm">Threads</a>
             <a href="<%= edit_admin_subforum_path(sf) %>" class="btn btn-sm">Edit</a>
             <%= button_to "Delete", admin_subforum_path(sf), method: :delete, class: "btn btn-danger btn-sm",
               data: { turbo_confirm: "Delete subforum and all threads?" } %>

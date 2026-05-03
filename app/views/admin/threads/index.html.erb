@@ -1,0 +1,108 @@
+<% content_for :title, "Threads — #{@subforum.name}" %>
+
+<div style="font-size:11px; color:#888; margin-bottom:6px;">
+  <a href="<%= admin_subforums_path %>">← Subforums</a> &raquo; <%= @subforum.name %>
+</div>
+
+<div class="panel">
+  <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <span>Threads in <%= @subforum.name %> (<%= @subforum.threads_count %>)</span>
+    <a href="<%= subforum_path(@subforum) %>" class="btn btn-sm">View Forum</a>
+  </div>
+  <div class="panel-body" style="border-bottom:1px solid #333;">
+    <div style="font-size:11px; color:#888; margin-bottom:6px; font-weight:bold;">Bulk Actions</div>
+    <%= form_with url: admin_bulk_threads_path, method: :patch, id: "bulk-form" do |f| %>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px;">
+        <%= f.select :bulk_action, [
+          ["— Select Action —", ""],
+          ["Lock",   "lock"],
+          ["Unlock", "unlock"],
+          ["Pin",    "pin"],
+          ["Unpin",  "unpin"],
+          ["Move to subforum…", "move"],
+          ["Delete", "delete"]
+        ], {}, style: "width:180px;" %>
+
+        <div id="move-target" style="display:none;">
+          <%= f.select :target_subforum_id,
+            @subforums.map { |sf| [sf.name, sf.id] },
+            { include_blank: "— Select subforum —" },
+            style: "width:200px;" %>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-sm"
+          onclick="return confirmBulk()">Apply to Selected</button>
+
+        <button type="button" class="btn btn-sm" onclick="selectAll()">Select All</button>
+        <button type="button" class="btn btn-sm" onclick="deselectAll()">Deselect All</button>
+      </div>
+
+      <table>
+        <tr style="background:#222; font-size:10px; color:#666; text-transform:uppercase;">
+          <th style="width:30px; text-align:center;"></th>
+          <th style="text-align:left;">Thread</th>
+          <th style="text-align:left;">By</th>
+          <th style="text-align:center;">Replies</th>
+          <th style="text-align:center;">Views</th>
+          <th style="text-align:left;">Created</th>
+          <th style="text-align:left;">Status</th>
+          <th></th>
+        </tr>
+        <% if @threads.empty? %>
+          <tr><td colspan="8" style="padding:20px; text-align:center; color:#666; font-size:12px;">No threads.</td></tr>
+        <% end %>
+        <% @threads.each_with_index do |t, i| %>
+          <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
+            <td style="text-align:center; padding:6px;">
+              <input type="checkbox" name="thread_ids[]" value="<%= t.id %>" class="bulk-cb">
+            </td>
+            <td style="padding:6px 10px;">
+              <a href="<%= forum_thread_path(t) %>" style="font-size:12px; color:#a8c8f0;"><%= truncate(t.title, length: 60) %></a>
+            </td>
+            <td style="font-size:11px; color:#888;"><%= t.user.username %></td>
+            <td style="text-align:center; font-size:11px; color:#cfcfcf;"><%= [t.posts_count - 1, 0].max %></td>
+            <td style="text-align:center; font-size:11px; color:#cfcfcf;"><%= t.views_count %></td>
+            <td style="font-size:11px; color:#888;"><%= t.created_at.strftime("%m/%d/%Y") %></td>
+            <td style="font-size:10px;">
+              <% if t.pinned? %><span style="color:#f0c060;">PINNED</span><% end %>
+              <% if t.locked? %><span style="color:#888;">LOCKED</span><% end %>
+            </td>
+            <td style="padding:4px;">
+              <a href="<%= forum_thread_path(t) %>" class="btn btn-sm">View</a>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+
+    <% end %>
+  </div>
+
+  <!-- Pagination -->
+  <div class="panel-body">
+    <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#888;">
+      <span>Page <%= @threads.current_page %> of <%= @threads.total_pages %></span>
+      <div>
+        <%= link_to_prev_page @threads, "← Prev", class: "btn btn-sm" %>
+        <%= link_to_next_page @threads, "Next →", class: "btn btn-sm" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function selectAll()   { document.querySelectorAll(".bulk-cb").forEach(cb => cb.checked = true);  }
+  function deselectAll() { document.querySelectorAll(".bulk-cb").forEach(cb => cb.checked = false); }
+
+  document.getElementById("bulk-form").querySelector("select[name='bulk_action']").addEventListener("change", function() {
+    document.getElementById("move-target").style.display = this.value === "move" ? "inline-block" : "none";
+  });
+
+  function confirmBulk() {
+    const action = document.querySelector("select[name='bulk_action']").value;
+    const count  = document.querySelectorAll(".bulk-cb:checked").length;
+    if (!action)   { alert("Please select an action."); return false; }
+    if (!count)    { alert("Please select at least one thread."); return false; }
+    if (action === "delete") return confirm("Delete " + count + " thread(s)? This cannot be undone.");
+    return true;
+  }
+</script>

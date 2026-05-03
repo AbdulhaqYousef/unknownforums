@@ -59,7 +59,9 @@ Rails.application.routes.draw do
   namespace :admin do
     root "dashboard#index"
     resources :categories, except: :show
-    resources :subforums, except: :show
+    resources :subforums, except: :show do
+      resources :threads, only: %i[index], controller: "threads"
+    end
     resources :users, only: %i[index show edit update] do
       member do
         patch :ban
