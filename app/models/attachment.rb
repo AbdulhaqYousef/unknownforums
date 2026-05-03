@@ -36,6 +36,40 @@ class Attachment < ApplicationRecord
   def vt_clean?()       vt_status == "clean"      end
   def vt_malicious?()   vt_status == "malicious"  end
   def vt_pending?()     vt_status == "pending"     end
+  def vt_scanning?()    vt_status == "scanning"    end
+  def vt_suspicious?()  vt_status == "suspicious"  end
+  def vt_skipped?()     vt_status == "skipped"     end
+
+  def vt_warning_required?
+    vt_scannable? && !vt_clean?
+  end
+
+  def vt_status_label
+    case vt_status
+    when "clean"      then "VT Clean"
+    when "suspicious" then "VT Suspicious"
+    when "malicious"  then "VT Malicious"
+    when "scanning"   then "VT Scanning"
+    when "pending"    then "VT Pending"
+    when "skipped"    then "VT Not Scanned"
+    else "VT Unknown"
+    end
+  end
+
+  def vt_warning_message
+    case vt_status
+    when "malicious"
+      "VirusTotal detected this file as malicious. Download only if you fully trust the source."
+    when "suspicious"
+      "VirusTotal flagged this file as suspicious. This file might be unsafe, so watch out."
+    when "pending", "scanning"
+      "This file has not finished scanning yet. This file might be unsafe, so watch out."
+    when "skipped"
+      "This file could not be scanned by VirusTotal. This file might be unsafe, so watch out."
+    else
+      "This file might be unsafe, so watch out."
+    end
+  end
 
   def root_attachment
     parent_attachment || self

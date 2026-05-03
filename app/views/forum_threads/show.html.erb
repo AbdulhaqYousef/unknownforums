@@ -51,10 +51,10 @@
     <% end %>
     <% if logged_in? %>
       <% if @subscription %>
-        <%= button_to "🔔 Watching", forum_thread_thread_subscription_path(@thread, @subscription),
+        <%= button_to "Watching", forum_thread_thread_subscription_path(@thread, @subscription),
               method: :delete, class: "btn btn-sm", title: "Click to unwatch" %>
       <% else %>
-        <%= button_to "🔕 Watch", forum_thread_thread_subscriptions_path(@thread),
+        <%= button_to "Watch", forum_thread_thread_subscriptions_path(@thread),
               method: :post, class: "btn btn-sm" %>
       <% end %>
     <% end %>
@@ -117,7 +117,7 @@
   </div>
 <% elsif @thread.locked? %>
   <div style="background:#2a2a2a; border:1px solid #444; padding:10px; text-align:center; color:#888; font-size:12px;">
-    &#128274; This thread is locked and cannot be replied to.
+    This thread is locked and cannot be replied to.
   </div>
 <% elsif !logged_in? %>
   <div style="background:#242424; border:1px solid #444; padding:10px; text-align:center; font-size:12px; color:#888;">

@@ -28,7 +28,7 @@
 
   <% active_admin_section = controller_path == "downloads" ? "downloads" : controller_name %>
   <div class="admin-quick-links">
-    <a href="<%= admin_forums_path %>" class="btn <%= active_admin_section == 'forums' ? 'btn-primary' : '' %>">&#128193; Forum Structure</a>
+    <a href="<%= admin_forums_path %>" class="btn <%= active_admin_section == 'forums' ? 'btn-primary' : '' %>">Forum Structure</a>
     <a href="<%= admin_categories_path %>" class="btn <%= active_admin_section == 'categories' ? 'btn-primary' : '' %>">Categories</a>
     <a href="<%= admin_subforums_path %>" class="btn <%= active_admin_section == 'subforums' ? 'btn-primary' : '' %>">Subforums</a>
     <a href="<%= downloads_path %>" class="btn <%= active_admin_section == 'downloads' ? 'btn-primary' : '' %>">Downloads</a>

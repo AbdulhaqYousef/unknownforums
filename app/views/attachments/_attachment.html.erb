@@ -14,10 +14,11 @@
       <div style="font-size:10px; color:#666; margin-top:4px;">
         <%= attachment.filename %> (<%= attachment.human_size %>)
         <% if attachment.approved? %>
-          <span style="color:#60c060; font-weight:bold; margin-left:4px;">&#10003; Verified</span>
+          <span style="color:#60c060; font-weight:bold; margin-left:4px;">Verified</span>
         <% else %>
-          <span style="color:#e0a030; font-weight:bold; margin-left:4px;">&#9888; Not verified &mdash; may not be secure</span>
+          <span style="color:#e0a030; font-weight:bold; margin-left:4px;">Not verified &mdash; may not be secure</span>
         <% end %>
+        <%= render "attachments/vt_badge", attachment: attachment %>
       </div>
     </div>
   <% elsif attachment.image? %>
@@ -26,22 +27,24 @@
       <div style="font-size:10px; color:#666; margin-top:2px;">
         <%= attachment.filename %> (<%= attachment.human_size %>)
         <% if attachment.approved? %>
-          <span style="color:#60c060; font-weight:bold; margin-left:4px;">&#10003; Verified</span>
+          <span style="color:#60c060; font-weight:bold; margin-left:4px;">Verified</span>
         <% else %>
-          <span style="color:#e0a030; font-weight:bold; margin-left:4px;">&#9888; Not verified &mdash; may not be secure</span>
+          <span style="color:#e0a030; font-weight:bold; margin-left:4px;">Not verified &mdash; may not be secure</span>
         <% end %>
+        <%= render "attachments/vt_badge", attachment: attachment %>
       </div>
     </div>
   <% else %>
-    <span style="font-size:18px; color:#888;">&#128196;</span>
+    <%= render "attachments/file_icon", attachment: attachment %>
     <div style="flex:1; min-width:0;">
       <div>
         <a href="<%= download_attachment_path(attachment) %>" style="font-size:12px; color:#7aabde;"><%= attachment.filename %></a>
         <% if attachment.approved? %>
-          <span style="color:#60c060; font-size:9px; font-weight:bold; margin-left:4px;">&#10003; VERIFIED</span>
+          <span style="color:#60c060; font-size:9px; font-weight:bold; margin-left:4px;">VERIFIED</span>
         <% else %>
-          <span style="color:#e0a030; font-size:9px; font-weight:bold; margin-left:4px;">&#9888; NOT VERIFIED</span>
+          <span style="color:#e0a030; font-size:9px; font-weight:bold; margin-left:4px;">NOT VERIFIED</span>
         <% end %>
+        <%= render "attachments/vt_badge", attachment: attachment %>
       </div>
       <div style="font-size:10px; color:#666;">
         v<%= attachment.version %> &mdash;
@@ -56,7 +59,7 @@
     </div>
     <a href="<%= download_attachment_path(attachment) %>" class="btn btn-sm">Download</a>
     <% if logged_in? && (current_user == attachment.root_attachment.user || moderator_or_admin?) %>
-      <a href="<%= new_version_attachment_path(attachment.root_attachment) %>" class="btn btn-sm" title="Upload new version">&#8593; v</a>
+      <a href="<%= new_version_attachment_path(attachment.root_attachment) %>" class="btn btn-sm" title="Upload new version">Upload version</a>
     <% end %>
   <% end %>
 
@@ -69,7 +72,7 @@
       <% end %>
     <% end %>
     <% if logged_in? && (current_user == attachment.user || moderator_or_admin?) %>
-      <%= button_to "✕", attachment_path(attachment), method: :delete, class: "btn btn-danger btn-sm",
+      <%= button_to "Delete", attachment_path(attachment), method: :delete, class: "btn btn-danger btn-sm",
         style: "padding:2px 5px;",
         data: { turbo_confirm: "Delete this attachment?" } %>
     <% end %>

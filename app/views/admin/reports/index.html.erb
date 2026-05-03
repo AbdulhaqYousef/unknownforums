@@ -47,7 +47,7 @@
         <td style="padding:5px 10px; font-size:11px; color:#888;">
           <%= truncate(report.reason, length: 60) %>
           <% if report.screenshots.attached? %>
-            <span style="color:#7aabde; margin-left:4px;" title="<%= report.screenshots.count %> screenshot(s)">&#128247; <%= report.screenshots.count %></span>
+            <span style="color:#7aabde; margin-left:4px;" title="<%= report.screenshots.count %> screenshot(s)">Screenshots: <%= report.screenshots.count %></span>
           <% end %>
         </td>
         <td style="padding:5px 10px; text-align:center; font-size:11px;">

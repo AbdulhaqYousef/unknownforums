@@ -5,7 +5,6 @@ class Post < ApplicationRecord
   has_many :attachments, as: :attachable, dependent: :destroy
   has_many :reputations, dependent: :destroy
   has_many :reports, as: :reportable, dependent: :destroy
-  has_many :reactions, class_name: "PostReaction", dependent: :destroy
 
   validates :body, presence: true, length: { minimum: 1, maximum: 50_000 }
 

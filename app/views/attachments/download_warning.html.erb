@@ -1,0 +1,44 @@
+<% content_for :title, "Download warning" %>
+
+<div class="panel" style="max-width:620px; margin:20px auto;">
+  <div class="panel-header" style="color:<%= @attachment.vt_malicious? ? '#f08080' : '#f0c060' %>;">
+    File safety warning
+  </div>
+  <div class="panel-body" style="padding:16px;">
+    <div style="display:flex; gap:12px; align-items:flex-start;">
+      <%= render "attachments/file_icon", attachment: @attachment %>
+      <div style="flex:1; min-width:0;">
+        <div style="font-size:14px; font-weight:bold; color:#e0e0e0; word-break:break-word;"><%= @attachment.filename %></div>
+        <div style="font-size:11px; color:#777; margin-top:3px;">
+          <%= @attachment.content_type %> &mdash; <%= @attachment.human_size %>
+        </div>
+        <div style="margin-top:10px;">
+          <%= render "attachments/vt_badge", attachment: @attachment %>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px; padding:12px; border:1px solid <%= @attachment.vt_malicious? ? '#6a2a2a' : '#6a5a2a' %>; background:<%= @attachment.vt_malicious? ? '#2a1414' : '#2a2414' %>; color:<%= @attachment.vt_malicious? ? '#f0a0a0' : '#f0d080' %>; font-size:12px; line-height:1.5;">
+      <strong><%= @attachment.vt_status_label %>:</strong>
+      <%= @attachment.vt_warning_message %>
+    </div>
+
+    <% if @attachment.vt_report.present? %>
+      <div style="margin-top:10px; font-size:10px; color:#777;">
+        VirusTotal engines:
+        malicious <%= @attachment.vt_report["malicious"].to_i %>,
+        suspicious <%= @attachment.vt_report["suspicious"].to_i %>,
+        harmless <%= @attachment.vt_report["harmless"].to_i %>,
+        undetected <%= @attachment.vt_report["undetected"].to_i %>
+      </div>
+    <% end %>
+
+    <div class="toolbar" style="margin-top:14px; border:1px solid #333;">
+      <span style="font-size:11px; color:#777;">Only continue if you trust the uploader and understand the risk.</span>
+      <div class="action-group">
+        <a href="<%= request.referer.presence || downloads_path %>" class="btn">Cancel</a>
+        <a href="<%= download_attachment_path(@attachment, confirm: 1) %>" class="btn <%= @attachment.vt_malicious? ? 'btn-danger' : 'btn-primary' %>">Continue download</a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+<% label = if attachment.image?
+  "IMG"
+elsif attachment.video?
+  "VID"
+elsif attachment.content_type.include?("pdf")
+  "PDF"
+elsif attachment.content_type.include?("zip")
+  "ZIP"
+elsif attachment.content_type.include?("text")
+  "TXT"
+else
+  "FILE"
+end %>
+<span style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:36px; border:1px solid #555; background:#1b1b1b; color:#aaa; font-size:9px; font-weight:bold; letter-spacing:.4px; flex-shrink:0; position:relative;">
+  <span style="position:absolute; top:-1px; right:-1px; width:8px; height:8px; border-left:1px solid #555; border-bottom:1px solid #555; background:#2a2a2a;"></span>
+  <%= label %>
+</span>

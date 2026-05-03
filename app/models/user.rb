@@ -17,7 +17,6 @@ class User < ApplicationRecord
   has_many :thread_subscriptions, dependent: :destroy
   has_many :subscribed_threads, through: :thread_subscriptions, source: :forum_thread
   has_many :notifications, foreign_key: :recipient_id, dependent: :destroy
-  has_many :post_reactions, dependent: :destroy
 
   has_one_attached :avatar
 

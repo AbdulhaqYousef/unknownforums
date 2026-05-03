@@ -39,12 +39,12 @@ function updateFileList(input) {
 
     const isImage = file.type.startsWith('image/');
     const isVideo = file.type.startsWith('video/');
-    const icon = isImage ? '🖼' : isVideo ? '🎬' : '📎';
+    const icon = isImage ? 'IMG' : isVideo ? 'VID' : 'FILE';
     const size = file.size > 1048576
       ? (file.size / 1048576).toFixed(1) + ' MB'
       : (file.size / 1024).toFixed(0) + ' KB';
 
-    row.innerHTML = '<span>' + icon + '</span><span style="color:#a8c8f0;">' + file.name + '</span><span style="color:#555;">(' + size + ')</span>';
+    row.innerHTML = '<span style="border:1px solid #555; padding:1px 4px; font-size:9px; color:#aaa;">' + icon + '</span><span style="color:#a8c8f0;">' + file.name + '</span><span style="color:#555;">(' + size + ')</span>';
 
     if (isImage) {
       const img = document.createElement('img');

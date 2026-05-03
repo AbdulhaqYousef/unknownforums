@@ -48,7 +48,7 @@
       <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
         <td style="padding:7px 10px;">
           <div style="display:flex; align-items:center; gap:8px; min-width:0;">
-            <span style="font-size:18px; color:#888;"><%= attachment.image? ? '&#128247;'.html_safe : attachment.video? ? '&#127909;'.html_safe : '&#128196;'.html_safe %></span>
+            <%= render "attachments/file_icon", attachment: attachment %>
             <div style="min-width:0;">
               <a href="<%= download_attachment_path(attachment) %>" style="font-size:12px; color:#a8c8f0;"><%= attachment.filename %></a>
               <div style="font-size:10px; color:#666;"><%= attachment.content_type %> &middot; <%= time_ago_in_words(attachment.created_at) %> ago</div>
@@ -67,11 +67,9 @@
         <td style="padding:7px 10px; text-align:center; font-size:11px;"><%= attachment.human_size %></td>
         <td style="padding:7px 10px; text-align:center; font-size:11px;"><%= attachment.download_count %></td>
         <td style="padding:7px 10px; text-align:center; font-size:11px;">
-          <% if attachment.approved? %>
-            <span style="color:#60c060; font-weight:bold;">&#10003; Verified</span>
-          <% else %>
-            <span style="color:#e0a030; font-weight:bold;">&#9888; Not verified</span>
-            <div style="font-size:9px; color:#e0a030;">may not be secure</div>
+          <%= render "attachments/vt_badge", attachment: attachment %>
+          <% if attachment.vt_warning_required? %>
+            <div style="font-size:9px; color:#e0a030; margin-top:2px;">Warning before download</div>
           <% end %>
         </td>
         <td style="padding:7px 10px; text-align:center; font-size:11px;"><a href="<%= user_path(attachment.user) %>"><%= attachment.user.username %></a></td>

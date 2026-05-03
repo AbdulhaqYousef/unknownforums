@@ -24,7 +24,7 @@
       <%= f.text_field :q, placeholder: "Search…",
             style: "width:160px; font-size:11px; padding:3px 6px; background:#1b1b1b; border:1px solid #444; color:#cfcfcf;",
             autocomplete: "off" %>
-      <button type="submit" style="background:#2a2a2a; border:1px solid #444; color:#888; padding:3px 8px; font-size:11px; cursor:pointer;">&#128269;</button>
+      <button type="submit" style="background:#2a2a2a; border:1px solid #444; color:#888; padding:3px 8px; font-size:11px; cursor:pointer;">Search</button>
     <% end %>
   </div>
 
@@ -42,7 +42,7 @@
           </a>
           <% _unread_notif = current_user.unread_notifications_count %>
           <a href="<%= notifications_path %>" style="position:relative; white-space:nowrap; text-decoration:none;">
-            🔔 Watched
+            Watched
             <% if _unread_notif > 0 %>
               <span style="background:#7aabde; color:#000; border-radius:10px; padding:0 5px; font-size:9px; font-weight:bold; margin-left:2px;"><%= _unread_notif > 99 ? '99+' : _unread_notif %></span>
             <% end %>

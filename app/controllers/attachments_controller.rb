@@ -5,6 +5,10 @@ class AttachmentsController < ApplicationController
   end
 
   def download
+    if @attachment.vt_warning_required? && params[:confirm] != "1"
+      return render :download_warning
+    end
+
     @attachment.increment_download!
     redirect_to rails_blob_url(@attachment.file), allow_other_host: true
   end
