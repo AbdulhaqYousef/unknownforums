@@ -1,3 +1,5 @@
+<% return unless attachment.vt_badge_visible? %>
+
 <% color = case attachment.vt_status
   when "clean" then "#80c080"
   when "malicious" then "#f08080"

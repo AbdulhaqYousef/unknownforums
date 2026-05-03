@@ -16,19 +16,18 @@ class VirusTotalScanner
   end
 
   def scan
-    return skip!("No API key configured")           if API_KEY.blank?
-    return skip!("Content type not scannable")      unless @attachment.vt_scannable?
-    return skip!("File too large for VT free tier") if @attachment.byte_size > 32.megabytes
+    return skip!("No API key configured") unless API_KEY.present?
+    return skip!("File is not attached") unless @attachment.vt_scannable?
 
     @attachment.update_columns(vt_status: "scanning")
 
+    file_id = submit_file
+    return poll_and_update(file_id) if file_id
+
     url_id = submit_url
-    if url_id
-      poll_and_update(url_id)
-    else
-      file_id = submit_file
-      poll_and_update(file_id) if file_id
-    end
+    return poll_and_update(url_id) if url_id
+
+    skip!("VirusTotal did not accept file or URL submission")
   rescue => e
     Rails.logger.error("VirusTotalScanner error attachment=#{@attachment.id}: #{e.message}")
     @attachment.update_columns(vt_status: "skipped")
@@ -54,7 +53,7 @@ class VirusTotalScanner
     blob = @attachment.file.blob
     file_data = blob.download
 
-    uri  = URI("#{BASE}/files")
+    uri  = URI(file_upload_url)
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
 
@@ -79,6 +78,15 @@ class VirusTotalScanner
     nil
   end
 
+  def file_upload_url
+    return "#{BASE}/files" if @attachment.byte_size.to_i <= 32.megabytes
+
+    get_json("#{BASE}/files/upload_url").fetch("data")
+  rescue => e
+    Rails.logger.error("VT large-file upload URL failed: #{e.message}")
+    "#{BASE}/files"
+  end
+
   def poll_and_update(analysis_id)
     @attachment.update_columns(vt_scan_id: analysis_id)
 
@@ -92,6 +100,7 @@ class VirusTotalScanner
       result = classify(stats)
       @attachment.update_columns(
         vt_status:    result,
+        approved:     result == "clean" ? true : @attachment.approved?,
         vt_report:    stats,
         vt_scanned_at: Time.current
       )

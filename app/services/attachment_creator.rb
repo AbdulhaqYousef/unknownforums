@@ -15,7 +15,7 @@ class AttachmentCreator
       )
       attach_file(attachment, file, attachable, user, content_type)
       if attachment.save
-        VirusTotalScanJob.perform_later(attachment.id) if attachment.vt_scannable?
+        VirusTotalScanJob.perform_later(attachment.id)
       end
     end
   end

@@ -8,7 +8,6 @@ class Attachment < ApplicationRecord
 
   BLOCKED_EXTENSIONS = %w[exe bat cmd sh ps1 vbs js dll msi dmg].freeze
   MAX_SIZE = 100.megabytes
-  VIRUSTOTAL_MAX_SIZE = 100.megabytes
 
   belongs_to :attachable, polymorphic: true
   belongs_to :user
@@ -31,9 +30,7 @@ class Attachment < ApplicationRecord
   scope :public_downloads, -> { where(attachable_type: "Post") }
 
   def vt_scannable?
-    byte_size.to_i <= VIRUSTOTAL_MAX_SIZE &&
-      %w[application/zip application/x-zip-compressed application/pdf
-         application/octet-stream text/plain].include?(content_type)
+    file.attached?
   end
 
   def dm_file?
@@ -48,7 +45,11 @@ class Attachment < ApplicationRecord
   def vt_skipped?()     vt_status == "skipped"     end
 
   def vt_warning_required?
-    vt_scannable? && !vt_clean?
+    vt_scannable? && !approved? && !vt_clean?
+  end
+
+  def vt_badge_visible?
+    !(approved? && !vt_clean?)
   end
 
   def vt_status_label
