@@ -1,4 +1,8 @@
+require "kramdown"
+
 class SitePage < ApplicationRecord
+  BODY_FORMATS = %w[html markdown].freeze
+
   DEFAULTS = {
     "rules" => {
       title: "Forum Rules",
@@ -87,12 +91,22 @@ class SitePage < ApplicationRecord
   validates :slug, presence: true, uniqueness: true, inclusion: { in: DEFAULTS.keys }
   validates :title, presence: true
   validates :body_html, presence: true
+  validates :body_format, presence: true, inclusion: { in: BODY_FORMATS }
 
   def self.fetch!(slug)
     find_or_create_by!(slug: slug) do |page|
       defaults = DEFAULTS.fetch(slug)
       page.title = defaults.fetch(:title)
       page.body_html = defaults.fetch(:body_html)
+      page.body_format = "html"
+    end
+  end
+
+  def rendered_body_html
+    if body_format == "markdown"
+      Kramdown::Document.new(body_html, hard_wrap: true).to_html
+    else
+      body_html
     end
   end
 end

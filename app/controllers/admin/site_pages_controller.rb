@@ -24,6 +24,6 @@ class Admin::SitePagesController < ApplicationController
   end
 
   def site_page_params
-    params.require(:site_page).permit(:title, :body_html)
+    params.require(:site_page).permit(:title, :body_html, :body_format)
   end
 end

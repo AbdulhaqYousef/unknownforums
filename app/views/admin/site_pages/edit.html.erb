@@ -21,9 +21,13 @@
         <%= f.text_field :title, style: "width:100%;" %>
       </div>
       <div style="margin-bottom:10px;">
-        <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">HTML Content:</label>
+        <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Format:</label>
+        <%= f.select :body_format, SitePage::BODY_FORMATS.map { |format| [format.upcase, format] }, {}, style: "width:180px;" %>
+      </div>
+      <div style="margin-bottom:10px;">
+        <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Content:</label>
         <%= f.text_area :body_html, rows: 24, style: "width:100%; font-family:monospace; font-size:12px; resize:vertical;" %>
-        <div style="font-size:10px; color:#666; margin-top:4px;">Allowed tags include paragraphs, headings, lists, links, strong/emphasis, divs, spans, inline styles, and classes.</div>
+        <div style="font-size:10px; color:#666; margin-top:4px;">Choose HTML for full styled markup, or MARKDOWN for .md-style editing. Rendered output is sanitized before display.</div>
       </div>
       <div style="display:flex; gap:8px; align-items:center;">
         <%= f.submit "Save Page", class: "btn btn-primary" %>

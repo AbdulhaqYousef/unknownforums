@@ -1,5 +1,5 @@
 <% content_for :title, "Forum Index" %>
-<% meta_description "#{forum_name} — Browse categories and subforums. #{ForumThread.count} threads, #{Post.where(deleted: false).count} posts, #{User.count} members." %>
+<% meta_description "#{forum_name} — Browse categories and subforums." %>
 <% meta_keywords [forum_name, "forum", "community", "discussion", "threads"] %>
 <% canonical_url root_url %>
 <% content_for :structured_data do %>
@@ -41,7 +41,7 @@
       </tr>
 
       <% category.subforums.each_with_index do |subforum, i| %>
-        <% last_post = subforum.last_post %>
+        <% last_post = @last_post_by_subforum[subforum.id] %>
         <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
           <td style="padding:8px 10px;">
             <div style="display:flex; align-items:flex-start; gap:8px;">
@@ -61,10 +61,10 @@
           <td style="text-align:center; font-size:12px; color:#cfcfcf;"><%= subforum.posts_count %></td>
           <td style="font-size:11px; color:#888;">
             <% if last_post %>
-              <div><a href="<%= forum_thread_path(last_post.thread) %>" style="color:#7aabde; font-size:11px;"><%= truncate(last_post.thread.title, length: 40) %></a></div>
+              <div><a href="<%= forum_thread_path(last_post["thread_id"]) %>" style="color:#7aabde; font-size:11px;"><%= truncate(last_post["thread_title"], length: 40) %></a></div>
               <div style="margin-top:2px;">
-                by <a href="<%= user_path(last_post.user) %>"><%= last_post.user.username %></a>
-                &mdash; <%= time_ago_in_words(last_post.created_at) %> ago
+                by <a href="<%= user_path(last_post["user_id"]) %>"><%= last_post["username"] %></a>
+                &mdash; <%= time_ago_in_words(last_post["post_created_at"]) %> ago
               </div>
             <% else %>
               <span style="color:#555;">No posts yet</span>
@@ -79,9 +79,9 @@
 <!-- Forum stats footer -->
 <div style="background:#242424; border:1px solid #444; padding:6px 10px; font-size:11px; color:#888; margin-top:4px;">
   <strong style="color:#cfcfcf;">Forum Statistics:</strong>
-  Threads: <strong><%= ForumThread.count %></strong> &nbsp;|&nbsp;
-  Posts: <strong><%= Post.where(deleted: false).count %></strong> &nbsp;|&nbsp;
-  Members: <strong><%= User.count %></strong> &nbsp;|&nbsp;
-  Files: <strong><%= Attachment.count %></strong> &nbsp;|&nbsp;
-  Downloads: <strong><%= Attachment.sum(:download_count) %></strong>
+  Threads: <strong><%= @stats[:threads] %></strong> &nbsp;|&nbsp;
+  Posts: <strong><%= @stats[:posts] %></strong> &nbsp;|&nbsp;
+  Members: <strong><%= @stats[:members] %></strong> &nbsp;|&nbsp;
+  Files: <strong><%= @stats[:files] %></strong> &nbsp;|&nbsp;
+  Downloads: <strong><%= @stats[:downloads] %></strong>
 </div>

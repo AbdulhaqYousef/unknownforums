@@ -31,6 +31,9 @@ gem "rack-attack"
 # Transactional emails through Resend API
 gem "resend"
 
+# Markdown rendering for editable site pages
+gem "kramdown"
+
 # AWS S3-compatible storage (Cloudflare R2)
 gem "aws-sdk-s3", require: false
 

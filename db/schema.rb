@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_03_071500) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_03_073500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -146,6 +146,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_071500) do
   end
 
   create_table "site_pages", force: :cascade do |t|
+    t.string "body_format", default: "html", null: false
     t.text "body_html", null: false
     t.datetime "created_at", null: false
     t.string "slug", null: false
