@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_03_070500) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_03_071000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -145,6 +145,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_070500) do
     t.index ["receiver_id"], name: "index_reputations_on_receiver_id"
   end
 
+  create_table "site_pages", force: :cascade do |t|
+    t.text "body_html", null: false
+    t.datetime "created_at", null: false
+    t.string "slug", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "updated_by_id"
+    t.index ["slug"], name: "index_site_pages_on_slug", unique: true
+    t.index ["updated_by_id"], name: "index_site_pages_on_updated_by_id"
+  end
+
   create_table "subforums", force: :cascade do |t|
     t.bigint "category_id", null: false
     t.datetime "created_at", null: false
@@ -213,5 +224,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_070500) do
   add_foreign_key "reputations", "posts"
   add_foreign_key "reputations", "users", column: "giver_id"
   add_foreign_key "reputations", "users", column: "receiver_id"
+  add_foreign_key "site_pages", "users", column: "updated_by_id"
   add_foreign_key "subforums", "categories"
 end

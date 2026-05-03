@@ -1,59 +1,20 @@
-<% content_for :title, "Terms of Service" %>
+<% content_for :title, @site_page.title %>
 <% meta_description "#{forum_name} Terms of Service — rules and conditions for using our community forum." %>
 <% canonical_url terms_url %>
 <% noindex_page %>
 
 <div style="max-width:740px; margin:0 auto;">
+  <% if admin? %>
+    <div style="text-align:right; margin-bottom:6px;">
+      <a href="<%= edit_admin_site_page_path(@site_page) %>" class="btn btn-sm">Edit Terms</a>
+    </div>
+  <% end %>
   <div style="background:#242424; border:1px solid #444;">
     <div style="background:#303030; border-bottom:1px solid #444; padding:8px 14px; font-size:14px; font-weight:bold; color:#e0e0e0;">
-      Terms of Service
+      <%= @site_page.title %>
     </div>
     <div style="padding:16px 20px; font-size:12px; line-height:1.8; color:#b0b0b0;">
-
-      <p style="color:#888; font-size:11px; margin-bottom:14px;">Last updated: <%= Date.today.strftime("%B %d, %Y") %></p>
-
-      <h3 style="color:#cfcfcf; font-size:13px; margin:16px 0 6px;">1. Acceptance of Terms</h3>
-      <p>By accessing or using <%= forum_name %> ("the Forum"), you agree to be bound by these Terms of Service. If you do not agree, do not use the Forum.</p>
-
-      <h3 style="color:#cfcfcf; font-size:13px; margin:16px 0 6px;">2. Account Registration</h3>
-      <p>You must provide accurate information when creating an account. You are responsible for maintaining the security of your account credentials. You must be at least 13 years old to use this service.</p>
-
-      <h3 style="color:#cfcfcf; font-size:13px; margin:16px 0 6px;">3. User Conduct</h3>
-      <p>You agree not to:</p>
-      <ul style="margin:6px 0 6px 20px; color:#999;">
-        <li>Post illegal, harmful, threatening, abusive, harassing, defamatory, or otherwise objectionable content</li>
-        <li>Impersonate any person or entity</li>
-        <li>Upload malicious software or files designed to harm others</li>
-        <li>Spam, flood, or disrupt the Forum</li>
-        <li>Attempt to gain unauthorized access to any part of the Forum</li>
-        <li>Scrape, crawl, or harvest data without permission</li>
-        <li>Circumvent bans, suspensions, or other restrictions</li>
-      </ul>
-
-      <h3 style="color:#cfcfcf; font-size:13px; margin:16px 0 6px;">4. Content Ownership</h3>
-      <p>You retain ownership of content you post. By posting content, you grant the Forum a non-exclusive, royalty-free license to display, distribute, and store your content as part of the service. You may delete your content at any time.</p>
-
-      <h3 style="color:#cfcfcf; font-size:13px; margin:16px 0 6px;">5. File Uploads</h3>
-      <p>Files uploaded to the Forum are subject to review. Unapproved files carry a warning and may be removed at any time. You are solely responsible for the files you upload. Do not upload copyrighted material you do not have rights to distribute.</p>
-
-      <h3 style="color:#cfcfcf; font-size:13px; margin:16px 0 6px;">6. Moderation</h3>
-      <p>Forum moderators and administrators may edit, move, or delete any content, and may ban or suspend accounts at their discretion. Decisions by moderators are final.</p>
-
-      <h3 style="color:#cfcfcf; font-size:13px; margin:16px 0 6px;">7. Disclaimer of Warranties</h3>
-      <p>The Forum is provided "as is" without warranties of any kind, express or implied. We do not guarantee the accuracy, completeness, or usefulness of any content posted by users.</p>
-
-      <h3 style="color:#cfcfcf; font-size:13px; margin:16px 0 6px;">8. Limitation of Liability</h3>
-      <p>To the fullest extent permitted by law, the Forum and its operators shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the service.</p>
-
-      <h3 style="color:#cfcfcf; font-size:13px; margin:16px 0 6px;">9. Termination</h3>
-      <p>We reserve the right to terminate or suspend your account at any time, for any reason, without notice. Upon termination, your right to use the Forum ceases immediately.</p>
-
-      <h3 style="color:#cfcfcf; font-size:13px; margin:16px 0 6px;">10. Changes to Terms</h3>
-      <p>We may update these Terms at any time. Continued use of the Forum after changes constitutes acceptance of the new Terms.</p>
-
-      <h3 style="color:#cfcfcf; font-size:13px; margin:16px 0 6px;">11. Contact</h3>
-      <p>Questions about these Terms? Contact us at <a href="mailto:admin@unknownforums.fun">admin@unknownforums.fun</a>.</p>
-
+      <%= sanitize @site_page.body_html, tags: %w[p br strong em b i u a ul ol li h2 h3 h4 div span], attributes: %w[href style class] %>
     </div>
   </div>
 </div>

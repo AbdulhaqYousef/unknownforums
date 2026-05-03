@@ -1,0 +1,39 @@
+<% content_for :title, "Edit #{@site_page.title}" %>
+
+<div style="font-size:11px; color:#888; margin-bottom:6px;">
+  <a href="<%= admin_site_pages_path %>">← Site Pages</a>
+</div>
+
+<div class="panel">
+  <div class="panel-header">Edit <%= @site_page.title %></div>
+  <div class="panel-body">
+    <% if @site_page.errors.any? %>
+      <div style="background:#3a1a1a; border:1px solid #6a2a2a; padding:8px 10px; margin-bottom:12px;">
+        <ul class="error-list">
+          <% @site_page.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%= form_with model: [:admin, @site_page], method: :patch do |f| %>
+      <div style="margin-bottom:10px;">
+        <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Title:</label>
+        <%= f.text_field :title, style: "width:100%;" %>
+      </div>
+      <div style="margin-bottom:10px;">
+        <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">HTML Content:</label>
+        <%= f.text_area :body_html, rows: 24, style: "width:100%; font-family:monospace; font-size:12px; resize:vertical;" %>
+        <div style="font-size:10px; color:#666; margin-top:4px;">Allowed tags include paragraphs, headings, lists, links, strong/emphasis, divs, spans, inline styles, and classes.</div>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <%= f.submit "Save Page", class: "btn btn-primary" %>
+        <a href="<%= admin_site_pages_path %>" class="btn">Cancel</a>
+        <% if @site_page.slug == "rules" %>
+          <a href="<%= rules_path %>" class="btn">View Page</a>
+        <% elsif @site_page.slug == "terms" %>
+          <a href="<%= terms_path %>" class="btn">View Page</a>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -69,6 +69,7 @@ Rails.application.routes.draw do
       end
     end
     resources :reports, only: %i[index show update]
+    resources :site_pages, only: %i[index edit update]
     get "forums", to: "forums#index", as: :forums
   end
 

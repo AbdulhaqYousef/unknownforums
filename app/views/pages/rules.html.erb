@@ -1,66 +1,19 @@
-<% content_for :title, "Forum Rules" %>
+<% content_for :title, @site_page.title %>
 <% meta_description "#{forum_name} Forum Rules — community guidelines and expectations for all members." %>
 <% canonical_url rules_url %>
 
 <div style="max-width:740px; margin:0 auto;">
+  <% if admin? %>
+    <div style="text-align:right; margin-bottom:6px;">
+      <a href="<%= edit_admin_site_page_path(@site_page) %>" class="btn btn-sm">Edit Rules</a>
+    </div>
+  <% end %>
   <div style="background:#242424; border:1px solid #444;">
     <div style="background:#303030; border-bottom:1px solid #444; padding:8px 14px; font-size:14px; font-weight:bold; color:#e0e0e0;">
-      Forum Rules
+      <%= @site_page.title %>
     </div>
     <div style="padding:16px 20px; font-size:12px; line-height:1.8; color:#b0b0b0;">
-
-      <p style="margin-bottom:14px;">By using <%= forum_name %>, you agree to follow these rules. Violations may result in warnings, post removal, or bans at moderator discretion.</p>
-
-      <div style="background:#1e1e1e; border:1px solid #333; padding:12px 16px; margin-bottom:16px;">
-        <h3 style="color:#f0c060; font-size:13px; margin:0 0 8px;">&#9888; General Rules</h3>
-        <ol style="margin:0 0 0 20px; color:#b0b0b0;">
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">Be respectful.</strong> Treat all members with respect. No personal attacks, harassment, bullying, or hate speech.</li>
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">No spam.</strong> Do not post spam, advertisements, or self-promotional content without permission.</li>
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">No NSFW content.</strong> Do not post pornographic, excessively violent, or otherwise inappropriate content.</li>
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">No illegal content.</strong> Do not post anything that violates local, national, or international law.</li>
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">English only.</strong> Posts should be in English to allow moderation and participation from all members.</li>
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">No alt accounts.</strong> One account per person. Ban evasion will result in permanent removal.</li>
-        </ol>
-      </div>
-
-      <div style="background:#1e1e1e; border:1px solid #333; padding:12px 16px; margin-bottom:16px;">
-        <h3 style="color:#7aabde; font-size:13px; margin:0 0 8px;">&#128172; Posting Rules</h3>
-        <ol style="margin:0 0 0 20px; color:#b0b0b0;">
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">Stay on topic.</strong> Keep posts relevant to the subforum and thread topic.</li>
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">Use descriptive titles.</strong> Thread titles should clearly describe the content or question.</li>
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">No double posting.</strong> Edit your post instead of posting multiple times in a row.</li>
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">No necroposting.</strong> Do not bump threads older than 30 days unless you have something meaningful to add.</li>
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">No low-effort posts.</strong> Posts like "lol", "+1", or "bump" with no substance will be removed.</li>
-        </ol>
-      </div>
-
-      <div style="background:#1e1e1e; border:1px solid #333; padding:12px 16px; margin-bottom:16px;">
-        <h3 style="color:#60c060; font-size:13px; margin:0 0 8px;">&#128190; File Upload Rules</h3>
-        <ol style="margin:0 0 0 20px; color:#b0b0b0;">
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">No malware.</strong> Uploading malicious files will result in an immediate permanent ban.</li>
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">No pirated content.</strong> Do not upload copyrighted software, media, or materials you do not own or have rights to share.</li>
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">Describe your uploads.</strong> Include a description of what the file is and what it does.</li>
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">Unverified files.</strong> Files that have not been approved by staff carry a warning. Download at your own risk.</li>
-        </ol>
-      </div>
-
-      <div style="background:#1e1e1e; border:1px solid #333; padding:12px 16px; margin-bottom:16px;">
-        <h3 style="color:#c08080; font-size:13px; margin:0 0 8px;">&#9878; Reputation Rules</h3>
-        <ol style="margin:0 0 0 20px; color:#b0b0b0;">
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">No rep manipulation.</strong> Do not ask for, trade, or exchange reputation points.</li>
-          <li style="margin-bottom:6px;"><strong style="color:#cfcfcf;">Honest feedback.</strong> Give reputation based on the quality and helpfulness of posts.</li>
-        </ol>
-      </div>
-
-      <div style="background:#2a1a1a; border:1px solid #4a2a2a; padding:12px 16px;">
-        <h3 style="color:#f08080; font-size:13px; margin:0 0 8px;">&#128683; Enforcement</h3>
-        <p style="margin:0; color:#b0b0b0;">
-          Violations are handled at staff discretion. Consequences include:
-          <strong style="color:#cfcfcf;">verbal warning → post removal → temporary ban → permanent ban.</strong>
-          Severe violations (malware, doxxing, threats) may result in an immediate permanent ban without warning.
-        </p>
-      </div>
-
+      <%= sanitize @site_page.body_html, tags: %w[p br strong em b i u a ul ol li h2 h3 h4 div span], attributes: %w[href style class] %>
     </div>
   </div>
 </div>

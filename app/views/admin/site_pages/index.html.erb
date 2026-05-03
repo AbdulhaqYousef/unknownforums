@@ -1,0 +1,38 @@
+<% content_for :title, "Edit Site Pages" %>
+
+<div class="panel">
+  <div class="panel-header">
+    <span>Site Pages</span>
+    <span style="font-size:10px; color:#777; font-weight:normal;">Edit rules and legal pages</span>
+  </div>
+  <div class="panel-body" style="padding:0;">
+    <table>
+      <tr style="background:#222; font-size:10px; color:#666; text-transform:uppercase;">
+        <th style="text-align:left;">Page</th>
+        <th style="text-align:left;">Slug</th>
+        <th style="text-align:left;">Last Updated</th>
+        <th style="text-align:right;">Actions</th>
+      </tr>
+      <% @site_pages.each do |page| %>
+        <tr>
+          <td><strong><%= page.title %></strong></td>
+          <td style="color:#888;"><%= page.slug %></td>
+          <td style="color:#888; font-size:11px;">
+            <%= page.updated_at.strftime("%m/%d/%Y %I:%M %p") %>
+            <% if page.updated_by %>
+              by <%= page.updated_by.username %>
+            <% end %>
+          </td>
+          <td style="text-align:right;">
+            <a href="<%= edit_admin_site_page_path(page) %>" class="btn btn-sm">Edit</a>
+            <% if page.slug == "rules" %>
+              <a href="<%= rules_path %>" class="btn btn-sm">View</a>
+            <% elsif page.slug == "terms" %>
+              <a href="<%= terms_path %>" class="btn btn-sm">View</a>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </table>
+  </div>
+</div>
