@@ -4,6 +4,8 @@ class VirusTotalScanJob < ApplicationJob
   def perform(attachment_id)
     attachment = Attachment.find_by(id: attachment_id)
     return unless attachment
-    VirusTotalScanner.scan(attachment)
+
+    result = VirusTotalScanner.scan(attachment)
+    VirusTotalScanJob.set(wait: 2.minutes).perform_later(attachment.id) if result == :pending
   end
 end

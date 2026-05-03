@@ -21,6 +21,8 @@ class VirusTotalScanner
 
     @attachment.update_columns(vt_status: "scanning")
 
+    return poll_and_update(@attachment.vt_scan_id) if @attachment.vt_scan_id.present?
+
     file_id = submit_file
     return poll_and_update(file_id) if file_id
 
@@ -30,7 +32,10 @@ class VirusTotalScanner
     skip!("VirusTotal did not accept file or URL submission")
   rescue => e
     Rails.logger.error("VirusTotalScanner error attachment=#{@attachment.id}: #{e.message}")
+    return retry_later! if @attachment.vt_scan_id.present?
+
     @attachment.update_columns(vt_status: "skipped")
+    :skipped
   end
 
   private
@@ -71,7 +76,13 @@ class VirusTotalScanner
       "\r\n--#{boundary}--\r\n"
     ].join
 
-    body = JSON.parse(http.request(req).body)
+    response = http.request(req)
+    unless response.is_a?(Net::HTTPSuccess)
+      Rails.logger.error("VT file submit failed attachment=#{@attachment.id}: HTTP #{response.code} #{response.body}")
+      return nil
+    end
+
+    body = JSON.parse(response.body)
     body.dig("data", "id")
   rescue => e
     Rails.logger.error("VT file submit failed: #{e.message}")
@@ -104,10 +115,11 @@ class VirusTotalScanner
         vt_report:    stats,
         vt_scanned_at: Time.current
       )
-      return
+      return :completed
     end
 
-    @attachment.update_columns(vt_status: "skipped")
+    @attachment.update_columns(vt_status: "scanning")
+    :pending
   end
 
   def classify(stats)
@@ -131,7 +143,10 @@ class VirusTotalScanner
     req["accept"]      = "application/json"
     req["content-type"] = "application/x-www-form-urlencoded"
     req.body = URI.encode_www_form(payload)
-    JSON.parse(http.request(req).body)
+    response = http.request(req)
+    raise Error, "HTTP #{response.code} #{response.body}" unless response.is_a?(Net::HTTPSuccess)
+
+    JSON.parse(response.body)
   end
 
   def get_json(url)
@@ -141,11 +156,20 @@ class VirusTotalScanner
     req  = Net::HTTP::Get.new(uri)
     req["x-apikey"] = API_KEY
     req["accept"]   = "application/json"
-    JSON.parse(http.request(req).body)
+    response = http.request(req)
+    raise Error, "HTTP #{response.code} #{response.body}" unless response.is_a?(Net::HTTPSuccess)
+
+    JSON.parse(response.body)
   end
 
   def skip!(reason)
     Rails.logger.info("VT scan skipped attachment=#{@attachment.id}: #{reason}")
     @attachment.update_columns(vt_status: "skipped")
+    :skipped
+  end
+
+  def retry_later!
+    @attachment.update_columns(vt_status: "scanning")
+    :pending
   end
 end
