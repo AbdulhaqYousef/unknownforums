@@ -23,9 +23,18 @@ ActiveSupport.on_load(:active_storage_blob) do
 
       def key
         unless self[:key]
-          token  = self.class.generate_unique_secure_token(length: MINIMUM_TOKEN_LENGTH)
           folder = folder_for(content_type.to_s)
-          self[:key] = "#{folder}/#{token}"
+          token  = self.class.generate_unique_secure_token(length: 12)
+
+          raw  = self[:filename].to_s.presence || "file"
+          ext  = File.extname(raw)
+          base = File.basename(raw, ext)
+                     .gsub(/[^\w\-]/, "_")
+                     .gsub(/_+/, "_")
+                     .slice(0, 60)
+
+          name = "#{base}[unknownforums.fun]_#{token}#{ext}"
+          self[:key] = "#{folder}/#{name}"
         end
         self[:key]
       end
