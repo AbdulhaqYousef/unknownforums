@@ -89,7 +89,7 @@ class User < ApplicationRecord
     base = 1
     base += posts_count / 100
     base += reputation / 250 if reputation.positive?
-    [base, 10].min
+    [ base, 10 ].min
   end
 
   def uploaded_files_count
@@ -181,7 +181,7 @@ class User < ApplicationRecord
 
   def email_otp_resend_wait
     return 0 if email_otp_sent_at.blank?
-    [(email_otp_sent_at + EMAIL_OTP_RESEND_COOLDOWN - Time.current).ceil, 0].max
+    [ (email_otp_sent_at + EMAIL_OTP_RESEND_COOLDOWN - Time.current).ceil, 0 ].max
   end
 
   def email_otp_resend_allowed?
@@ -208,7 +208,7 @@ class User < ApplicationRecord
     old_username = username_in_database
     return if old_username.blank?
 
-    self.previous_usernames = (previous_usernames + [old_username]).uniq
+    self.previous_usernames = (previous_usernames + [ old_username ]).uniq
   end
 
   def password_complexity

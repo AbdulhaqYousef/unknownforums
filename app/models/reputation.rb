@@ -3,7 +3,7 @@ class Reputation < ApplicationRecord
   belongs_to :receiver, class_name: "User"
   belongs_to :post, optional: true
 
-  validates :value, inclusion: { in: [-1, 1] }
+  validates :value, inclusion: { in: [ -1, 1 ] }
   validates :giver_id, uniqueness: { scope: %i[receiver_id post_id], message: "already rated this post" }
   validate :cannot_rate_own_post
 

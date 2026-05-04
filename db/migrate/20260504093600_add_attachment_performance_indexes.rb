@@ -7,7 +7,7 @@ class AddAttachmentPerformanceIndexes < ActiveRecord::Migration[8.1]
     add_index :attachments, :download_count, name: "idx_attachments_download_count"
 
     # For combined approved + public downloads queries
-    add_index :attachments, [:approved, :attachable_type, :download_count],
+    add_index :attachments, [ :approved, :attachable_type, :download_count ],
               name: "idx_attachments_approved_type_downloads"
   end
 end

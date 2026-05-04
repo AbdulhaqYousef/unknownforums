@@ -16,6 +16,6 @@ class SecurityHeaders
     headers["X-Permitted-Cross-Domain-Policies"] = "none"
     headers["X-Download-Options"]      = "noopen"
 
-    [status, headers, body]
+    [ status, headers, body ]
   end
 end

@@ -27,12 +27,12 @@ class LeaderboardsController < ApplicationController
   def top_uploaders
     counts = Attachment.group(:user_id).count.sort_by { |_user_id, count| -count }.first(10)
     users = User.where(id: counts.map(&:first)).index_by(&:id)
-    counts.filter_map { |user_id, count| [users[user_id], count] if users[user_id] }
+    counts.filter_map { |user_id, count| [ users[user_id], count ] if users[user_id] }
   end
 
   def top_downloaders
     counts = Attachment.group(:user_id).sum(:download_count).sort_by { |_user_id, count| -count }.first(10)
     users = User.where(id: counts.map(&:first)).index_by(&:id)
-    counts.filter_map { |user_id, count| [users[user_id], count] if users[user_id] }
+    counts.filter_map { |user_id, count| [ users[user_id], count ] if users[user_id] }
   end
 end

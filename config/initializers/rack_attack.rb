@@ -173,7 +173,7 @@ class Rack::Attack
       [
         429,
         headers.merge("Content-Type" => "application/json"),
-        [{ error: "rate_limited", message: message, retry_after: retry_after.to_i }.to_json]
+        [ { error: "rate_limited", message: message, retry_after: retry_after.to_i }.to_json ]
       ]
     else
       body = <<~HTML
@@ -205,7 +205,7 @@ class Rack::Attack
         </html>
       HTML
 
-      [429, headers.merge("Content-Type" => "text/html; charset=utf-8"), [body]]
+      [ 429, headers.merge("Content-Type" => "text/html; charset=utf-8"), [ body ] ]
     end
   end
 
@@ -213,7 +213,7 @@ class Rack::Attack
     [
       403,
       { "Content-Type" => "text/plain; charset=utf-8", "Cache-Control" => "no-store" },
-      ["Forbidden\n"]
+      [ "Forbidden\n" ]
     ]
   end
 end

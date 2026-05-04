@@ -9,7 +9,7 @@ class ReputationGiver
   end
 
   def call
-    unless [-1, 1].include?(@value)
+    unless [ -1, 1 ].include?(@value)
       @errors << "Invalid reputation value"
       return nil
     end

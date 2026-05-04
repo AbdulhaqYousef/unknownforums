@@ -14,7 +14,7 @@ class EmailOtpSender
     Resend::Emails.send(
       {
         from: ENV.fetch("MAIL_FROM", "UnknownForums <noreply@unknownforums.fun>"),
-        to: [user.email],
+        to: [ user.email ],
         subject: subject_for(purpose),
         html: html_body(user, code, purpose),
         text: text_body(user, code, purpose)

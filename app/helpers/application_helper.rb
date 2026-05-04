@@ -79,10 +79,10 @@ module ApplicationHelper
   end
 
   def user_activity(user)
-    days_since_join = [(Time.current - user.created_at) / 1.day, 1].max
+    days_since_join = [ (Time.current - user.created_at) / 1.day, 1 ].max
     recent_posts = user.posts.where("created_at > ?", 30.days.ago).count
-    activity = (recent_posts.to_f / [days_since_join, 30].min * 100).round(1)
-    [activity, 100.0].min
+    activity = (recent_posts.to_f / [ days_since_join, 30 ].min * 100).round(1)
+    [ activity, 100.0 ].min
   end
 
   def rep_power_dots(user)
@@ -119,7 +119,7 @@ module ApplicationHelper
       in_fence = !in_fence if line.match?(/^~~~\s*/)
 
       if !in_fence && markdown_table_start?(lines, i)
-        table_lines = [lines[i].rstrip, lines[i + 1].rstrip]
+        table_lines = [ lines[i].rstrip, lines[i + 1].rstrip ]
         i += 2
         while i < lines.length && lines[i].include?("|") && lines[i].strip.present?
           table_lines << lines[i].rstrip

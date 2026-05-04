@@ -6,7 +6,7 @@ class CreateVirusTotalQuotas < ActiveRecord::Migration[8.1]
       t.integer :count, default: 0, null: false
       t.timestamps
 
-      t.index [:period, :period_start], unique: true
+      t.index [ :period, :period_start ], unique: true
     end
   end
 end

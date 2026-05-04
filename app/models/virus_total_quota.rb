@@ -30,7 +30,7 @@ class VirusTotalQuota < ApplicationRecord
 
       if exhausted
         wait_until = periods.fetch(exhausted.period.to_sym).fetch(:finish)
-        raise RateLimited, [(wait_until - now).ceil, 60].max
+        raise RateLimited, [ (wait_until - now).ceil, 60 ].max
       end
 
       rows.each { |row| row.increment!(:count) }

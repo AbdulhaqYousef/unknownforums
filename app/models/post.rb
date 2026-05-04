@@ -47,7 +47,7 @@ class Post < ApplicationRecord
   end
 
   def recalculate_visible_counters_after_soft_delete
-    return unless saved_change_to_deleted == [false, true]
+    return unless saved_change_to_deleted == [ false, true ]
 
     thread.update_columns(posts_count: Post.where(forum_thread_id: thread.id, deleted: false).count)
     thread.subforum.update_columns(

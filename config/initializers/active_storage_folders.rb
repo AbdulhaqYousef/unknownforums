@@ -7,7 +7,7 @@ ActiveSupport.on_load(:active_storage_blob) do
         "application/zip"                  => "archives",
         "application/x-zip-compressed"     => "archives",
         "application/pdf"                  => "documents",
-        "text/plain"                       => "documents",
+        "text/plain"                       => "documents"
       }.freeze
 
       private

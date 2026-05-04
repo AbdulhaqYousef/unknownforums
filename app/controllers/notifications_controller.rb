@@ -9,7 +9,7 @@ class NotificationsController < ApplicationController
                             .limit(30)
 
     @watched_threads = current_user.thread_subscriptions
-                                   .includes(forum_thread: [:subforum, :user])
+                                   .includes(forum_thread: [ :subforum, :user ])
                                    .order(updated_at: :desc)
                                    .limit(30)
 

@@ -1,7 +1,7 @@
 class ForumController < ApplicationController
   def index
     fresh_when(
-      etag: ["forum-index", current_user&.id || "guest"],
+      etag: [ "forum-index", current_user&.id || "guest" ],
       last_modified: ForumThread.maximum(:updated_at) || Time.current,
       public: !logged_in?
     )

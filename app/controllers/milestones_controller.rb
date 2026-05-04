@@ -44,7 +44,7 @@ class MilestonesController < ApplicationController
       current: current_value,
       target: target_value,
       unit: unit,
-      percent: target_value.positive? ? [((current_value.to_f / target_value) * 100).round, 100].min : 100
+      percent: target_value.positive? ? [ ((current_value.to_f / target_value) * 100).round, 100 ].min : 100
     }
   end
 end

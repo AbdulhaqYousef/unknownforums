@@ -6,6 +6,6 @@ class CreatePostReactions < ActiveRecord::Migration[8.1]
       t.string     :emoji, null: false
       t.timestamps
     end
-    add_index :post_reactions, [:post_id, :user_id, :emoji], unique: true
+    add_index :post_reactions, [ :post_id, :user_id, :emoji ], unique: true
   end
 end
