@@ -10,7 +10,7 @@ Rails.application.configure do
     policy.font_src    :self, :data
     policy.img_src     :self, :data, :https
     policy.object_src  :none
-    policy.script_src  :self, :nonce, "https://static.cloudflareinsights.com", "https://cdn.jsdelivr.net"
+    policy.script_src  :self, "https://static.cloudflareinsights.com", "https://cdn.jsdelivr.net"
     policy.style_src   :self, :unsafe_inline, "https://cdn.jsdelivr.net"
     policy.frame_src   :none
     policy.base_uri    :self
