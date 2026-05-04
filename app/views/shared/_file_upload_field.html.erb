@@ -1,59 +1,117 @@
-<div style="background:#1e1e1e; border:1px solid #333; padding:8px 10px;">
-  <div style="font-size:10px; color:#666; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">
+<div style="background:var(--bg3); border:1px solid var(--border); border-radius:3px; padding:10px 12px;">
+  <div style="font-size:10px; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">
     Attach Files
   </div>
-  <div style="display:flex; align-items:center; gap:8px;">
+  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
     <label style="cursor:pointer; display:inline-block;">
-      <span class="btn btn-sm" style="font-size:10px;">Browse...</span>
-      <input type="file" name="files[]" multiple
+      <span class="btn btn-sm" style="display:inline-flex; align-items:center; gap:5px;">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        Browse…
+      </span>
+      <input id="file-upload-input" type="file" name="files[]" multiple
         accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/ogg,application/pdf,text/plain,application/zip,application/x-zip-compressed,application/x-bittorrent,application/x-msdownload,application/x-msdos-program,application/x-dosexec,application/octet-stream,application/x-sh,application/x-powershell,application/javascript,text/javascript,application/x-apple-diskimage"
         style="display:none;"
         onchange="updateFileList(this)">
     </label>
-    <span id="file-list-label" style="font-size:10px; color:#666;">No files selected</span>
+    <span id="file-list-label" style="font-size:10px; color:var(--text-muted);">No files selected</span>
   </div>
-  <div id="file-preview-list" style="margin-top:6px;"></div>
-  <div style="font-size:10px; color:#555; margin-top:4px;">
-    Images, videos, PDF, ZIP, torrent, executables (.exe, .dll, .msi, .sh, .bat, .ps1, .js, .vbs, .dmg) &mdash; max 100MB per file
+  <div id="file-preview-list" style="margin-top:8px;"></div>
+  <div id="file-size-error" style="display:none; margin-top:6px; padding:6px 10px; background:#3a1a1a; border:1px solid #d06060; border-radius:2px; font-size:11px; color:#e07070;"></div>
+  <div style="font-size:10px; color:var(--text-muted); margin-top:6px; opacity:.7;">
+    Images · MP4/WebM/OGG · PDF · ZIP · Torrent · EXE/DLL/MSI/SH/PS1/JS/DMG &mdash; max 100 MB per file
   </div>
 </div>
 
 <script nonce="<%= content_security_policy_nonce %>">
-function updateFileList(input) {
-  const label = document.getElementById('file-list-label');
-  const preview = document.getElementById('file-preview-list');
-  const files = input.files;
+(function() {
+  const MAX_BYTES = 100 * 1024 * 1024;
 
-  if (!files.length) {
-    label.textContent = 'No files selected';
-    preview.innerHTML = '';
-    return;
+  function fmtSize(bytes) {
+    return bytes >= 1048576
+      ? (bytes / 1048576).toFixed(1) + ' MB'
+      : (bytes / 1024).toFixed(0) + ' KB';
   }
 
-  label.textContent = files.length + ' file' + (files.length > 1 ? 's' : '') + ' selected';
-  preview.innerHTML = '';
+  function typeLabel(file) {
+    if (file.type.startsWith('image/')) return 'IMG';
+    if (file.type.startsWith('video/')) return 'VID';
+    if (file.type.includes('pdf'))      return 'PDF';
+    if (file.type.includes('zip'))      return 'ZIP';
+    return 'FILE';
+  }
 
-  Array.from(files).forEach(function(file) {
-    const row = document.createElement('div');
-    row.style.cssText = 'font-size:10px; color:#888; padding:2px 0; display:flex; align-items:center; gap:6px;';
+  function typeColor(file) {
+    if (file.type.startsWith('image/')) return '#7fd4e0';
+    if (file.type.startsWith('video/')) return '#9b8fff';
+    if (file.type.includes('pdf'))      return '#f0a060';
+    if (file.type.includes('zip'))      return '#80c880';
+    return '#aaaaaa';
+  }
 
-    const isImage = file.type.startsWith('image/');
-    const isVideo = file.type.startsWith('video/');
-    const icon = isImage ? 'IMG' : isVideo ? 'VID' : 'FILE';
-    const size = file.size > 1048576
-      ? (file.size / 1048576).toFixed(1) + ' MB'
-      : (file.size / 1024).toFixed(0) + ' KB';
+  window.updateFileList = function(input) {
+    const label   = document.getElementById('file-list-label');
+    const preview = document.getElementById('file-preview-list');
+    const errBox  = document.getElementById('file-size-error');
+    const files   = Array.from(input.files);
 
-    row.innerHTML = '<span style="border:1px solid #555; padding:1px 4px; font-size:9px; color:#aaa;">' + icon + '</span><span style="color:#a8c8f0;">' + file.name + '</span><span style="color:#555;">(' + size + ')</span>';
+    preview.innerHTML = '';
+    errBox.style.display = 'none';
+    errBox.textContent   = '';
 
-    if (isImage) {
-      const img = document.createElement('img');
-      img.style.cssText = 'height:40px; width:auto; border:1px solid #333; margin-left:4px; vertical-align:middle;';
-      img.src = URL.createObjectURL(file);
-      row.appendChild(img);
+    if (!files.length) {
+      label.textContent = 'No files selected';
+      return;
     }
 
-    preview.appendChild(row);
-  });
-}
+    const oversized = files.filter(f => f.size > MAX_BYTES);
+    if (oversized.length) {
+      errBox.style.display = 'block';
+      errBox.innerHTML = '<strong>File size exceeded (100 MB limit):</strong><ul style="margin:4px 0 0 16px; padding:0;">'
+        + oversized.map(f => '<li>' + f.name + ' &mdash; ' + fmtSize(f.size) + '</li>').join('')
+        + '</ul>';
+      // Disable the closest submit button
+      const form = input.closest('form');
+      if (form) {
+        form.querySelectorAll('[type=submit]').forEach(btn => {
+          btn.disabled = true;
+          btn._disabledByFileCheck = true;
+        });
+      }
+    } else {
+      // Re-enable if we fixed it
+      const form = input.closest('form');
+      if (form) {
+        form.querySelectorAll('[type=submit]').forEach(btn => {
+          if (btn._disabledByFileCheck) { btn.disabled = false; btn._disabledByFileCheck = false; }
+        });
+      }
+    }
+
+    const ok    = files.filter(f => f.size <= MAX_BYTES);
+    const total = ok.length;
+    label.textContent = total + ' file' + (total !== 1 ? 's' : '') + ' ready'
+      + (oversized.length ? ' · ' + oversized.length + ' too large' : '');
+
+    files.forEach(function(file) {
+      const tooBig = file.size > MAX_BYTES;
+      const row    = document.createElement('div');
+      row.style.cssText = 'font-size:10px; padding:4px 6px; margin-bottom:2px; display:flex; align-items:center; gap:8px; background:' + (tooBig ? 'rgba(192,80,80,0.08)' : 'rgba(255,255,255,0.02)') + '; border:1px solid ' + (tooBig ? '#803030' : 'var(--border-dim, #333)') + '; border-radius:2px;';
+
+      const badge = '<span style="padding:1px 5px; font-size:9px; font-weight:bold; border-radius:2px; background:rgba(255,255,255,0.06); color:' + typeColor(file) + ';">' + typeLabel(file) + '</span>';
+      const name  = '<span style="flex:1; color:' + (tooBig ? '#e07070' : 'var(--text-bright, #efefef)') + '; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="' + file.name + '">' + file.name + '</span>';
+      const size  = '<span style="color:' + (tooBig ? '#e07070' : 'var(--text-muted, #666)') + '; flex-shrink:0;">' + fmtSize(file.size) + '</span>';
+      const warn  = tooBig ? '<span style="color:#e07070; font-weight:bold; flex-shrink:0;">✕ Too large</span>' : '';
+      row.innerHTML = badge + name + size + warn;
+
+      if (file.type.startsWith('image/') && !tooBig) {
+        const img = document.createElement('img');
+        img.style.cssText = 'height:36px; width:auto; border-radius:1px; border:1px solid var(--border-dim, #333); flex-shrink:0;';
+        img.src = URL.createObjectURL(file);
+        row.appendChild(img);
+      }
+
+      preview.appendChild(row);
+    });
+  };
+})();
 </script>
