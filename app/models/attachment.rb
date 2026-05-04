@@ -3,6 +3,7 @@ class Attachment < ApplicationRecord
     image/jpeg image/png image/gif image/webp
     application/pdf text/plain
     application/zip application/x-zip-compressed
+    application/x-bittorrent
     video/mp4 video/webm video/ogg
   ].freeze
 
