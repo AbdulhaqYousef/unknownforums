@@ -4,7 +4,11 @@ class ForumThreadsController < ApplicationController
   before_action :require_moderator, only: %i[lock unlock pin unpin move destroy]
 
   def show
-    @thread.increment_views!
+    viewed = session[:viewed_threads] || []
+    unless viewed.include?(@thread.id)
+      @thread.increment_views!
+      session[:viewed_threads] = (viewed + [ @thread.id ]).last(100)
+    end
     @posts = @thread.posts.visible
                     .includes(:user, :quote_post,
                               attachments: [ :file_attachment, :versions ],
