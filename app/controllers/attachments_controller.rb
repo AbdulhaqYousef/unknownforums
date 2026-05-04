@@ -1,6 +1,6 @@
 class AttachmentsController < ApplicationController
-  before_action :require_login
   before_action :set_attachment
+  before_action :require_login, except: %i[show]
   before_action :authorize_attachment_access!, only: %i[show download]
 
   def show

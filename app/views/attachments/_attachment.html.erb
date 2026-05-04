@@ -57,6 +57,7 @@
         <% end %>
       </div>
     </div>
+    <a href="<%= attachment_path(attachment) %>" class="btn btn-sm">Details</a>
     <a href="<%= download_attachment_path(attachment) %>" class="btn btn-sm" data-turbo="false">Download</a>
     <% if logged_in? && (current_user == attachment.root_attachment.user || moderator_or_admin?) %>
       <a href="<%= new_version_attachment_path(attachment.root_attachment) %>" class="btn btn-sm" title="Upload new version">Upload version</a>

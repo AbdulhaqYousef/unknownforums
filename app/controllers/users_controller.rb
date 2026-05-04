@@ -6,6 +6,7 @@ class UsersController < ApplicationController
   def show
     @threads  = @user.forum_threads.order(created_at: :desc).page(params[:page]).per(15)
     @posts    = @user.posts.visible.order(created_at: :desc).page(params[:page]).per(15)
+    Trophy.check_and_award!(@user)
     @trophies = @user.trophies.recent
   end
 

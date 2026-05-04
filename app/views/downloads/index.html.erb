@@ -11,85 +11,132 @@
   </div>
 </div>
 
-<div class="panel" style="margin-bottom:10px;">
-  <div class="panel-body">
-    <%= form_with url: downloads_path, method: :get, class: "admin-search-form" do |f| %>
-      <div class="admin-search-field grow">
-        <label>Search Downloads</label>
-        <%= f.text_field :q, value: params[:q], placeholder: "Filename, content type, uploader username...", style: "width:100%;" %>
-      </div>
-      <div class="admin-search-actions">
-        <%= f.submit "Search", class: "btn btn-primary" %>
-        <a href="<%= downloads_path %>" class="btn">Reset</a>
-      </div>
-    <% end %>
-  </div>
-</div>
-
-<div class="panel">
-  <div class="panel-header">
-    <span>Latest Files</span>
-    <span style="font-size:10px; color:#777; font-weight:normal;">Approved attachments posted by members</span>
-  </div>
-  <table>
-    <tr style="background:#222; font-size:10px; color:#666; text-transform:uppercase;">
-      <th style="padding:4px 10px; text-align:left; width:30%;">File</th>
-      <th style="padding:4px 10px; text-align:left; width:16%;">Posted In</th>
-      <th style="padding:4px 10px; text-align:center; width:8%;">Size</th>
-      <th style="padding:4px 10px; text-align:center; width:6%;">Downloads</th>
-      <th style="padding:4px 10px; text-align:center; width:10%;">Status</th>
-      <th style="padding:4px 10px; text-align:center; width:10%;">Uploader</th>
-      <th style="padding:4px 10px; text-align:right; width:20%;">Action</th>
-    </tr>
-    <% if @attachments.empty? %>
-      <tr><td colspan="7" style="padding:20px; text-align:center; color:#666; font-size:12px;">No files uploaded yet.</td></tr>
-    <% end %>
-    <% @attachments.each_with_index do |attachment, i| %>
-      <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
-        <td style="padding:7px 10px;">
-          <div style="display:flex; align-items:center; gap:8px; min-width:0;">
-            <%= render "attachments/file_icon", attachment: attachment %>
-            <div style="min-width:0;">
-              <a href="<%= download_attachment_path(attachment) %>" style="font-size:12px; color:#a8c8f0;" data-turbo="false"><%= attachment.filename %></a>
-              <div style="font-size:10px; color:#666;"><%= attachment.content_type %> &middot; <%= time_ago_in_words(attachment.created_at) %> ago</div>
-            </div>
+<div style="display:flex; gap:10px; align-items:flex-start;">
+  <!-- Main content -->
+  <div style="flex:1; min-width:0;">
+    <div class="panel" style="margin-bottom:10px;">
+      <div class="panel-body">
+        <%= form_with url: downloads_path, method: :get, class: "admin-search-form" do |f| %>
+          <div class="admin-search-field grow">
+            <label>Search Downloads</label>
+            <%= f.text_field :q, value: params[:q], placeholder: "Filename, uploader, content type...", style: "width:100%;" %>
           </div>
-        </td>
-        <td style="padding:7px 10px; font-size:11px; color:#888;">
-          <% if attachment.attachable.is_a?(Post) %>
-            <a href="<%= forum_thread_path(attachment.attachable.thread, anchor: "post-#{attachment.attachable.id}") %>"><%= truncate(attachment.attachable.thread.title, length: 38) %></a>
-          <% elsif attachment.attachable.is_a?(ForumThread) %>
-            <a href="<%= forum_thread_path(attachment.attachable) %>"><%= truncate(attachment.attachable.title, length: 38) %></a>
-          <% else %>
-            <span style="color:#555;">Unknown source</span>
-          <% end %>
-        </td>
-        <td style="padding:7px 10px; text-align:center; font-size:11px;"><%= attachment.human_size %></td>
-        <td style="padding:7px 10px; text-align:center; font-size:11px;"><%= attachment.download_count %></td>
-        <td style="padding:7px 10px; text-align:center; font-size:11px;">
-          <%= render "attachments/vt_badge", attachment: attachment %>
-          <% if attachment.vt_warning_required? %>
-            <div style="font-size:9px; color:#e0a030; margin-top:2px;">Warning before download</div>
-          <% end %>
-        </td>
-        <td style="padding:7px 10px; text-align:center; font-size:11px;"><a href="<%= user_path(attachment.user) %>"><%= attachment.user.username %></a></td>
-        <td style="padding:7px 10px; text-align:right; white-space:nowrap;">
-          <div class="action-group" style="justify-content:flex-end; flex-wrap:nowrap;">
-            <a href="<%= download_attachment_path(attachment) %>" class="btn btn-primary btn-sm" data-turbo="false">Download</a>
-            <% if logged_in? && current_user == attachment.user %>
-              <%= button_to "Delete", attachment_path(attachment), method: :delete, class: "btn btn-danger btn-sm", data: { turbo_confirm: "Delete this attachment?" } %>
+          <div class="admin-search-actions">
+            <%= f.submit "Search", class: "btn btn-primary" %>
+            <a href="<%= downloads_path %>" class="btn">Reset</a>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <% if @active_tag %>
+      <div style="background:#1e2a1e; border:1px solid #3a5a3a; padding:6px 10px; margin-bottom:8px; font-size:11px; display:flex; justify-content:space-between; align-items:center;">
+        <span>Filtered by tag: <strong style="color:#80d080;">#<%= @active_tag %></strong></span>
+        <%= link_to "✕ Clear filter", downloads_path(q: params[:q].presence), class: "btn btn-sm" %>
+      </div>
+    <% end %>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span><%= @active_tag ? "##{@active_tag}" : "Latest Files" %></span>
+        <span style="font-size:10px; color:#777; font-weight:normal;">Click a filename to view details, ratings &amp; comments</span>
+      </div>
+      <table style="width:100%;">
+        <tr style="background:#222; font-size:10px; color:#666; text-transform:uppercase;">
+          <th style="padding:4px 10px; text-align:left;">File</th>
+          <th style="padding:4px 10px; text-align:left;">Posted In</th>
+          <th style="padding:4px 10px; text-align:center;">Size</th>
+          <th style="padding:4px 10px; text-align:center;">DLs</th>
+          <th style="padding:4px 10px; text-align:center;">Rating</th>
+          <th style="padding:4px 10px; text-align:right;">Action</th>
+        </tr>
+        <% if @attachments.empty? %>
+          <tr><td colspan="6" style="padding:20px; text-align:center; color:#666; font-size:12px;">No files found.</td></tr>
+        <% end %>
+        <% @attachments.each_with_index do |attachment, i| %>
+          <%
+            visible_comments = attachment.file_comments.reject(&:deleted?)
+            avg_rating = visible_comments.map(&:rating).compact
+            avg_str = avg_rating.any? ? ("★" * (avg_rating.sum / avg_rating.size.to_f).round) : nil
+          %>
+          <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
+            <td style="padding:7px 10px;">
+              <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                <%= render "attachments/file_icon", attachment: attachment %>
+                <div style="min-width:0;">
+                  <a href="<%= attachment_path(attachment) %>" style="font-size:12px; color:#a8c8f0;"><%= attachment.filename %></a>
+                  <div style="font-size:10px; color:#666; margin-top:1px;">
+                    by <a href="<%= user_path(attachment.user) %>" style="color:#666;"><%= attachment.user.username %></a>
+                    &middot; <%= time_ago_in_words(attachment.created_at) %> ago
+                    <% if visible_comments.any? %>
+                      &middot; <span style="color:#888;"><%= visible_comments.size %> comment<%= visible_comments.size == 1 ? '' : 's' %></span>
+                    <% end %>
+                  </div>
+                  <% if attachment.file_tags.any? %>
+                    <div style="margin-top:3px;">
+                      <% attachment.file_tags.each do |ft| %>
+                        <%= link_to "##{ft.tag}", downloads_path(tag: ft.tag), style: "display:inline-block; background:#1a1a2a; border:1px solid #335; padding:0px 5px; font-size:9px; color:#7a9abf; margin-right:2px; text-decoration:none;" %>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            </td>
+            <td style="padding:7px 10px; font-size:11px; color:#888; max-width:160px;">
+              <% if attachment.attachable.is_a?(Post) %>
+                <a href="<%= forum_thread_path(attachment.attachable.thread, anchor: "post-#{attachment.attachable.id}") %>" style="color:#888; font-size:10px;"><%= truncate(attachment.attachable.thread.title, length: 36) %></a>
+              <% elsif attachment.attachable.is_a?(ForumThread) %>
+                <a href="<%= forum_thread_path(attachment.attachable) %>" style="color:#888; font-size:10px;"><%= truncate(attachment.attachable.title, length: 36) %></a>
+              <% else %>
+                <span style="color:#555;">—</span>
+              <% end %>
+            </td>
+            <td style="padding:7px 10px; text-align:center; font-size:11px; white-space:nowrap;"><%= attachment.human_size %></td>
+            <td style="padding:7px 10px; text-align:center; font-size:11px;"><%= attachment.download_count %></td>
+            <td style="padding:7px 10px; text-align:center; font-size:11px; color:#f0c060;">
+              <%= avg_str || '<span style="color:#444;">—</span>'.html_safe %>
+            </td>
+            <td style="padding:7px 10px; text-align:right; white-space:nowrap;">
+              <div class="action-group" style="justify-content:flex-end; flex-wrap:nowrap;">
+                <%= render "attachments/vt_badge", attachment: attachment %>
+                <a href="<%= attachment_path(attachment) %>" class="btn btn-sm">Details</a>
+                <a href="<%= download_attachment_path(attachment) %>" class="btn btn-primary btn-sm" data-turbo="false">Download</a>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
+
+    <div class="toolbar" style="margin-top:8px;">
+      <span>Page <%= @attachments.current_page %> of <%= @attachments.total_pages %></span>
+      <div class="action-group">
+        <%= link_to_prev_page @attachments, "← Prev", class: "btn btn-sm" %>
+        <%= link_to_next_page @attachments, "Next →", class: "btn btn-sm" %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tags sidebar -->
+  <% if @popular_tags.any? %>
+    <div style="width:160px; flex-shrink:0;">
+      <div class="panel">
+        <div class="panel-header">Browse by Tag</div>
+        <div style="padding:8px;">
+          <% @popular_tags.each do |tag, count| %>
+            <%= link_to downloads_path(tag: tag),
+                  style: "display:flex; justify-content:space-between; align-items:center; padding:3px 4px; font-size:11px; color:#{@active_tag == tag ? '#80d080' : '#aaa'}; text-decoration:none; background:#{@active_tag == tag ? '#1e2a1e' : 'transparent'}; border-radius:2px; margin-bottom:1px;" do %>
+              <span>#<%= tag %></span>
+              <span style="font-size:10px; color:#555;"><%= count %></span>
             <% end %>
-          </div>
-        </td>
-      </tr>
-    <% end %>
-  </table>
-</div>
-
-<div class="toolbar" style="margin-top:8px;">
-  <span>Page <%= @attachments.current_page %> of <%= @attachments.total_pages %></span>
-  <div class="action-group">
-    <%= link_to_prev_page @attachments, "← Prev", class: "btn btn-sm" %>
-    <%= link_to_next_page @attachments, "Next →", class: "btn btn-sm" %>
-  </div>
+          <% end %>
+          <% if @active_tag %>
+            <div style="border-top:1px solid #333; margin-top:6px; padding-top:6px;">
+              <%= link_to "Show all", downloads_path, style: "font-size:10px; color:#888;" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
 </div>
