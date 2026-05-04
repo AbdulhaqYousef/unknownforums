@@ -61,7 +61,6 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
 
-  # Email OTP delivery uses the Resend API directly through RESEND_API_KEY.
   config.action_mailer.default_url_options = {
     host: ENV.fetch("APP_HOST", "unknownforums.fun"),
     protocol: "https"
@@ -69,7 +68,17 @@ Rails.application.configure do
   config.action_mailer.default_options = {
     from: ENV.fetch("MAIL_FROM", "UnknownForums <noreply@unknownforums.fun>")
   }
-  config.action_mailer.perform_deliveries = false
+  config.action_mailer.perform_deliveries = true
+  config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address:              "smtp.resend.com",
+    port:                 587,
+    user_name:            "resend",
+    password:             ENV.fetch("RESEND_API_KEY", ""),
+    authentication:       :plain,
+    enable_starttls_auto: true
+  }
   config.action_cable.url = "wss://#{ENV.fetch('APP_HOST', 'unknownforums.fun')}/cable"
   config.action_cable.allowed_request_origins = [
     "https://unknownforums.fun",
