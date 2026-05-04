@@ -13,6 +13,7 @@
     <meta property="og:description" content="<%= content_for(:og_description).presence || content_for(:meta_description).presence || forum_description %>">
     <meta property="og:type" content="<%= content_for(:og_type).presence || 'website' %>">
     <% if content_for?(:og_image) %><meta property="og:image" content="<%= content_for(:og_image) %>"><% end %>
+    <meta name="turbo-cache-control" content="no-cache">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="<%= content_for(:og_title).presence || content_for(:title).presence || forum_name %>">
     <meta name="twitter:description" content="<%= content_for(:og_description).presence || content_for(:meta_description).presence || forum_description %>">

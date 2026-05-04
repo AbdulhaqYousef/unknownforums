@@ -26,13 +26,13 @@ class SessionsController < ApplicationController
         session[:pending_email_otp_purpose] = "login"
         session[:return_to_after_email_otp] = return_to
         AuditLog.record(actor: user, action: "login_2fa_initiated", details: "Email OTP sent", ip: request.remote_ip)
-        redirect_to email_otp_path, notice: "We sent a login code to #{user.email}."
+        redirect_to email_otp_path, notice: "We sent a login code to #{user.email}.", status: :see_other
       else
         user.register_successful_login!(ip: request.remote_ip)
         reset_session
         session[:user_id] = user.id
         AuditLog.record(actor: user, action: "login_success", details: "Direct login", ip: request.remote_ip)
-        redirect_to return_to, notice: "Welcome back, #{user.username}!"
+        redirect_to return_to, notice: "Welcome back, #{user.username}!", status: :see_other
       end
     else
       user&.register_failed_login!
@@ -53,7 +53,7 @@ class SessionsController < ApplicationController
   def destroy
     AuditLog.record(actor: current_user, action: "logout", ip: request.remote_ip) if current_user
     reset_session
-    redirect_to root_path, notice: "You have been logged out."
+    redirect_to root_path, notice: "You have been logged out.", status: :see_other
   end
 
   private
