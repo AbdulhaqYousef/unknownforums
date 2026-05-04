@@ -30,7 +30,7 @@ class ForumController < ApplicationController
     return {} if subforum_ids.empty?
 
     Post
-      .joins(:user, :forum_thread)
+      .joins(:user, :thread)
       .where(forum_threads: { subforum_id: subforum_ids }, deleted: false)
       .select(Arel.sql(
         "DISTINCT ON (forum_threads.subforum_id) " \
