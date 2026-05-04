@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_04_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_04_210001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -512,6 +512,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_210000) do
     t.datetime "locked_until"
     t.text "moderation_note"
     t.string "password_digest", null: false
+    t.datetime "password_reset_sent_at"
+    t.string "password_reset_token"
     t.integer "posts_count", default: 0, null: false
     t.text "previous_usernames", default: [], null: false, array: true
     t.integer "reputation", default: 0, null: false
@@ -527,6 +529,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_210000) do
     t.index ["email_verified_at"], name: "index_users_on_email_verified_at"
     t.index ["flagged"], name: "index_users_on_flagged"
     t.index ["last_seen_at"], name: "index_users_on_last_seen_at"
+    t.index ["password_reset_token"], name: "index_users_on_password_reset_token"
     t.index ["previous_usernames"], name: "index_users_on_previous_usernames", using: :gin
     t.index ["role"], name: "index_users_on_role"
     t.index ["username"], name: "index_users_on_username", unique: true

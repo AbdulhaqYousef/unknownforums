@@ -8,6 +8,7 @@ class RegistrationsController < ApplicationController
   def create
     @user = User.new(registration_params)
     if @user.save
+      AuditLog.record(actor: @user, action: "registered", details: "New account created", ip: request.remote_ip)
       send_email_otp!
       session[:pending_email_otp_user_id] = @user.id
       session[:pending_email_otp_purpose] = "registration"

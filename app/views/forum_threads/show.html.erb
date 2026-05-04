@@ -163,7 +163,7 @@
   </div>
 <% end %>
 
-<script>
+<script nonce="<%= content_security_policy_nonce %>">
 (function() {
   const bar   = document.getElementById('bulk-delete-bar');
   const count = document.getElementById('bulk-count');

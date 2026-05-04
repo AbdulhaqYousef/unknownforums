@@ -106,6 +106,8 @@ Rails.application.routes.draw do
     get "file_leaderboard", to: "file_leaderboard#index", as: :file_leaderboard
   end
 
+  resources :password_resets, only: %i[new create edit update]
+
   get "terms",   to: "pages#terms",   as: :terms
   get "privacy", to: "pages#privacy", as: :privacy
   get "rules",   to: "pages#rules",  as: :rules

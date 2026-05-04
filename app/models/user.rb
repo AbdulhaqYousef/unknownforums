@@ -32,6 +32,7 @@ class User < ApplicationRecord
   EMAIL_OTP_EXPIRATION = 10.minutes
   EMAIL_OTP_RESEND_COOLDOWN = 60.seconds
   EMAIL_OTP_MAX_ATTEMPTS = 5
+  PASSWORD_RESET_EXPIRY = 1.hour
 
   validates :username, presence: true, uniqueness: { case_sensitive: false },
             length: { minimum: 3, maximum: 30 },
@@ -41,6 +42,7 @@ class User < ApplicationRecord
   validates :reputation, numericality: { only_integer: true }
   validates :password, length: { minimum: 8 }, if: -> { password.present? }
   validate :password_complexity, if: -> { password.present? }
+  validate :password_not_pwned,  if: -> { password.present? }
   validate :avatar_format, if: -> { avatar.attached? }
   before_validation :normalize_registration_fields
   before_update :clear_email_verification_on_email_change, if: :will_save_change_to_email?
@@ -201,6 +203,29 @@ class User < ApplicationRecord
     email_otp_resend_wait.zero?
   end
 
+  def generate_password_reset_token!
+    raw = SecureRandom.urlsafe_base64(32)
+    update_columns(
+      password_reset_token:   Digest::SHA256.hexdigest(raw),
+      password_reset_sent_at: Time.current
+    )
+    raw
+  end
+
+  def password_reset_token_valid?
+    password_reset_sent_at.present? &&
+      password_reset_sent_at > PASSWORD_RESET_EXPIRY.ago
+  end
+
+  def self.find_by_reset_token(raw_token)
+    digest = Digest::SHA256.hexdigest(raw_token.to_s)
+    find_by(password_reset_token: digest)
+  end
+
+  def clear_password_reset!
+    update_columns(password_reset_token: nil, password_reset_sent_at: nil)
+  end
+
   private
 
   def normalize_registration_fields
@@ -231,6 +256,13 @@ class User < ApplicationRecord
     end
     if password.downcase == username&.downcase
       errors.add(:password, "cannot be the same as your username")
+    end
+  end
+
+  def password_not_pwned
+    return if password.blank?
+    if PwnedPasswordChecker.pwned?(password)
+      errors.add(:password, "has appeared in a known data breach. Please choose a different password.")
     end
   end
 

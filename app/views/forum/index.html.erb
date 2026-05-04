@@ -84,7 +84,7 @@
   </div>
 <% end %>
 
-<script>
+<script nonce="<%= content_security_policy_nonce %>">
   function toggleCategory(id) {
     var body    = document.getElementById('cat-body-' + id);
     var chevron = document.getElementById('cat-chevron-' + id);

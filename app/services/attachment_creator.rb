@@ -5,6 +5,15 @@ class AttachmentCreator
     errors = []
     Array(files).compact.select { |f| f.respond_to?(:original_filename) }.each do |file|
       content_type = file.content_type.presence || "application/octet-stream"
+
+      io = file.respond_to?(:tempfile) ? file.tempfile : file.to_io
+      io.rewind if io.respond_to?(:rewind)
+      unless MimeValidator.valid?(content_type, io)
+        errors << "#{file.original_filename}: file content does not match its declared type"
+        next
+      end
+      io.rewind if io.respond_to?(:rewind)
+
       stored_filename = stored_filename_for(attachable, file.original_filename)
       attachment = Attachment.new(
         attachable: attachable,
@@ -14,7 +23,7 @@ class AttachmentCreator
         byte_size: file.size,
         is_video: content_type.start_with?("video/")
       )
-      attach_file(attachment, file, attachable, user, content_type)
+      attach_file(attachment, io, attachable, user, content_type)
       if attachment.save
         if attachment.vt_scannable?
           VirusTotalScanJob.perform_later(attachment.id)
@@ -28,8 +37,7 @@ class AttachmentCreator
     errors
   end
 
-  def self.attach_file(attachment, file, attachable, user, content_type)
-    io = file.respond_to?(:tempfile) ? file.tempfile : file.to_io
+  def self.attach_file(attachment, io, attachable, user, content_type)
     io.rewind if io.respond_to?(:rewind)
 
     if attachable.is_a?(PrivateMessage)

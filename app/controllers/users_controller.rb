@@ -24,7 +24,11 @@ class UsersController < ApplicationController
   def update
     require_owner_or_moderator(@user)
     @user.avatar.purge if params[:user][:remove_avatar] == "1"
+    changing_password = user_params[:password].present?
+    changing_email    = user_params[:email].present? && user_params[:email] != @user.email
     if @user.update(user_params)
+      AuditLog.record(actor: current_user, action: "password_changed", target: @user, ip: request.remote_ip) if changing_password
+      AuditLog.record(actor: current_user, action: "email_changed",    target: @user, ip: request.remote_ip) if changing_email
       redirect_to user_path(@user), notice: "Profile updated."
     else
       render :edit, status: :unprocessable_entity

@@ -1,0 +1,29 @@
+<% content_for :title, "Reset Password" %>
+
+<div class="panel" style="max-width:420px; margin:40px auto;">
+  <div class="panel-header">Set a new password</div>
+  <div style="padding:16px;">
+    <%= form_with url: password_reset_path(@token), method: :patch do |f| %>
+      <div class="form-row">
+        <label style="font-size:11px; color:var(--text-dim); display:block; margin-bottom:3px;">New password</label>
+        <%= password_field_tag :password, nil, required: true, style: "width:100%;",
+              placeholder: "At least 8 characters", autocomplete: "new-password" %>
+      </div>
+      <div class="form-row" style="margin-top:8px;">
+        <label style="font-size:11px; color:var(--text-dim); display:block; margin-bottom:3px;">Confirm new password</label>
+        <%= password_field_tag :password_confirmation, nil, required: true, style: "width:100%;",
+              autocomplete: "new-password" %>
+      </div>
+      <% if @user.errors.any? %>
+        <ul class="error-list" style="margin-top:8px;">
+          <% @user.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      <% end %>
+      <div style="margin-top:14px;">
+        <%= f.submit "Update password", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

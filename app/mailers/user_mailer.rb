@@ -25,6 +25,13 @@ class UserMailer < ApplicationMailer
     mail(to: @user.email, subject: "#{@author.username} mentioned you in \"#{@thread.title.truncate(60)}\"")
   end
 
+  def password_reset(user, token)
+    @user  = user
+    @token = token
+    @reset_url = edit_password_reset_url(@token, host: Rails.application.config.action_mailer.default_url_options[:host])
+    mail(to: @user.email, subject: "Reset your password")
+  end
+
   def warning_notification(user, warning)
     @user    = user
     @warning = warning

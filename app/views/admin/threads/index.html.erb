@@ -88,7 +88,7 @@
   </div>
 </div>
 
-<script>
+<script nonce="<%= content_security_policy_nonce %>">
   function selectAll()   { document.querySelectorAll(".bulk-cb").forEach(cb => cb.checked = true);  }
   function deselectAll() { document.querySelectorAll(".bulk-cb").forEach(cb => cb.checked = false); }
 

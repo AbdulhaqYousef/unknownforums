@@ -63,9 +63,9 @@ class Rack::Attack
     normalized_ip(req) if req.path == "/register" && req.post?
   end
 
-  # Password-related: 5 per 15 minutes per IP
-  throttle("passwords/ip", limit: 5, period: 15.minutes) do |req|
-    normalized_ip(req) if req.path.start_with?("/password") && req.post?
+  # Password reset requests: strict to prevent email flooding.
+  throttle("password_resets/ip", limit: 5, period: 15.minutes) do |req|
+    normalized_ip(req) if req.path == "/password_resets" && req.post?
   end
 
   throttle("email-otp/ip", limit: 10, period: 10.minutes) do |req|
@@ -104,6 +104,11 @@ class Rack::Attack
   # Reputation.
   throttle("reputation/ip", limit: 30, period: 5.minutes) do |req|
     normalized_ip(req) if req.path == "/reputations" && req.post?
+  end
+
+  # User search / mention autocomplete — prevent username enumeration scraping.
+  throttle("user_search/ip", limit: 60, period: 1.minute) do |req|
+    normalized_ip(req) if req.path == "/users/search" && req.get?
   end
 
   ### --- Blocklist ---
