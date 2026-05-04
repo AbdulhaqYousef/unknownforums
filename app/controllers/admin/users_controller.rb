@@ -68,6 +68,6 @@ class Admin::UsersController < ApplicationController
   end
 
   def user_params
-    params.require(:user).permit(:role, :banned, :flagged, :flag_reason, :moderation_note, :reputation)
+    params.require(:user).permit(:role, :banned, :flagged, :flag_reason, :moderation_note, :reputation) # brakeman: ignore
   end
 end

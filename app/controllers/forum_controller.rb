@@ -29,25 +29,26 @@ class ForumController < ApplicationController
   def last_post_per_subforum(subforum_ids)
     return {} if subforum_ids.empty?
 
-    sql = <<~SQL
-      SELECT DISTINCT ON (ft.subforum_id)
-        ft.subforum_id,
-        p.id          AS post_id,
-        p.created_at  AS post_created_at,
-        ft.id         AS thread_id,
-        ft.title      AS thread_title,
-        u.id          AS user_id,
-        u.username    AS username
-      FROM posts p
-      JOIN forum_threads ft ON ft.id = p.forum_thread_id
-      JOIN users u          ON u.id  = p.user_id
-      WHERE ft.subforum_id = ANY(ARRAY[#{subforum_ids.join(',')}])
-        AND p.deleted = false
-      ORDER BY ft.subforum_id, p.created_at DESC
-    SQL
-
-    ActiveRecord::Base.connection.select_all(sql).each_with_object({}) do |row, h|
-      h[row["subforum_id"].to_i] = row
-    end
+    Post
+      .joins(:user, :forum_thread)
+      .where(forum_threads: { subforum_id: subforum_ids }, deleted: false)
+      .select(Arel.sql(
+        "DISTINCT ON (forum_threads.subforum_id) " \
+        "forum_threads.subforum_id, posts.id AS post_id, posts.created_at AS post_created_at, " \
+        "forum_threads.id AS thread_id, forum_threads.title AS thread_title, " \
+        "users.id AS user_id, users.username"
+      ))
+      .order(Arel.sql("forum_threads.subforum_id, posts.created_at DESC"))
+      .each_with_object({}) do |row, h|
+        h[row.subforum_id] = {
+          "subforum_id"    => row.subforum_id.to_s,
+          "post_id"        => row.post_id.to_s,
+          "post_created_at" => row.post_created_at,
+          "thread_id"      => row.thread_id.to_s,
+          "thread_title"   => row.thread_title,
+          "user_id"        => row.user_id.to_s,
+          "username"       => row.username
+        }
+      end
   end
 end
