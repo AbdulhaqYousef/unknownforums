@@ -7,16 +7,20 @@
 
   <% if attachment.video? %>
     <div style="width:100%;">
-      <video controls style="max-width:100%; max-height:400px; background:#000;">
-        <%= tag.source src: rails_blob_url(attachment.file), type: attachment.content_type %>
+      <video data-controller="video-player"
+             style="max-width:100%; --plyr-color-main:#3d9faf; --plyr-video-background:#000;"
+             playsinline
+             preload="metadata">
+        <source src="<%= rails_blob_url(attachment.file) %>" type="<%= attachment.content_type %>">
         Your browser does not support the video tag.
       </video>
-      <div style="font-size:10px; color:#666; margin-top:4px;">
-        <%= attachment.filename %> (<%= attachment.human_size %>)
+      <div style="font-size:10px; color:var(--text-muted); margin-top:6px; display:flex; align-items:center; gap:6px;">
+        <span style="color:var(--text-dim);"><%= attachment.filename %></span>
+        <span>(<%= attachment.human_size %>)</span>
         <% if attachment.approved? %>
-          <span style="color:#60c060; font-weight:bold; margin-left:4px;">Verified</span>
+          <span style="color:#60c060; font-weight:bold;">Verified</span>
         <% else %>
-          <span style="color:#e0a030; font-weight:bold; margin-left:4px;">Not verified &mdash; may not be secure</span>
+          <span style="color:#e0a030; font-weight:bold;">Not verified &mdash; may not be secure</span>
         <% end %>
         <%= render "attachments/vt_badge", attachment: attachment %>
       </div>
