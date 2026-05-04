@@ -50,7 +50,7 @@
           <div style="display:flex; align-items:center; gap:8px; min-width:0;">
             <%= render "attachments/file_icon", attachment: attachment %>
             <div style="min-width:0;">
-              <a href="<%= download_attachment_path(attachment) %>" style="font-size:12px; color:#a8c8f0;"><%= attachment.filename %></a>
+              <a href="<%= download_attachment_path(attachment) %>" style="font-size:12px; color:#a8c8f0;" data-turbo="false"><%= attachment.filename %></a>
               <div style="font-size:10px; color:#666;"><%= attachment.content_type %> &middot; <%= time_ago_in_words(attachment.created_at) %> ago</div>
             </div>
           </div>
@@ -75,7 +75,7 @@
         <td style="padding:7px 10px; text-align:center; font-size:11px;"><a href="<%= user_path(attachment.user) %>"><%= attachment.user.username %></a></td>
         <td style="padding:7px 10px; text-align:right; white-space:nowrap;">
           <div class="action-group" style="justify-content:flex-end; flex-wrap:nowrap;">
-            <a href="<%= download_attachment_path(attachment) %>" class="btn btn-primary btn-sm">Download</a>
+            <a href="<%= download_attachment_path(attachment) %>" class="btn btn-primary btn-sm" data-turbo="false">Download</a>
             <% if logged_in? && current_user == attachment.user %>
               <%= button_to "Delete", attachment_path(attachment), method: :delete, class: "btn btn-danger btn-sm", data: { turbo_confirm: "Delete this attachment?" } %>
             <% end %>

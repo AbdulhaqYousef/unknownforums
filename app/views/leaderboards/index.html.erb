@@ -67,7 +67,7 @@
       <% @top_files.each_with_index do |attachment, i| %>
         <tr style="background:<%= i.even? ? '#242424' : '#202020' %>;">
           <td><%= i + 1 %></td>
-          <td><a href="<%= download_attachment_path(attachment) %>"><%= attachment.filename %></a> <span style="font-size:10px; color:#666;"><%= attachment.human_size %></span></td>
+          <td><a href="<%= download_attachment_path(attachment) %>" data-turbo="false"><%= attachment.filename %></a> <span style="font-size:10px; color:#666;"><%= attachment.human_size %></span></td>
           <td><a href="<%= user_path(attachment.user) %>"><%= attachment.user.username %></a></td>
           <td style="text-align:center; font-weight:bold;"><%= attachment.download_count %></td>
         </tr>

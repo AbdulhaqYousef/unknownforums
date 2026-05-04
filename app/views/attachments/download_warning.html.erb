@@ -37,7 +37,7 @@
       <span style="font-size:11px; color:#777;">Only continue if you trust the uploader and understand the risk.</span>
       <div class="action-group">
         <a href="<%= request.referer.presence || downloads_path %>" class="btn">Cancel</a>
-        <a href="<%= download_attachment_path(@attachment, confirm: 1) %>" class="btn <%= @attachment.vt_malicious? ? 'btn-danger' : 'btn-primary' %>">Continue download</a>
+        <a href="<%= download_attachment_path(@attachment, confirm: 1) %>" class="btn <%= @attachment.vt_malicious? ? 'btn-danger' : 'btn-primary' %>" data-turbo="false">Continue download</a>
       </div>
     </div>
   </div>

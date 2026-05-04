@@ -58,7 +58,7 @@
         <tr style="background:<%= i.even? ? '#242424' : '#202020' %>;">
           <td style="color:#555; font-size:11px;"><%= i + 1 %></td>
           <td>
-            <a href="<%= download_attachment_path(a) %>" style="font-size:12px; color:#a8c8f0;"><%= a.filename %></a>
+            <a href="<%= download_attachment_path(a) %>" style="font-size:12px; color:#a8c8f0;" data-turbo="false"><%= a.filename %></a>
             <span style="font-size:10px; color:#666;">&nbsp;<%= a.human_size %></span>
           </td>
           <td style="font-size:11px;"><a href="<%= admin_user_path(a.user) %>"><%= a.user.username %></a></td>

@@ -38,7 +38,7 @@
     <%= render "attachments/file_icon", attachment: attachment %>
     <div style="flex:1; min-width:0;">
       <div>
-        <a href="<%= download_attachment_path(attachment) %>" style="font-size:12px; color:#7aabde;"><%= attachment.filename %></a>
+        <a href="<%= download_attachment_path(attachment) %>" style="font-size:12px; color:#7aabde;" data-turbo="false"><%= attachment.filename %></a>
         <% if attachment.approved? %>
           <span style="color:#60c060; font-size:9px; font-weight:bold; margin-left:4px;">VERIFIED</span>
         <% else %>
@@ -57,7 +57,7 @@
         <% end %>
       </div>
     </div>
-    <a href="<%= download_attachment_path(attachment) %>" class="btn btn-sm">Download</a>
+    <a href="<%= download_attachment_path(attachment) %>" class="btn btn-sm" data-turbo="false">Download</a>
     <% if logged_in? && (current_user == attachment.root_attachment.user || moderator_or_admin?) %>
       <a href="<%= new_version_attachment_path(attachment.root_attachment) %>" class="btn btn-sm" title="Upload new version">Upload version</a>
     <% end %>
