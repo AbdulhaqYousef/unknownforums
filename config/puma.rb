@@ -34,7 +34,8 @@ port ENV.fetch("PORT", 4251)
 # Specifies the number of `workers` to boot in clustered mode.
 # Workers are forked web server processes. If using threads and workers together
 # the concurrency of the application would be max `threads` * `workers`.
-workers ENV.fetch("WEB_CONCURRENCY", 1) if ENV["RAILS_ENV"] == "production"
+web_concurrency = ENV.fetch("WEB_CONCURRENCY", 0).to_i
+workers web_concurrency if ENV["RAILS_ENV"] == "production" && web_concurrency > 0
 
 # Use the `preload_app!` method when specifying a `workers` number.
 # This directive tells Puma to first boot the application and load code before forking.
