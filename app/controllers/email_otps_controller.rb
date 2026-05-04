@@ -2,6 +2,10 @@ class EmailOtpsController < ApplicationController
   before_action :require_guest
   before_action :set_pending_user
 
+  rescue_from ActionController::InvalidAuthenticityToken do
+    redirect_to email_otp_path, alert: "Your session expired. Please submit the form again."
+  end
+
   def show
   end
 
