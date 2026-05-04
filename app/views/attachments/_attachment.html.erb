@@ -1,43 +1,87 @@
-<div style="background:#1e1e1e; border:1px solid #333; padding:6px 8px; margin-bottom:4px; display:flex; align-items:center; gap:8px;">
-  <% if attachment.approved? %>
-    <span style="display:inline-block; width:8px; height:8px; background:#60c060; border-radius:50%; flex-shrink:0;" title="Approved"></span>
-  <% else %>
-    <span style="display:inline-block; width:8px; height:8px; background:#c06060; border-radius:50%; flex-shrink:0;" title="Not Approved"></span>
-  <% end %>
+<%
+  can_mod    = logged_in? && moderator_or_admin?
+  can_delete = logged_in? && (current_user == attachment.user || moderator_or_admin?)
+%>
 
-  <% if attachment.video? %>
-    <div style="width:100%;">
-      <video controls preload="metadata" playsinline
-             style="width:100%; max-height:420px; background:#000; border-radius:3px; display:block;">
-        <%= tag.source src: rails_blob_url(attachment.file), type: attachment.content_type %>
-      </video>
-      <div style="font-size:10px; color:#666; margin-top:4px;">
-        <%= attachment.filename %> (<%= attachment.human_size %>)
+<% if attachment.video? %>
+  <div style="background:#1e1e1e; border:1px solid #333; border-radius:3px; margin-bottom:6px; overflow:hidden;">
+    <video controls preload="metadata" playsinline
+           style="width:100%; max-height:420px; background:#000; display:block;">
+      <%= tag.source src: rails_blob_url(attachment.file), type: attachment.content_type %>
+    </video>
+    <div style="padding:5px 8px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; border-top:1px solid #2a2a2a;">
+      <% if attachment.approved? %>
+        <span style="width:7px;height:7px;background:#60c060;border-radius:50%;flex-shrink:0;" title="Verified"></span>
+      <% else %>
+        <span style="width:7px;height:7px;background:#c06060;border-radius:50%;flex-shrink:0;" title="Not verified"></span>
+      <% end %>
+      <span style="font-size:10px; color:#888; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+        <%= attachment.filename %> &mdash; <%= attachment.human_size %>
         <% if attachment.approved? %>
           <span style="color:#60c060; font-weight:bold; margin-left:4px;">Verified</span>
         <% else %>
-          <span style="color:#e0a030; font-weight:bold; margin-left:4px;">Not verified &mdash; may not be secure</span>
+          <span style="color:#e0a030; font-weight:bold; margin-left:4px;">Not verified</span>
         <% end %>
         <%= render "attachments/vt_badge", attachment: attachment %>
+      </span>
+      <div style="display:flex; gap:3px; flex-shrink:0;">
+        <% if can_mod %>
+          <% if attachment.approved? %>
+            <%= button_to "Revoke", unapprove_attachment_path(attachment), method: :patch, class: "btn btn-sm", style: "padding:2px 6px;", data: { turbo_confirm: "Revoke approval?" } %>
+          <% else %>
+            <%= button_to "Approve", approve_attachment_path(attachment), method: :patch, class: "btn btn-success btn-sm", style: "padding:2px 6px;" %>
+          <% end %>
+        <% end %>
+        <% if can_delete %>
+          <%= button_to "Delete", attachment_path(attachment), method: :delete, class: "btn btn-danger btn-sm", style: "padding:2px 6px;", data: { turbo_confirm: "Delete this attachment?" } %>
+        <% end %>
       </div>
     </div>
-  <% elsif attachment.image? %>
-    <div>
-      <%= image_tag rails_blob_url(attachment.file),
-            style: "max-width:100%; max-height:360px; border:1px solid #333; border-radius:3px; cursor:zoom-in; display:block;",
-            loading: "lazy",
-            data: { lightbox_src: rails_blob_url(attachment.file) } %>
-      <div style="font-size:10px; color:#666; margin-top:2px;">
-        <%= attachment.filename %> (<%= attachment.human_size %>)
+  </div>
+
+<% elsif attachment.image? %>
+  <div style="background:#1e1e1e; border:1px solid #333; border-radius:3px; margin-bottom:6px; overflow:hidden; display:inline-block; max-width:100%;">
+    <%= image_tag rails_blob_url(attachment.file),
+          style: "max-width:100%; max-height:360px; display:block; cursor:zoom-in;",
+          loading: "lazy",
+          data: { lightbox_src: rails_blob_url(attachment.file) } %>
+    <div style="padding:5px 8px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; border-top:1px solid #2a2a2a;">
+      <% if attachment.approved? %>
+        <span style="width:7px;height:7px;background:#60c060;border-radius:50%;flex-shrink:0;" title="Verified"></span>
+      <% else %>
+        <span style="width:7px;height:7px;background:#c06060;border-radius:50%;flex-shrink:0;" title="Not verified"></span>
+      <% end %>
+      <span style="font-size:10px; color:#888; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+        <%= attachment.filename %> &mdash; <%= attachment.human_size %>
         <% if attachment.approved? %>
           <span style="color:#60c060; font-weight:bold; margin-left:4px;">Verified</span>
         <% else %>
-          <span style="color:#e0a030; font-weight:bold; margin-left:4px;">Not verified &mdash; may not be secure</span>
+          <span style="color:#e0a030; font-weight:bold; margin-left:4px;">Not verified</span>
         <% end %>
         <%= render "attachments/vt_badge", attachment: attachment %>
+      </span>
+      <div style="display:flex; gap:3px; flex-shrink:0;">
+        <% if can_mod %>
+          <% if attachment.approved? %>
+            <%= button_to "Revoke", unapprove_attachment_path(attachment), method: :patch, class: "btn btn-sm", style: "padding:2px 6px;", data: { turbo_confirm: "Revoke approval?" } %>
+          <% else %>
+            <%= button_to "Approve", approve_attachment_path(attachment), method: :patch, class: "btn btn-success btn-sm", style: "padding:2px 6px;" %>
+          <% end %>
+        <% end %>
+        <% if can_delete %>
+          <%= button_to "Delete", attachment_path(attachment), method: :delete, class: "btn btn-danger btn-sm", style: "padding:2px 6px;", data: { turbo_confirm: "Delete this attachment?" } %>
+        <% end %>
       </div>
     </div>
-  <% else %>
+  </div>
+
+<% else %>
+  <div style="background:#1e1e1e; border:1px solid #333; padding:6px 8px; margin-bottom:4px; display:flex; align-items:center; gap:8px;">
+    <% if attachment.approved? %>
+      <span style="width:7px;height:7px;background:#60c060;border-radius:50%;flex-shrink:0;" title="Verified"></span>
+    <% else %>
+      <span style="width:7px;height:7px;background:#c06060;border-radius:50%;flex-shrink:0;" title="Not verified"></span>
+    <% end %>
     <%= render "attachments/file_icon", attachment: attachment %>
     <div style="flex:1; min-width:0;">
       <div>
@@ -50,11 +94,8 @@
         <%= render "attachments/vt_badge", attachment: attachment %>
       </div>
       <div style="font-size:10px; color:#666;">
-        v<%= attachment.version %> &mdash;
-        <%= attachment.human_size %> &mdash; <%= attachment.download_count %> downloads
-        <% unless attachment.approved? %>
-          <span style="color:#e0a030;">&mdash; this file may not be secure</span>
-        <% end %>
+        v<%= attachment.version %> &mdash; <%= attachment.human_size %> &mdash; <%= attachment.download_count %> downloads
+        <% unless attachment.approved? %><span style="color:#e0a030;">&mdash; may not be secure</span><% end %>
         <% if attachment.root_attachment.versions.any? %>
           &mdash; <a href="<%= new_version_attachment_path(attachment.root_attachment) %>" style="color:#888; font-size:10px;"><%= attachment.root_attachment.versions.count + 1 %> versions</a>
         <% end %>
@@ -63,22 +104,19 @@
     <a href="<%= attachment_path(attachment) %>" class="btn btn-sm">Details</a>
     <a href="<%= download_attachment_path(attachment) %>" class="btn btn-sm" data-turbo="false">Download</a>
     <% if logged_in? && (current_user == attachment.root_attachment.user || moderator_or_admin?) %>
-      <a href="<%= new_version_attachment_path(attachment.root_attachment) %>" class="btn btn-sm" title="Upload new version">Upload version</a>
+      <a href="<%= new_version_attachment_path(attachment.root_attachment) %>" class="btn btn-sm">Upload version</a>
     <% end %>
-  <% end %>
-
-  <div style="display:flex; gap:3px; flex-shrink:0;">
-    <% if logged_in? && moderator_or_admin? %>
-      <% if attachment.approved? %>
-        <%= button_to "Revoke", unapprove_attachment_path(attachment), method: :patch, class: "btn btn-sm", style: "padding:2px 5px;", data: { turbo_confirm: "Revoke approval?" } %>
-      <% else %>
-        <%= button_to "Approve", approve_attachment_path(attachment), method: :patch, class: "btn btn-success btn-sm", style: "padding:2px 5px;" %>
+    <div style="display:flex; gap:3px; flex-shrink:0;">
+      <% if can_mod %>
+        <% if attachment.approved? %>
+          <%= button_to "Revoke", unapprove_attachment_path(attachment), method: :patch, class: "btn btn-sm", style: "padding:2px 6px;", data: { turbo_confirm: "Revoke approval?" } %>
+        <% else %>
+          <%= button_to "Approve", approve_attachment_path(attachment), method: :patch, class: "btn btn-success btn-sm", style: "padding:2px 6px;" %>
+        <% end %>
       <% end %>
-    <% end %>
-    <% if logged_in? && (current_user == attachment.user || moderator_or_admin?) %>
-      <%= button_to "Delete", attachment_path(attachment), method: :delete, class: "btn btn-danger btn-sm",
-        style: "padding:2px 5px;",
-        data: { turbo_confirm: "Delete this attachment?" } %>
-    <% end %>
+      <% if can_delete %>
+        <%= button_to "Delete", attachment_path(attachment), method: :delete, class: "btn btn-danger btn-sm", style: "padding:2px 6px;", data: { turbo_confirm: "Delete this attachment?" } %>
+      <% end %>
+    </div>
   </div>
-</div>
+<% end %>
