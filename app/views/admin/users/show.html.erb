@@ -84,8 +84,8 @@
             <td style="font-size:11px; color:#888;"><%= w.created_at.strftime("%m/%d/%Y") %></td>
             <td style="font-size:11px; color:#888;"><%= w.expires_at ? w.expires_at.strftime("%m/%d/%Y") : "Permanent" %></td>
             <td>
-              <%= button_to "✕", admin_user_warning_path(@user, w), method: :delete,
-                    class: "btn btn-danger btn-sm", data: { turbo_confirm: "Remove this warning?" } %>
+              <%= button_to admin_user_warning_path(@user, w), method: :delete,
+                    class: "btn btn-danger btn-sm", data: { turbo_confirm: "Remove this warning?" } do %><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><% end %>
             </td>
           </tr>
         <% end %>
@@ -132,8 +132,8 @@
               &mdash; <%= note.created_at.strftime("%m/%d/%Y %I:%M %p") %>
             </div>
           </div>
-          <%= button_to "✕", admin_user_staff_note_path(@user, note), method: :delete,
-                class: "btn btn-sm", style: "flex-shrink:0;", data: { turbo_confirm: "Delete this note?" } %>
+          <%= button_to admin_user_staff_note_path(@user, note), method: :delete,
+                class: "btn btn-sm", style: "flex-shrink:0;", data: { turbo_confirm: "Delete this note?" } do %><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><% end %>
         </div>
       <% end %>
     <% else %>

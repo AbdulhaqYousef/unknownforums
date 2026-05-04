@@ -32,7 +32,7 @@
     <% if @active_tag %>
       <div style="background:#1e2a1e; border:1px solid #3a5a3a; padding:6px 10px; margin-bottom:8px; font-size:11px; display:flex; justify-content:space-between; align-items:center;">
         <span>Filtered by tag: <strong style="color:#80d080;">#<%= @active_tag %></strong></span>
-        <%= link_to "✕ Clear filter", downloads_path(q: params[:q].presence), class: "btn btn-sm" %>
+        <%= link_to downloads_path(q: params[:q].presence), class: "btn btn-sm", style: "display:inline-flex; align-items:center; gap:4px;" do %><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Clear filter<% end %>
       </div>
     <% end %>
 
@@ -57,7 +57,7 @@
           <%
             visible_comments = attachment.file_comments.reject(&:deleted?)
             avg_rating = visible_comments.map(&:rating).compact
-            avg_str = avg_rating.any? ? ("★" * (avg_rating.sum / avg_rating.size.to_f).round) : nil
+            avg_count = avg_rating.any? ? (avg_rating.sum / avg_rating.size.to_f).round : nil
           %>
           <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
             <td style="padding:7px 10px;">
@@ -93,8 +93,14 @@
             </td>
             <td style="padding:7px 10px; text-align:center; font-size:11px; white-space:nowrap;"><%= attachment.human_size %></td>
             <td style="padding:7px 10px; text-align:center; font-size:11px;"><%= attachment.download_count %></td>
-            <td style="padding:7px 10px; text-align:center; font-size:11px; color:#f0c060;">
-              <%= avg_str || '<span style="color:#444;">—</span>'.html_safe %>
+            <td style="padding:7px 10px; text-align:center; font-size:11px;">
+              <% if avg_count %>
+                <span style="display:inline-flex; align-items:center; gap:1px;">
+                  <% avg_count.times do %><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="#f0c060" stroke="#f0c060" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><% end %>
+                </span>
+              <% else %>
+                <span style="color:#444;">—</span>
+              <% end %>
             </td>
             <td style="padding:7px 10px; text-align:right; white-space:nowrap;">
               <div class="action-group" style="justify-content:flex-end; flex-wrap:nowrap;">
