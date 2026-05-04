@@ -60,6 +60,9 @@
         <%= button_to "Watch", forum_thread_thread_subscriptions_path(@thread),
               method: :post, class: "btn btn-sm" %>
       <% end %>
+      <% if current_user != @thread.user %>
+        <%= link_to "Report", new_report_path(reportable_type: "ForumThread", reportable_id: @thread.id), class: "btn btn-sm" %>
+      <% end %>
     <% end %>
   </div>
 </div>
