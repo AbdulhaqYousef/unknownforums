@@ -61,7 +61,7 @@
       </span>
       <span class="post-actions">
         <% if viewer && !thread.locked? %>
-          <a href="<%= new_subforum_forum_thread_path(thread.subforum, quote_post_id: post.id) %>" onclick="quotePost(<%= post.id %>); return false;">Quote</a>
+          <a href="<%= new_subforum_forum_thread_path(thread.subforum, quote_post_id: post.id) %>" data-quote-post-id="<%= post.id %>">Quote</a>
         <% end %>
         <% if viewer && (viewer == post.user || can_moderate) %>
           <a href="<%= edit_forum_thread_post_path(thread, post) %>">Edit</a>

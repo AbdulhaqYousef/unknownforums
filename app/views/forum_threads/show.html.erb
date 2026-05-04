@@ -117,7 +117,7 @@
 <% if _can_mod %>
   <div id="bulk-delete-bar" style="display:none; background:#2a1a1a; border:1px solid #6a2a2a; border-top:none; padding:6px 10px; justify-content:space-between; align-items:center;">
     <span id="bulk-count" style="font-size:11px; color:#cfcfcf;">0 posts selected</span>
-    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete selected posts?')">Delete Selected</button>
+    <button type="submit" class="btn btn-danger btn-sm" data-turbo-confirm="Delete selected posts?">Delete Selected</button>
   </div>
 <% end %>
 <% end %>
@@ -163,28 +163,3 @@
   </div>
 <% end %>
 
-<script nonce="<%= content_security_policy_nonce %>">
-(function() {
-  const bar   = document.getElementById('bulk-delete-bar');
-  const count = document.getElementById('bulk-count');
-  if (!bar) return;
-  document.addEventListener('change', function(e) {
-    if (!e.target.classList.contains('bulk-check')) return;
-    const checked = document.querySelectorAll('.bulk-check:checked').length;
-    count.textContent = checked + ' post' + (checked === 1 ? '' : 's') + ' selected';
-    bar.style.display = checked > 0 ? 'flex' : 'none';
-  });
-})();
-
-function quotePost(postId) {
-  const postEl = document.getElementById('post-' + postId);
-  const body = postEl ? postEl.querySelector('[data-post-body]') : null;
-  document.getElementById('quote_post_id_field').value = postId;
-
-  const preview = document.getElementById('quote-preview');
-  preview.style.display = 'block';
-  preview.textContent = 'Quoting post #' + postId;
-
-  document.getElementById('reply-form').scrollIntoView({ behavior: 'smooth' });
-}
-</script>

@@ -32,8 +32,8 @@
 
         <button type="submit" class="btn btn-primary btn-sm">Apply to Selected</button>
 
-        <button type="button" class="btn btn-sm" onclick="selectAll()">Select All</button>
-        <button type="button" class="btn btn-sm" onclick="deselectAll()">Deselect All</button>
+        <button type="button" class="btn btn-sm" id="bulk-select-all">Select All</button>
+        <button type="button" class="btn btn-sm" id="bulk-deselect-all">Deselect All</button>
       </div>
 
       <table>
@@ -88,34 +88,3 @@
   </div>
 </div>
 
-<script nonce="<%= content_security_policy_nonce %>">
-  function selectAll()   { document.querySelectorAll(".bulk-cb").forEach(cb => cb.checked = true);  }
-  function deselectAll() { document.querySelectorAll(".bulk-cb").forEach(cb => cb.checked = false); }
-
-  document.getElementById("bulk-form").querySelector("select[name='bulk_action']").addEventListener("change", function() {
-    document.getElementById("move-target").style.display = this.value === "move" ? "inline-block" : "none";
-  });
-
-  document.getElementById("bulk-form").addEventListener("submit", async function(event) {
-    const action = document.querySelector("select[name='bulk_action']").value;
-    const count  = document.querySelectorAll(".bulk-cb:checked").length;
-    if (!action) {
-      event.preventDefault();
-      await window.siteAlert("Please select an action.");
-      return;
-    }
-    if (!count) {
-      event.preventDefault();
-      await window.siteAlert("Please select at least one thread.");
-      return;
-    }
-    if (action === "delete" && !event.target.dataset.confirmed) {
-      event.preventDefault();
-      const confirmed = await window.siteConfirm("Delete " + count + " thread(s)? This cannot be undone.");
-      if (confirmed) {
-        event.target.dataset.confirmed = "1";
-        event.target.requestSubmit();
-      }
-    }
-  });
-</script>

@@ -27,7 +27,7 @@
       <tr style="background:var(--bg4);">
         <td colspan="4" style="padding:0; border-bottom:1px solid var(--border); border-left:3px solid var(--accent);">
           <button
-            onclick="toggleCategory(<%= category.id %>)"
+            data-category-id="<%= category.id %>"
             style="width:100%; background:none; border:none; cursor:pointer; padding:8px 12px; display:flex; align-items:center; justify-content:space-between; gap:8px; text-align:left;"
           >
             <span style="display:flex; align-items:center; gap:8px;">
@@ -84,33 +84,8 @@
   </div>
 <% end %>
 
-<script nonce="<%= content_security_policy_nonce %>">
-  function toggleCategory(id) {
-    var body    = document.getElementById('cat-body-' + id);
-    var chevron = document.getElementById('cat-chevron-' + id);
-    var key     = 'cat-collapsed-' + id;
-    var collapsed = body.style.display === 'none';
-    if (collapsed) {
-      body.style.display = '';
-      chevron.style.transform = '';
-      localStorage.removeItem(key);
-    } else {
-      body.style.display = 'none';
-      chevron.style.transform = 'rotate(-90deg)';
-      localStorage.setItem(key, '1');
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', function() {
-    <% @categories.each do |category| %>
-      if (localStorage.getItem('cat-collapsed-<%= category.id %>') === '1') {
-        var body    = document.getElementById('cat-body-<%= category.id %>');
-        var chevron = document.getElementById('cat-chevron-<%= category.id %>');
-        if (body)    body.style.display = 'none';
-        if (chevron) chevron.style.transform = 'rotate(-90deg)';
-      }
-    <% end %>
-  });
+<script type="application/json" id="category-collapsed-ids">
+  [<%= @categories.map(&:id).join(',') %>]
 </script>
 
 <!-- Forum stats bar -->

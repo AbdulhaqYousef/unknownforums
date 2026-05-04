@@ -108,20 +108,3 @@
   </div>
 </div>
 
-<script nonce="<%= content_security_policy_nonce %>">
-  (() => {
-    const form = document.getElementById("admin-user-search-form");
-    const input = document.getElementById("admin-user-search-input");
-    if (!form || !input) return;
-
-    let timer;
-    input.addEventListener("input", () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => form.requestSubmit(), 450);
-    });
-
-    form.querySelectorAll("select").forEach((select) => {
-      select.addEventListener("change", () => form.requestSubmit());
-    });
-  })();
-</script>

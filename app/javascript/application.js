@@ -58,6 +58,12 @@ document.addEventListener("turbo:load", () => {
     window.Turbo.config.drive.prefetch = false
   }
   initMentionAutocomplete()
+  initFileUpload()
+  initCategoryToggle()
+  initBulkPosts()
+  initQuotePost()
+  initAdminUserSearch()
+  initAdminThreadBulk()
 })
 
 /* ── @mention autocomplete ── */
@@ -216,4 +222,221 @@ function initMentionAutocomplete() {
   document.addEventListener("scroll", () => {
     if (dropdown.style.display !== "none" && currentInput) positionDropdown(currentInput)
   }, true)
+}
+
+/* ── File upload & drag-drop ── */
+function initFileUpload() {
+  const zone  = document.getElementById("file-drop-zone")
+  const input = document.getElementById("file-upload-input")
+  if (!zone || !input) return
+
+  // Drop zone click → open file picker
+  if (!zone._ddInit) {
+    zone._ddInit = true
+    zone.addEventListener("click", () => input.click())
+
+    let dragCounter = 0
+    zone.addEventListener("dragenter", (e) => {
+      e.preventDefault(); e.stopPropagation()
+      dragCounter++
+      zone.style.borderColor = "var(--accent)"
+      zone.style.background  = "rgba(61,159,175,0.07)"
+    })
+    zone.addEventListener("dragleave", (e) => {
+      e.preventDefault(); e.stopPropagation()
+      dragCounter--
+      if (dragCounter <= 0) {
+        dragCounter = 0
+        zone.style.borderColor = "var(--border)"
+        zone.style.background  = ""
+      }
+    })
+    zone.addEventListener("dragover", (e) => { e.preventDefault(); e.stopPropagation() })
+    zone.addEventListener("drop", (e) => {
+      e.preventDefault(); e.stopPropagation()
+      dragCounter = 0
+      zone.style.borderColor = "var(--border)"
+      zone.style.background  = ""
+      const dropped = Array.from(e.dataTransfer.files)
+      if (!dropped.length) return
+      const dt = new DataTransfer()
+      Array.from(input.files).forEach(f => dt.items.add(f))
+      dropped.forEach(f => dt.items.add(f))
+      input.files = dt.files
+      processFiles(Array.from(input.files), input)
+    })
+  }
+
+  input.addEventListener("change", function() { processFiles(Array.from(this.files), this) })
+}
+
+function processFiles(files, inputEl) {
+  const MAX_BYTES = 100 * 1024 * 1024
+  const label   = document.getElementById("file-list-label")
+  const preview = document.getElementById("file-preview-list")
+  const errBox  = document.getElementById("file-size-error")
+  if (!label || !preview || !errBox) return
+
+  preview.innerHTML    = ""
+  errBox.style.display = "none"
+  errBox.textContent   = ""
+  if (!files.length) { label.textContent = ""; return }
+
+  const oversized = files.filter(f => f.size > MAX_BYTES)
+  const form = inputEl ? inputEl.closest("form") : null
+
+  if (oversized.length) {
+    errBox.style.display = "block"
+    errBox.innerHTML = "<strong>File size exceeded (100 MB limit):</strong>"
+      + "<ul style='margin:4px 0 0 16px; padding:0;'>"
+      + oversized.map(f => "<li>" + f.name + " — " + fmtSize(f.size) + "</li>").join("")
+      + "</ul>"
+    if (form) form.querySelectorAll("[type=submit]").forEach(btn => { btn.disabled = true; btn._disabledByFileCheck = true })
+  } else {
+    if (form) form.querySelectorAll("[type=submit]").forEach(btn => {
+      if (btn._disabledByFileCheck) { btn.disabled = false; btn._disabledByFileCheck = false }
+    })
+  }
+
+  const ok = files.filter(f => f.size <= MAX_BYTES)
+  label.textContent = ok.length + " file" + (ok.length !== 1 ? "s" : "") + " ready"
+    + (oversized.length ? " · " + oversized.length + " too large" : "")
+
+  files.forEach(file => {
+    const tooBig = file.size > MAX_BYTES
+    const row = document.createElement("div")
+    row.style.cssText = "font-size:10px; padding:4px 6px; margin-bottom:2px; display:flex; align-items:center; gap:8px;"
+      + "background:" + (tooBig ? "rgba(192,80,80,0.08)" : "rgba(255,255,255,0.02)") + ";"
+      + "border:1px solid " + (tooBig ? "#803030" : "var(--border-dim,#333)") + "; border-radius:2px;"
+    const color = file.type.startsWith("image/") ? "#7fd4e0" : file.type.startsWith("video/") ? "#9b8fff" : file.type.includes("pdf") ? "#f0a060" : file.type.includes("zip") ? "#80c880" : "#aaaaaa"
+    const lbl   = file.type.startsWith("image/") ? "IMG" : file.type.startsWith("video/") ? "VID" : file.type.includes("pdf") ? "PDF" : file.type.includes("zip") ? "ZIP" : "FILE"
+    row.innerHTML = `<span style="padding:1px 5px;font-size:9px;font-weight:bold;border-radius:2px;background:rgba(255,255,255,0.06);color:${color};">${lbl}</span>`
+      + `<span style="flex:1;color:${tooBig ? "#e07070" : "var(--text-bright,#efefef)"};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${file.name}">${file.name}</span>`
+      + `<span style="color:${tooBig ? "#e07070" : "var(--text-muted,#666)"};flex-shrink:0;">${fmtSize(file.size)}</span>`
+      + (tooBig ? `<span style="color:#e07070;font-weight:bold;flex-shrink:0;">✕ Too large</span>` : "")
+    if (file.type.startsWith("image/") && !tooBig) {
+      const img = document.createElement("img")
+      img.style.cssText = "height:36px;width:auto;border-radius:1px;border:1px solid var(--border-dim,#333);flex-shrink:0;"
+      img.src = URL.createObjectURL(file)
+      row.appendChild(img)
+    }
+    preview.appendChild(row)
+  })
+}
+
+function fmtSize(bytes) {
+  return bytes >= 1048576 ? (bytes / 1048576).toFixed(1) + " MB" : (bytes / 1024).toFixed(0) + " KB"
+}
+
+/* ── Category collapse toggle ── */
+function initCategoryToggle() {
+  const meta = document.getElementById("category-collapsed-ids")
+  if (meta) {
+    let ids = []
+    try { ids = JSON.parse(meta.textContent) } catch(e) {}
+    ids.forEach(id => {
+      if (localStorage.getItem("cat-collapsed-" + id) === "1") {
+        const body    = document.getElementById("cat-body-" + id)
+        const chevron = document.getElementById("cat-chevron-" + id)
+        if (body)    body.style.display = "none"
+        if (chevron) chevron.style.transform = "rotate(-90deg)"
+      }
+    })
+  }
+
+  document.querySelectorAll("[data-category-id]").forEach(btn => {
+    if (btn._catInit) return
+    btn._catInit = true
+    btn.addEventListener("click", () => {
+      const id      = btn.dataset.categoryId
+      const body    = document.getElementById("cat-body-" + id)
+      const chevron = document.getElementById("cat-chevron-" + id)
+      const key     = "cat-collapsed-" + id
+      const collapsed = body.style.display === "none"
+      if (collapsed) {
+        body.style.display = ""
+        chevron.style.transform = ""
+        localStorage.removeItem(key)
+      } else {
+        body.style.display = "none"
+        chevron.style.transform = "rotate(-90deg)"
+        localStorage.setItem(key, "1")
+      }
+    })
+  })
+}
+
+/* ── Bulk post checkboxes ── */
+function initBulkPosts() {
+  const bar   = document.getElementById("bulk-delete-bar")
+  const count = document.getElementById("bulk-count")
+  if (!bar || !count) return
+  document.addEventListener("change", function(e) {
+    if (!e.target.classList.contains("bulk-check")) return
+    const checked = document.querySelectorAll(".bulk-check:checked").length
+    count.textContent = checked + " post" + (checked === 1 ? "" : "s") + " selected"
+    bar.style.display = checked > 0 ? "flex" : "none"
+  })
+}
+
+/* ── Quote post ── */
+function initQuotePost() {
+  document.querySelectorAll("[data-quote-post-id]").forEach(link => {
+    if (link._quoteInit) return
+    link._quoteInit = true
+    link.addEventListener("click", (e) => {
+      e.preventDefault()
+      const postId = link.dataset.quotePostId
+      const field   = document.getElementById("quote_post_id_field")
+      const preview = document.getElementById("quote-preview")
+      const form    = document.getElementById("reply-form")
+      if (!field) return
+      field.value = postId
+      if (preview) { preview.style.display = "block"; preview.textContent = "Quoting post #" + postId }
+      if (form)    form.scrollIntoView({ behavior: "smooth" })
+    })
+  })
+}
+
+/* ── Admin user search live filter ── */
+function initAdminUserSearch() {
+  const form  = document.getElementById("admin-user-search-form")
+  const input = document.getElementById("admin-user-search-input")
+  if (!form || !input || form._adminSearchInit) return
+  form._adminSearchInit = true
+  let timer
+  input.addEventListener("input", () => {
+    clearTimeout(timer)
+    timer = setTimeout(() => form.requestSubmit(), 450)
+  })
+  form.querySelectorAll("select").forEach(sel => sel.addEventListener("change", () => form.requestSubmit()))
+}
+
+/* ── Admin thread bulk actions ── */
+function initAdminThreadBulk() {
+  const selectAll   = document.getElementById("bulk-select-all")
+  const deselectAll = document.getElementById("bulk-deselect-all")
+  const bulkForm    = document.getElementById("bulk-form")
+  if (!bulkForm || bulkForm._bulkInit) return
+  bulkForm._bulkInit = true
+
+  if (selectAll)   selectAll.addEventListener("click",   () => document.querySelectorAll(".bulk-cb").forEach(cb => cb.checked = true))
+  if (deselectAll) deselectAll.addEventListener("click", () => document.querySelectorAll(".bulk-cb").forEach(cb => cb.checked = false))
+
+  bulkForm.querySelector("select[name='bulk_action']")?.addEventListener("change", function() {
+    const mt = document.getElementById("move-target")
+    if (mt) mt.style.display = this.value === "move" ? "inline-block" : "none"
+  })
+
+  bulkForm.addEventListener("submit", async function(event) {
+    const action = bulkForm.querySelector("select[name='bulk_action']")?.value
+    const count  = document.querySelectorAll(".bulk-cb:checked").length
+    if (!action) { event.preventDefault(); await window.siteAlert("Please select an action."); return }
+    if (!count)  { event.preventDefault(); await window.siteAlert("Please select at least one thread."); return }
+    if (action === "delete" && !event.target.dataset.confirmed) {
+      event.preventDefault()
+      const ok = await window.siteConfirm("Delete " + count + " thread(s)? This cannot be undone.")
+      if (ok) { event.target.dataset.confirmed = "1"; event.target.requestSubmit() }
+    }
+  })
 }
