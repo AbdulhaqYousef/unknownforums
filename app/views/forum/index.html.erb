@@ -6,67 +6,65 @@
   <script type="application/ld+json"><%= website_jsonld %></script>
 <% end %>
 
-<!-- Forum stats bar -->
-<div style="background:#242424; border:1px solid #444; padding:5px 10px; margin-bottom:8px; font-size:11px; color:#888; display:flex; justify-content:space-between;">
-  <span>
-    <strong style="color:#cfcfcf;">Welcome to the Forums</strong>
-  </span>
+<!-- Welcome bar -->
+<div style="background:var(--bg3); border:1px solid var(--border); border-left:3px solid var(--accent); padding:7px 12px; margin-bottom:10px; font-size:11px; color:var(--text-dim); display:flex; justify-content:space-between; align-items:center; border-radius:0 3px 3px 0;">
+  <span><strong style="color:var(--text-bright);">Welcome to <%= forum_name %></strong></span>
   <span>
     <% if logged_in? %>
-      Welcome back, <a href="<%= user_path(current_user) %>"><%= current_user.username %></a>
+      Welcome back, <a href="<%= user_path(current_user) %>" style="color:var(--accent); font-weight:bold;"><%= current_user.username %></a>
     <% else %>
-      <a href="<%= register_path %>">Register</a> or <a href="<%= login_path %>">Login</a>
+      <a href="<%= register_path %>" class="btn btn-primary btn-sm">Register</a>
+      &nbsp;
+      <a href="<%= login_path %>" class="btn btn-sm">Sign in</a>
     <% end %>
   </span>
 </div>
 
 <% @categories.each do |category| %>
-  <!-- Category block -->
-  <div style="margin-bottom:12px;">
-    <!-- Category header -->
-    <table style="border:1px solid #444;">
-      <tr style="background:#303030;">
-        <td colspan="4" style="padding:6px 10px; font-size:13px; font-weight:bold; color:#e0e0e0; border-bottom:1px solid #444;">
+  <div style="margin-bottom:14px;">
+    <table style="border:1px solid var(--border); border-radius:3px; overflow:hidden;">
+      <tr style="background:var(--bg4);">
+        <td colspan="4" style="padding:8px 12px; font-size:13px; font-weight:bold; color:var(--text-bright); border-bottom:1px solid var(--border); border-left:3px solid var(--accent);">
           <%= category.name %>
           <% if category.description.present? %>
-            <span style="font-size:10px; color:#888; font-weight:normal; margin-left:8px;"><%= category.description %></span>
+            <span style="font-size:10px; color:var(--text-dim); font-weight:normal; margin-left:8px;"><%= category.description %></span>
           <% end %>
         </td>
       </tr>
-      <tr style="background:#222; font-size:10px; color:#666; text-transform:uppercase;">
-        <th style="width:50%; text-align:left; padding:3px 10px;">Forum</th>
+      <tr style="background:var(--bg2); font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">
+        <th style="width:50%; text-align:left; padding:4px 12px;">Forum</th>
         <th style="width:10%; text-align:center;">Threads</th>
         <th style="width:10%; text-align:center;">Posts</th>
-        <th style="width:30%; text-align:left;">Last Post</th>
+        <th style="width:30%; text-align:left; padding:4px 10px;">Last Post</th>
       </tr>
 
       <% category.subforums.each_with_index do |subforum, i| %>
         <% last_post = @last_post_by_subforum[subforum.id] %>
-        <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
-          <td style="padding:8px 10px;">
-            <div style="display:flex; align-items:flex-start; gap:8px;">
-              <div style="width:36px; height:28px; background:#303030; border:1px solid #444; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:9px; color:#888; font-weight:bold;">
-                FORUM
+        <tr style="background:<%= i.even? ? 'var(--bg3)' : 'var(--bg2)' %>; border-top:1px solid var(--border-dim);">
+          <td style="padding:9px 12px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div style="width:32px; height:32px; background:var(--accent-dim); flex-shrink:0; display:flex; align-items:center; justify-content:center; border-radius:3px; opacity:0.85;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c8eef4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               </div>
               <div>
-                <a href="<%= subforum_path(subforum) %>" style="font-size:13px; font-weight:bold; color:#a8c8f0;"><%= subforum.name %></a>
+                <a href="<%= subforum_path(subforum) %>" style="font-size:13px; font-weight:bold; color:var(--link-hover);"><%= subforum.name %></a>
                 <% if subforum.description.present? %>
-                  <div style="font-size:11px; color:#888; margin-top:2px;"><%= subforum.description %></div>
+                  <div style="font-size:11px; color:var(--text-dim); margin-top:2px;"><%= subforum.description %></div>
                 <% end %>
               </div>
             </div>
           </td>
-          <td style="text-align:center; font-size:12px; color:#cfcfcf;"><%= subforum.threads_count %></td>
-          <td style="text-align:center; font-size:12px; color:#cfcfcf;"><%= subforum.posts_count %></td>
-          <td style="font-size:11px; color:#888;">
+          <td style="text-align:center; font-size:12px; color:var(--text);"><%= subforum.threads_count %></td>
+          <td style="text-align:center; font-size:12px; color:var(--text);"><%= subforum.posts_count %></td>
+          <td style="font-size:11px; color:var(--text-dim); padding:9px 10px;">
             <% if last_post %>
-              <div><a href="<%= forum_thread_path(last_post["thread_id"]) %>" style="color:#7aabde; font-size:11px;"><%= truncate(last_post["thread_title"], length: 40) %></a></div>
-              <div style="margin-top:2px;">
-                by <a href="<%= user_path(last_post["user_id"]) %>"><%= last_post["username"] %></a>
+              <div><a href="<%= forum_thread_path(last_post["thread_id"]) %>" style="font-size:11px;"><%= truncate(last_post["thread_title"], length: 40) %></a></div>
+              <div style="margin-top:2px; font-size:10px; color:var(--text-muted);">
+                by <a href="<%= user_path(last_post["user_id"]) %>" style="color:var(--text-dim);"><%= last_post["username"] %></a>
                 &mdash; <%= time_ago_in_words(last_post["post_created_at"]) %> ago
               </div>
             <% else %>
-              <span style="color:#555;">No posts yet</span>
+              <span style="color:var(--text-muted);">No posts yet</span>
             <% end %>
           </td>
         </tr>
@@ -75,12 +73,11 @@
   </div>
 <% end %>
 
-<!-- Forum stats footer -->
-<div style="background:#242424; border:1px solid #444; padding:6px 10px; font-size:11px; color:#888; margin-top:4px;">
-  <strong style="color:#cfcfcf;">Forum Statistics:</strong>
-  Threads: <strong><%= @stats[:threads] %></strong> &nbsp;|&nbsp;
-  Posts: <strong><%= @stats[:posts] %></strong> &nbsp;|&nbsp;
-  Members: <strong><%= @stats[:members] %></strong> &nbsp;|&nbsp;
-  Files: <strong><%= @stats[:files] %></strong> &nbsp;|&nbsp;
-  Downloads: <strong><%= @stats[:downloads] %></strong>
+<!-- Forum stats bar -->
+<div style="background:var(--bg3); border:1px solid var(--border); padding:7px 12px; font-size:11px; color:var(--text-dim); margin-top:4px; display:flex; gap:20px; flex-wrap:wrap; border-radius:3px;">
+  <span><span style="color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">Threads</span> <strong style="color:var(--text); margin-left:4px;"><%= @stats[:threads] %></strong></span>
+  <span><span style="color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">Posts</span> <strong style="color:var(--text); margin-left:4px;"><%= @stats[:posts] %></strong></span>
+  <span><span style="color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">Members</span> <strong style="color:var(--text); margin-left:4px;"><%= @stats[:members] %></strong></span>
+  <span><span style="color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">Files</span> <strong style="color:var(--text); margin-left:4px;"><%= @stats[:files] %></strong></span>
+  <span><span style="color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">Downloads</span> <strong style="color:var(--text); margin-left:4px;"><%= @stats[:downloads] %></strong></span>
 </div>
