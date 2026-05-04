@@ -96,7 +96,8 @@ Rails.application.routes.draw do
     resources :site_pages,    only: %i[index edit update]
     resources :attack_events, only: %i[index]
     resources :audit_logs,    only: %i[index]
-    resource  :site_settings, only: %i[index update]
+    get   "site_settings",        to: "site_settings#index",  as: :site_settings
+    patch "site_settings",        to: "site_settings#update"
     patch "bulk_threads", to: "bulk_threads#update", as: :bulk_threads
     get "forums", to: "forums#index", as: :forums
     get "file_leaderboard", to: "file_leaderboard#index", as: :file_leaderboard
