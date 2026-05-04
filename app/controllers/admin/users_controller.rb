@@ -3,7 +3,7 @@ class Admin::UsersController < ApplicationController
   before_action :set_user, only: %i[show edit update ban unban flag unflag]
 
   def index
-    @users = User.order(created_at: :desc)
+    @users = User.includes(moderated_categories: []).order(created_at: :desc)
     @users = search_users(@users) if params[:q].present?
     @users = @users.where(role: params[:role]) if params[:role].present? && User.roles.key?(params[:role])
     @users = @users.where(banned: true) if params[:status] == "banned"

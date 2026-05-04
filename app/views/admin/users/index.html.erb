@@ -34,13 +34,14 @@
       <th style="padding:4px 10px; text-align:left;">Email</th>
       <th style="padding:4px 10px; text-align:left;">Old Names</th>
       <th style="padding:4px 10px; text-align:center;">Role</th>
+      <th style="padding:4px 10px; text-align:left;">Staff Of</th>
       <th style="padding:4px 10px; text-align:center;">Rep</th>
       <th style="padding:4px 10px; text-align:center;">Posts</th>
       <th style="padding:4px 10px; text-align:center;">Status</th>
       <th style="padding:4px 10px; text-align:center;">Actions</th>
     </tr>
     <% if @users.empty? %>
-      <tr><td colspan="8" style="padding:20px; text-align:center; color:#666; font-size:12px;">No users matched your filters.</td></tr>
+      <tr><td colspan="9" style="padding:20px; text-align:center; color:#666; font-size:12px;">No users matched your filters.</td></tr>
     <% end %>
     <% @users.each_with_index do |user, i| %>
       <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
@@ -56,7 +57,17 @@
             —
           <% end %>
         </td>
-        <td style="padding:7px 10px; text-align:center; font-size:11px;"><%= user.role.capitalize %></td>
+        <td style="padding:7px 10px; text-align:center; font-size:11px;">
+          <%= user.role.capitalize %>
+        </td>
+        <td style="padding:7px 10px; font-size:10px; color:#888;">
+          <% cats = user.moderated_categories %>
+          <% if cats.any? %>
+            <%= cats.map(&:name).join(", ") %>
+          <% else %>
+            <span style="color:#555;">—</span>
+          <% end %>
+        </td>
         <td style="padding:7px 10px; text-align:center; font-size:12px;"><%= rep_label(user.reputation) %></td>
         <td style="padding:7px 10px; text-align:center; font-size:12px;"><%= user.post_count %></td>
         <td style="padding:7px 10px; text-align:center;">
