@@ -20,6 +20,8 @@ export default class extends Controller {
         tooltips:    { controls: true, seek: true },
         captions:    { active: false },
         ratio:       undefined,
+        loadSprite:  false,
+        iconUrl:     "https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.svg",
       })
     })
   }
