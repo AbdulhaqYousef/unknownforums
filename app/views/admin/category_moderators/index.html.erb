@@ -1,0 +1,65 @@
+<% content_for :title, "Staff — #{@category.name}" %>
+
+<div style="margin-bottom:10px; display:flex; align-items:center; gap:10px;">
+  <%= link_to "← Categories", admin_categories_path, class: "btn btn-sm" %>
+  <span style="font-size:13px; font-weight:bold; color:#e0e0e0;">Staff for: <%= @category.name %></span>
+</div>
+
+<div class="panel" style="margin-bottom:16px;">
+  <div class="panel-header">Current Staff</div>
+  <div class="panel-body" style="padding:0;">
+    <% if @staff.any? %>
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="background:#222; font-size:10px; color:#666; text-transform:uppercase;">
+            <th style="text-align:left; padding:5px 10px;">Username</th>
+            <th style="text-align:left; padding:5px 10px;">Role</th>
+            <th style="text-align:left; padding:5px 10px;">Joined</th>
+            <th style="padding:5px 10px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @staff.each do |user| %>
+            <tr style="border-top:1px solid #333;">
+              <td style="padding:7px 10px; font-size:12px;">
+                <%= link_to user.username, admin_user_path(user), style: "color:#cfcfcf;" %>
+              </td>
+              <td style="padding:7px 10px; font-size:11px; color:#888;">
+                <%= user.role.capitalize %>
+              </td>
+              <td style="padding:7px 10px; font-size:11px; color:#888;">
+                <%= user.created_at.strftime("%m/%d/%Y") %>
+              </td>
+              <td style="padding:7px 10px; text-align:right;">
+                <% cm = @category.category_moderators.find_by(user: user) %>
+                <%= button_to "Remove", admin_category_category_moderator_path(@category, cm),
+                      method: :delete, class: "btn btn-danger btn-sm",
+                      data: { turbo_confirm: "Remove #{user.username} from #{@category.name} staff?" } %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <div style="padding:14px; color:#666; font-size:12px;">No staff assigned to this category yet.</div>
+    <% end %>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">Add Staff Member</div>
+  <div class="panel-body">
+    <%= form_with url: admin_category_category_moderators_path(@category), method: :post do |f| %>
+      <div style="display:flex; gap:8px; align-items:flex-end;">
+        <div style="flex:1;">
+          <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Select User</label>
+          <%= f.select :user_id,
+                @available_users.map { |u| [u.username, u.id] },
+                { include_blank: "— choose a user —" },
+                style: "width:100%;" %>
+        </div>
+        <%= f.submit "Add to Staff", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

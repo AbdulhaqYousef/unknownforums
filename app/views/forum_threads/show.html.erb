@@ -39,7 +39,7 @@
   </span>
   <div class="action-group">
     <!-- Thread tools for mods -->
-    <% if moderator_or_admin? %>
+    <% if can_moderate_thread?(@thread) %>
       <% if @thread.locked? %>
         <%= button_to "Unlock", unlock_forum_thread_path(@thread), method: :patch, class: "btn btn-sm" %>
       <% else %>
@@ -87,7 +87,7 @@
       thread: @thread,
       post_number: (@posts.current_page - 1) * 20 + i + 1,
       viewer: current_user,
-      can_moderate: moderator_or_admin? %>
+      can_moderate: can_moderate_thread?(@thread) %>
   <% end %>
 </div>
 

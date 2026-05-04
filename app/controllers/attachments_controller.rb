@@ -17,14 +17,14 @@ class AttachmentsController < ApplicationController
 
   def approve
     require_login
-    require_admin
+    require_attachment_moderator
     @attachment.update!(approved: true)
     redirect_back fallback_location: downloads_path, notice: "File approved."
   end
 
   def unapprove
     require_login
-    require_admin
+    require_attachment_moderator
     @attachment.update!(approved: false)
     redirect_back fallback_location: downloads_path, notice: "File approval revoked."
   end
@@ -95,5 +95,19 @@ class AttachmentsController < ApplicationController
     return if message.sender == current_user || message.recipient == current_user
 
     redirect_to private_messages_path, alert: "You cannot access that file."
+  end
+
+  def require_attachment_moderator
+    return if moderator_or_admin?
+    return if attachment_category_moderator?
+    redirect_to root_path, alert: "Access denied."
+  end
+
+  def attachment_category_moderator?
+    return false unless current_user
+    attachable = @attachment.attachable
+    return false unless attachable.is_a?(Post) || attachable.is_a?(ForumThread)
+    thread = attachable.is_a?(Post) ? attachable.thread : attachable
+    current_user.can_moderate_category?(thread.subforum.category)
   end
 end

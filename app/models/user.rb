@@ -17,6 +17,8 @@ class User < ApplicationRecord
   has_many :thread_subscriptions, dependent: :destroy
   has_many :subscribed_threads, through: :thread_subscriptions, source: :forum_thread
   has_many :notifications, foreign_key: :recipient_id, dependent: :destroy
+  has_many :category_moderators, dependent: :destroy
+  has_many :moderated_categories, through: :category_moderators, source: :category
 
   has_one_attached :avatar
 
@@ -44,6 +46,15 @@ class User < ApplicationRecord
 
   def can_moderate?
     moderator? || admin?
+  end
+
+  def can_moderate_category?(category)
+    return true if can_moderate?
+    category_moderators.exists?(category: category)
+  end
+
+  def category_staff?
+    can_moderate? || category_moderators.exists?
   end
 
   def unread_messages_count

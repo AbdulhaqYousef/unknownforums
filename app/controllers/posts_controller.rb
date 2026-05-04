@@ -71,6 +71,8 @@ class PostsController < ApplicationController
   end
 
   def authorize_post!
-    require_owner_or_moderator(@post.user)
+    unless current_user == @post.user || can_moderate_thread?(@thread)
+      redirect_to root_path, alert: "Access denied."
+    end
   end
 end

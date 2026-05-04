@@ -11,7 +11,7 @@ class ApplicationController < ActionController::Base
   before_action :check_banned
   before_action :set_admin_summary, if: :show_admin_summary?
 
-  helper_method :current_user, :logged_in?, :admin?, :moderator_or_admin?
+  helper_method :current_user, :logged_in?, :admin?, :moderator_or_admin?, :can_moderate_thread?
 
   private
 

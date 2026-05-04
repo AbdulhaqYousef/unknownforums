@@ -1,7 +1,7 @@
 class ForumThreadsController < ApplicationController
   before_action :set_thread, only: %i[show edit update destroy lock unlock pin unpin move]
   before_action :require_login
-  before_action :require_moderator, only: %i[lock unlock pin unpin move destroy]
+  before_action :require_category_staff, only: %i[lock unlock pin unpin move destroy]
 
   def show
     viewed = session[:viewed_threads] || []
@@ -49,11 +49,11 @@ class ForumThreadsController < ApplicationController
   end
 
   def edit
-    require_owner_or_moderator(@thread.user)
+    require_owner_or_category_staff
   end
 
   def update
-    require_owner_or_moderator(@thread.user)
+    require_owner_or_category_staff
     @thread.assign_attributes(thread_update_params)
     @thread.edited_at = Time.current if @thread.title_changed?
     if @thread.save
@@ -98,7 +98,19 @@ class ForumThreadsController < ApplicationController
   private
 
   def set_thread
-    @thread = ForumThread.find(params[:id])
+    @thread = ForumThread.includes(subforum: :category).find(params[:id])
+  end
+
+  def require_category_staff
+    unless can_moderate_thread?(@thread)
+      redirect_to root_path, alert: "Access denied."
+    end
+  end
+
+  def require_owner_or_category_staff
+    unless current_user == @thread.user || can_moderate_thread?(@thread)
+      redirect_to root_path, alert: "Access denied."
+    end
   end
 
   def thread_params
