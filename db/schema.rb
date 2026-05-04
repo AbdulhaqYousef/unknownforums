@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_04_093600) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_04_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -84,6 +84,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_093600) do
     t.index ["occurred_at"], name: "index_attack_events_on_occurred_at"
   end
 
+  create_table "audit_logs", force: :cascade do |t|
+    t.string "action", null: false
+    t.bigint "actor_id", null: false
+    t.datetime "created_at", null: false
+    t.text "details"
+    t.string "ip_address"
+    t.bigint "target_id"
+    t.string "target_type"
+    t.datetime "updated_at", null: false
+    t.index ["actor_id"], name: "index_audit_logs_on_actor_id"
+    t.index ["created_at"], name: "index_audit_logs_on_created_at"
+    t.index ["target_type", "target_id"], name: "index_audit_logs_on_target_type_and_target_id"
+  end
+
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "description"
@@ -91,6 +105,51 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_093600) do
     t.integer "position", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["position"], name: "index_categories_on_position"
+  end
+
+  create_table "category_moderators", force: :cascade do |t|
+    t.bigint "category_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["category_id"], name: "index_category_moderators_on_category_id"
+    t.index ["user_id", "category_id"], name: "index_category_moderators_on_user_id_and_category_id", unique: true
+    t.index ["user_id"], name: "index_category_moderators_on_user_id"
+  end
+
+  create_table "download_histories", force: :cascade do |t|
+    t.bigint "attachment_id", null: false
+    t.datetime "created_at", null: false
+    t.string "ip_address"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["attachment_id"], name: "index_download_histories_on_attachment_id"
+    t.index ["created_at"], name: "index_download_histories_on_created_at"
+    t.index ["user_id", "attachment_id"], name: "index_download_histories_on_user_id_and_attachment_id"
+    t.index ["user_id"], name: "index_download_histories_on_user_id"
+  end
+
+  create_table "file_comments", force: :cascade do |t|
+    t.bigint "attachment_id", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.boolean "deleted", default: false, null: false
+    t.integer "rating"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["attachment_id", "deleted"], name: "index_file_comments_on_attachment_id_and_deleted"
+    t.index ["attachment_id"], name: "index_file_comments_on_attachment_id"
+    t.index ["user_id"], name: "index_file_comments_on_user_id"
+  end
+
+  create_table "file_tags", force: :cascade do |t|
+    t.bigint "attachment_id", null: false
+    t.datetime "created_at", null: false
+    t.string "tag", null: false
+    t.datetime "updated_at", null: false
+    t.index ["attachment_id", "tag"], name: "index_file_tags_on_attachment_id_and_tag", unique: true
+    t.index ["attachment_id"], name: "index_file_tags_on_attachment_id"
+    t.index ["tag"], name: "index_file_tags_on_tag"
   end
 
   create_table "forum_threads", force: :cascade do |t|
@@ -215,6 +274,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_093600) do
     t.bigint "updated_by_id"
     t.index ["slug"], name: "index_site_pages_on_slug", unique: true
     t.index ["updated_by_id"], name: "index_site_pages_on_updated_by_id"
+  end
+
+  create_table "site_settings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "key", null: false
+    t.datetime "updated_at", null: false
+    t.text "value"
+    t.index ["key"], name: "index_site_settings_on_key", unique: true
   end
 
   create_table "solid_cable_messages", force: :cascade do |t|
@@ -394,6 +461,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_093600) do
     t.index ["user_id"], name: "index_thread_subscriptions_on_user_id"
   end
 
+  create_table "trophies", force: :cascade do |t|
+    t.datetime "awarded_at", null: false
+    t.datetime "created_at", null: false
+    t.string "description"
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "slug"], name: "index_trophies_on_user_id_and_slug", unique: true
+    t.index ["user_id"], name: "index_trophies_on_user_id"
+  end
+
   create_table "user_warnings", force: :cascade do |t|
     t.boolean "acknowledged", default: false, null: false
     t.datetime "created_at", null: false
@@ -414,6 +493,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_093600) do
     t.boolean "banned", default: false, null: false
     t.datetime "created_at", null: false
     t.string "email"
+    t.boolean "email_on_mention", default: true, null: false
+    t.boolean "email_on_reply", default: true, null: false
+    t.boolean "email_on_thread_reply", default: true, null: false
     t.integer "email_otp_attempts", default: 0, null: false
     t.string "email_otp_digest"
     t.datetime "email_otp_expires_at"
@@ -462,6 +544,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_093600) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "attachments", "users"
+  add_foreign_key "audit_logs", "users", column: "actor_id"
+  add_foreign_key "category_moderators", "categories"
+  add_foreign_key "category_moderators", "users"
+  add_foreign_key "download_histories", "attachments"
+  add_foreign_key "download_histories", "users"
+  add_foreign_key "file_comments", "attachments"
+  add_foreign_key "file_comments", "users"
+  add_foreign_key "file_tags", "attachments"
   add_foreign_key "forum_threads", "subforums"
   add_foreign_key "forum_threads", "users"
   add_foreign_key "notifications", "users", column: "actor_id"
@@ -490,6 +580,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_093600) do
   add_foreign_key "subforums", "categories"
   add_foreign_key "thread_subscriptions", "forum_threads"
   add_foreign_key "thread_subscriptions", "users"
+  add_foreign_key "trophies", "users"
   add_foreign_key "user_warnings", "users"
   add_foreign_key "user_warnings", "users", column: "warned_by_id"
 end
