@@ -64,7 +64,29 @@ document.addEventListener("turbo:load", () => {
   }
   initMentionAutocomplete()
   initFileUpload()
+  initVideoJS()
 })
+
+/* ── Video.js player init ── */
+function initVideoJS() {
+  if (typeof window.videojs === "undefined") return
+  document.querySelectorAll("video.video-js").forEach(el => {
+    if (el._vjsInit) return
+    el._vjsInit = true
+    window.videojs(el, {
+      fluid: true,
+      responsive: true,
+      playbackRates: [0.5, 1, 1.25, 1.5, 2],
+      controlBar: {
+        children: [
+          "playToggle", "volumePanel", "currentTimeDisplay", "timeDivider",
+          "durationDisplay", "progressControl", "playbackRateMenuButton",
+          "fullscreenToggle"
+        ]
+      }
+    })
+  })
+}
 
 /* ── File upload drop zone ── */
 function initFileUpload() {

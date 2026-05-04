@@ -26,6 +26,8 @@
     <%= csp_meta_tag %>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/video.js@8.21.0/dist/video-js.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/video.js@8.21.0/dist/video.min.js" nonce="<%= content_security_policy_nonce %>"></script>
     <%= javascript_importmap_tags %>
     <style>
       :root {
@@ -231,6 +233,24 @@
       .markdown-body a { color: var(--link); }
       .mention { color: var(--accent) !important; font-weight: bold; background: rgba(61,159,175,0.1); padding: 0 3px; border-radius: 2px; }
       .mention:hover { background: rgba(61,159,175,0.2); text-decoration: none; }
+
+      /* ── Video.js dark theme ── */
+      .video-js { background:#000; font-family:Verdana,Arial,sans-serif; }
+      .video-js .vjs-control-bar { background:rgba(0,0,0,0.75); }
+      .video-js .vjs-play-progress,
+      .video-js .vjs-volume-level { background:#3d9faf; }
+      .video-js .vjs-slider { background:rgba(255,255,255,0.12); }
+      .video-js .vjs-load-progress { background:rgba(61,159,175,0.25); }
+      .video-js .vjs-big-play-button {
+        border-color:#3d9faf; background:rgba(0,0,0,0.55);
+        border-radius:4px; width:60px; height:40px; line-height:40px;
+        top:50%; left:50%; transform:translate(-50%,-50%); margin:0;
+      }
+      .video-js:hover .vjs-big-play-button,
+      .video-js .vjs-big-play-button:focus { background:rgba(61,159,175,0.35); }
+      .video-js .vjs-menu-item.vjs-selected,
+      .video-js .vjs-menu-item:focus { background:#3d9faf; color:#fff; }
+      .vjs-fluid { padding-top:0 !important; max-height:420px; }
 
       /* ── Online indicators ── */
       .uc-user-online { display: inline-block; width: 7px; height: 7px; background: #50c050; border-radius: 50%; margin-left: 3px; }

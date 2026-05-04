@@ -5,8 +5,10 @@
 
 <% if attachment.video? %>
   <div style="background:#1e1e1e; border:1px solid #333; border-radius:3px; margin-bottom:6px; overflow:hidden;">
-    <video controls preload="metadata" playsinline
-           style="width:100%; max-height:420px; background:#000; display:block;">
+    <video class="video-js vjs-theme-forum"
+           controls preload="metadata" playsinline
+           data-setup="{}"
+           style="width:100%; max-height:420px;">
       <%= tag.source src: rails_blob_url(attachment.file), type: attachment.content_type %>
     </video>
     <div style="padding:5px 8px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; border-top:1px solid #2a2a2a;">
