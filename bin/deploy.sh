@@ -10,7 +10,8 @@
 
 set -e
 
-APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Auto-detect app directory, or fallback to fixed path
+APP_DIR="${FORUMS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$APP_DIR"
 
 NO_CACHE=false
@@ -91,6 +92,11 @@ fi
 echo "=========================================="
 echo "✅ Deploy complete!"
 echo "=========================================="
+echo ""
+echo "💡 Tip: Install 'forums-deploy' system-wide:"
+echo "   sudo cp bin/forums-deploy /usr/local/bin/"
+echo "   sudo chmod +x /usr/local/bin/forums-deploy"
+echo "   Then run 'forums-deploy' from anywhere"
 echo ""
 echo "Container status:"
 docker compose ps

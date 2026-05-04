@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# System-wide deploy command for UnknownForums
+# Install: sudo cp bin/forums-deploy /usr/local/bin/
+# Usage: forums-deploy [--no-cache] [--full]
+#
+
+APP_DIR="/opt/forums"  # Adjust this to your actual app path
+DEPLOY_SCRIPT="$APP_DIR/bin/deploy.sh"
+
+if [ ! -f "$DEPLOY_SCRIPT" ]; then
+    echo "❌ Error: Deploy script not found at $DEPLOY_SCRIPT"
+    echo "Please update APP_DIR in /usr/local/bin/forums-deploy to match your installation"
+    exit 1
+fi
+
+cd "$APP_DIR" || exit 1
+exec "$DEPLOY_SCRIPT" "$@"
