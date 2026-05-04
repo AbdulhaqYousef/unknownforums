@@ -33,9 +33,10 @@ class PrivateMessagesController < ApplicationController
 
     @message = PrivateMessage.new(message_params.merge(sender: current_user, recipient: recipient))
     if @message.save
-      AttachmentCreator.attach(attachable: @message, user: current_user, files: params[:files])
+      attach_errors = AttachmentCreator.attach(attachable: @message, user: current_user, files: params[:files])
       broadcast_message
       broadcast_message_badge(recipient)
+      flash[:alert] = "Some files could not be attached: #{attach_errors.join('; ')}" if attach_errors.any?
       redirect_to private_messages_path, notice: "Message sent."
     else
       render :new, status: :unprocessable_entity

@@ -8,8 +8,9 @@ class PostsController < ApplicationController
     @post = service.call
 
     if @post
-      AttachmentCreator.attach(attachable: @post, user: current_user, files: params[:files])
+      attach_errors = AttachmentCreator.attach(attachable: @post, user: current_user, files: params[:files])
       broadcast_post
+      flash[:alert] = "Some files could not be attached: #{attach_errors.join('; ')}" if attach_errors.any?
       redirect_to forum_thread_path(@thread, anchor: "post-#{@post.id}"), notice: "Reply posted."
     else
       redirect_to forum_thread_path(@thread), alert: service.errors.join(", ")
@@ -25,7 +26,8 @@ class PostsController < ApplicationController
     @post.assign_attributes(post_params)
     @post.edited_at = Time.current if @post.body_changed?
     if @post.save
-      AttachmentCreator.attach(attachable: @post, user: current_user, files: params[:files])
+      attach_errors = AttachmentCreator.attach(attachable: @post, user: current_user, files: params[:files])
+      flash[:alert] = "Some files could not be attached: #{attach_errors.join('; ')}" if attach_errors.any?
       redirect_to forum_thread_path(@thread, anchor: "post-#{@post.id}"), notice: "Post updated."
     else
       render :edit, status: :unprocessable_entity

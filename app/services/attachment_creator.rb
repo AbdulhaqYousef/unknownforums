@@ -2,6 +2,7 @@ require "securerandom"
 
 class AttachmentCreator
   def self.attach(attachable:, user:, files:)
+    errors = []
     Array(files).compact.select { |f| f.respond_to?(:original_filename) }.each do |file|
       content_type = file.content_type.presence || "application/octet-stream"
       stored_filename = stored_filename_for(attachable, file.original_filename)
@@ -15,9 +16,16 @@ class AttachmentCreator
       )
       attach_file(attachment, file, attachable, user, content_type)
       if attachment.save
-        VirusTotalScanJob.perform_later(attachment.id)
+        if attachment.vt_scannable?
+          VirusTotalScanJob.perform_later(attachment.id)
+        else
+          attachment.update_columns(vt_status: "skipped", approved: true)
+        end
+      else
+        errors << "#{file.original_filename}: #{attachment.errors.full_messages.join(', ')}"
       end
     end
+    errors
   end
 
   def self.attach_file(attachment, file, attachable, user, content_type)

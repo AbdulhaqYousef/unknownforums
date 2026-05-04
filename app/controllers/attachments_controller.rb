@@ -62,7 +62,11 @@ class AttachmentsController < ApplicationController
     AttachmentCreator.attach_file(new_att, file, root.attachable, current_user, content_type)
 
     if new_att.save
-      VirusTotalScanJob.perform_later(new_att.id)
+      if new_att.vt_scannable?
+        VirusTotalScanJob.perform_later(new_att.id)
+      else
+        new_att.update_columns(vt_status: "skipped", approved: true)
+      end
       redirect_back fallback_location: root_path, notice: "Version #{next_version} uploaded."
     else
       redirect_to new_version_attachment_path(@attachment),

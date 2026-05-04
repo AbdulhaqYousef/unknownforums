@@ -10,6 +10,11 @@ class Attachment < ApplicationRecord
   BLOCKED_EXTENSIONS = %w[exe bat cmd sh ps1 vbs js dll msi dmg].freeze
   MAX_SIZE = 100.megabytes
 
+  VT_SCAN_TYPES = %w[
+    application/zip application/x-zip-compressed
+    application/x-bittorrent application/pdf
+  ].freeze
+
   belongs_to :attachable, polymorphic: true
   belongs_to :user
   belongs_to :parent_attachment, class_name: "Attachment", optional: true
@@ -17,8 +22,8 @@ class Attachment < ApplicationRecord
   has_one_attached :file
 
   validates :filename, presence: true
-  validates :content_type, inclusion: { in: ALLOWED_TYPES, message: "is not an allowed file type" }
-  validates :byte_size, numericality: { less_than_or_equal_to: MAX_SIZE, message: "exceeds 100MB limit" }
+  validates :content_type, inclusion: { in: ALLOWED_TYPES, message: "is not an allowed type. Allowed: images, videos, ZIP, PDF, plain text, torrent" }
+  validates :byte_size, numericality: { less_than_or_equal_to: MAX_SIZE, message: "is too large — maximum upload size is 100 MB" }
   validate :extension_not_blocked
 
   VT_STATUSES = %w[pending scanning clean suspicious malicious skipped].freeze
@@ -31,7 +36,7 @@ class Attachment < ApplicationRecord
   scope :public_downloads, -> { where(attachable_type: "Post") }
 
   def vt_scannable?
-    file.attached?
+    file.attached? && VT_SCAN_TYPES.include?(content_type)
   end
 
   def dm_file?
@@ -111,7 +116,7 @@ class Attachment < ApplicationRecord
   private
 
   def extension_not_blocked
-    ext = File.extname(filename).delete(".").downcase
-    errors.add(:filename, "has a blocked extension") if BLOCKED_EXTENSIONS.include?(ext)
+    ext = File.extname(filename.to_s).delete(".").downcase
+    errors.add(:filename, "has a blocked extension (.#{ext} files are not permitted)") if BLOCKED_EXTENSIONS.include?(ext)
   end
 end
