@@ -1,5 +1,5 @@
 class ForumThreadsController < ApplicationController
-  before_action :set_thread, only: %i[show edit update destroy lock unlock pin unpin move]
+  before_action :set_thread, only: %i[show edit update destroy lock unlock pin unpin move bulk_delete_posts]
   before_action :require_login
   before_action :require_category_staff, only: %i[lock unlock pin unpin move destroy]
 
@@ -111,7 +111,7 @@ class ForumThreadsController < ApplicationController
 
     post_ids = params[:post_ids].map(&:to_i)
     posts    = @thread.posts.where(id: post_ids)
-    count    = posts.update_all(deleted: true)
+    count    = posts.each { |p| p.update!(deleted: true) }.size
     AuditLog.record(actor: current_user, action: "bulk_delete_posts", target: @thread,
                     details: "Deleted #{count} post(s): IDs #{post_ids.join(', ')}", ip: request.ip)
     redirect_to forum_thread_path(@thread), notice: "#{count} post(s) deleted."
