@@ -25,7 +25,7 @@
 # Any libraries that use a connection pool or another resource pool should
 # be configured to provide at least as many connections as the number of
 # threads. This includes Active Record's `pool` parameter in `database.yml`.
-threads_count = ENV.fetch("RAILS_MAX_THREADS", 3)
+threads_count = ENV.fetch("RAILS_MAX_THREADS", 3).to_i
 threads threads_count, threads_count
 
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
@@ -34,7 +34,8 @@ port ENV.fetch("PORT", 4251)
 # Specifies the number of `workers` to boot in clustered mode.
 # Workers are forked web server processes. If using threads and workers together
 # the concurrency of the application would be max `threads` * `workers`.
-web_concurrency = ENV.fetch("WEB_CONCURRENCY", 0).to_i
+# Default to 2 workers in production for concurrency; override with WEB_CONCURRENCY env var.
+web_concurrency = ENV.fetch("WEB_CONCURRENCY", ENV["RAILS_ENV"] == "production" ? 2 : 0).to_i
 workers web_concurrency if ENV["RAILS_ENV"] == "production" && web_concurrency > 0
 
 # Use the `preload_app!` method when specifying a `workers` number.

@@ -5,13 +5,16 @@ class SiteSetting < ApplicationRecord
   validates :key, presence: true, uniqueness: true
 
   def self.get(key)
-    find_by(key: key)&.value
+    Rails.cache.fetch("site_setting:#{key}", expires_in: 1.minute) do
+      find_by(key: key)&.value
+    end
   end
 
   def self.set(key, value)
     record = find_or_initialize_by(key: key)
     record.value = value.to_s
     record.save!
+    Rails.cache.delete("site_setting:#{key}")
   end
 
   def self.maintenance_mode?

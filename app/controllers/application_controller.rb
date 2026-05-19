@@ -32,14 +32,16 @@ class ApplicationController < ActionController::Base
   def prevent_html_caching
     return unless request.format.html?
 
-    response.headers["Cache-Control"] = "no-store, no-cache, max-age=0, must-revalidate, private"
-    response.headers["Pragma"] = "no-cache"
-    response.headers["Expires"] = "0"
+    if logged_in?
+      response.headers["Cache-Control"] = "no-store, private"
+    else
+      response.headers["Cache-Control"] = "public, max-age=30, s-maxage=30"
+    end
   end
 
   def track_current_user_activity
     return unless current_user&.has_attribute?(:last_seen_at)
-    return if current_user.last_seen_at.present? && current_user.last_seen_at > 2.minutes.ago
+    return if current_user.last_seen_at.present? && current_user.last_seen_at > 5.minutes.ago
 
     current_user.update_column(:last_seen_at, Time.current)
   end
@@ -71,14 +73,16 @@ class ApplicationController < ActionController::Base
   end
 
   def set_admin_summary
-    @admin_summary = {
-      users: User.count,
-      threads: ForumThread.count,
-      posts: Post.count,
-      pending_reports: Report.pending.count,
-      files: Attachment.count,
-      pending_files: Attachment.pending_approval.count
-    }
+    @admin_summary = Rails.cache.fetch("admin_summary", expires_in: 1.minute) do
+      {
+        users: User.count,
+        threads: ForumThread.count,
+        posts: Post.count,
+        pending_reports: Report.pending.count,
+        files: Attachment.count,
+        pending_files: Attachment.pending_approval.count
+      }
+    end
   end
 
   def check_maintenance_mode
