@@ -7,11 +7,12 @@ class SubforumsController < ApplicationController
                         .order(pinned: :desc, updated_at: :desc)
                         .page(params[:page])
 
-    @last_post_by_thread = last_post_per_thread(@threads.map(&:id))
+    thread_ids = @threads.pluck(:id)
+    @last_post_by_thread = last_post_per_thread(thread_ids)
 
     if logged_in?
       @subscription_map = ThreadSubscription
-        .where(user: current_user, forum_thread_id: @threads.map(&:id))
+        .where(user: current_user, forum_thread_id: thread_ids)
         .index_by(&:forum_thread_id)
     end
   end
