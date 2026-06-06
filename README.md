@@ -91,7 +91,7 @@ unknownforums.fun, www.unknownforums.fun {
     encode gzip
 
     request_body {
-        max_size 500MB
+        max_size 2GB
     }
 }
 ```

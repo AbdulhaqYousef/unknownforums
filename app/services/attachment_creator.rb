@@ -23,7 +23,7 @@ class AttachmentCreator
       label = blob.filename.to_s
 
       if blob.byte_size > Attachment::MAX_SIZE
-        errors << "#{label}: file is too large — maximum upload size is 500 MB"
+        errors << "#{label}: file is too large — maximum upload size is #{Attachment.max_size_label}"
         blob.purge_later
         next
       end

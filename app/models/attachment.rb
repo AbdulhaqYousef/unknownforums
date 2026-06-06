@@ -16,7 +16,11 @@ class Attachment < ApplicationRecord
 
   attr_accessor :allowed_content_types
 
-  MAX_SIZE = 500.megabytes
+  MAX_SIZE = 2.gigabytes
+
+  def self.max_size_label
+    ActiveSupport::NumberHelper.number_to_human_size(MAX_SIZE)
+  end
 
   VT_SCAN_TYPES = %w[
     application/zip application/x-zip-compressed
@@ -39,7 +43,7 @@ class Attachment < ApplicationRecord
 
   validates :filename, presence: true
   validate :content_type_is_allowed
-  validates :byte_size, numericality: { less_than_or_equal_to: MAX_SIZE, message: "is too large — maximum upload size is 500 MB" }
+  validates :byte_size, numericality: { less_than_or_equal_to: MAX_SIZE, message: ->(_object, _data) { "is too large — maximum upload size is #{Attachment.max_size_label}" } }
 
   VT_STATUSES = %w[pending scanning clean suspicious malicious skipped].freeze
 
