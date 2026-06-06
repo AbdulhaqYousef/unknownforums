@@ -38,7 +38,7 @@ gem "kramdown"
 gem "aws-sdk-s3", require: false
 
 # Image processing for Active Storage variants (avatars etc.)
-gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 2.0"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
