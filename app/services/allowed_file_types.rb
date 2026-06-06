@@ -120,10 +120,48 @@ class AllowedFileTypes
     def rules_for_subforum(subforum)
       return global_rules unless subforum
 
-      policy = resolve_policy(subforum.allowed_file_types) ||
-               resolve_policy(subforum.category&.allowed_file_types) ||
-               global_policy
-      build_rules(policy)
+      build_rules(effective_policy_for_subforum(subforum))
+    end
+
+    def effective_policy_for_subforum(subforum)
+      own = parse_policy(subforum.allowed_file_types)
+      if subforum.allowed_file_types.blank?
+        return effective_policy_for_category(subforum.category)
+      end
+
+      if own[:inherit_groups]
+        merge_policies(effective_policy_for_category(subforum.category), own)
+      else
+        own
+      end
+    end
+
+    def effective_policy_for_category(category)
+      return global_policy unless category
+
+      own = parse_policy(category.allowed_file_types)
+      if category.allowed_file_types.blank?
+        return global_policy
+      end
+
+      if own[:inherit_groups]
+        merge_policies(global_policy, own)
+      else
+        own
+      end
+    end
+
+    def merge_policies(base, extra)
+      {
+        groups: base[:groups],
+        inherit_groups: false,
+        custom: base[:custom] + extra[:custom]
+      }
+    end
+
+    def inherit_groups_only?(raw)
+      policy = parse_policy(raw)
+      policy[:inherit_groups] && !policy[:groups]
     end
 
     def rules_for_thread(thread)
@@ -145,7 +183,7 @@ class AllowedFileTypes
     end
 
     def parse_policy(raw)
-      return { groups: nil, custom: [] } if raw.blank?
+      return { groups: nil, custom: [], inherit_groups: false } if raw.blank?
 
       parsed = JSON.parse(raw)
       if parsed.is_a?(Hash)
@@ -153,15 +191,16 @@ class AllowedFileTypes
           Array(parsed["groups"]).map(&:to_s).select { |key| GROUPS.key?(key) }
         end
         custom = parse_custom_entries(parsed["custom"])
-        { groups: groups, custom: custom }
+        inherit_groups = parsed["inherit_groups"] == true
+        { groups: groups, custom: custom, inherit_groups: inherit_groups }
       elsif parsed.is_a?(Array)
         groups = parsed.map(&:to_s).select { |key| GROUPS.key?(key) }.presence
-        { groups: groups, custom: [] }
+        { groups: groups, custom: [], inherit_groups: false }
       else
-        { groups: nil, custom: [] }
+        { groups: nil, custom: [], inherit_groups: false }
       end
     rescue JSON::ParserError
-      { groups: nil, custom: [] }
+      { groups: nil, custom: [], inherit_groups: false }
     end
 
     def resolve_policy(raw)
@@ -260,6 +299,16 @@ class AllowedFileTypes
       parts.presence&.join(" · ") || "files"
     end
 
+    def store_inherit_custom(custom:)
+      custom_entries = parse_custom_input(custom)
+      return nil if custom_entries.empty?
+
+      {
+        inherit_groups: true,
+        custom: custom_entries.map { |entry| entry[:input] }
+      }.to_json
+    end
+
     def store_policy(groups:, custom: nil)
       group_keys = Array(groups).map(&:to_s).select { |key| GROUPS.key?(key) }
       custom_entries = parse_custom_input(custom)
@@ -308,14 +357,24 @@ class AllowedFileTypes
 
       case record
       when Category
-        if record.file_types_inherited?
+        if record.allowed_file_types.blank?
           "Site default"
+        elsif inherit_groups_only?(record.allowed_file_types)
+          label = "Site default"
+          custom = parse_policy(record.allowed_file_types)[:custom]
+          label += " + Extra: #{custom.map { |e| e[:ext] || e[:mime] }.join(', ')}" if custom.any?
+          label
         else
           policy_label(parse_policy(record.allowed_file_types))
         end
       when Subforum
-        if record.file_types_inherited?
+        if record.allowed_file_types.blank?
           "Category default"
+        elsif inherit_groups_only?(record.allowed_file_types)
+          label = "Category default"
+          custom = parse_policy(record.allowed_file_types)[:custom]
+          label += " + Extra: #{custom.map { |e| e[:ext] || e[:mime] }.join(', ')}" if custom.any?
+          label
         else
           policy_label(parse_policy(record.allowed_file_types))
         end

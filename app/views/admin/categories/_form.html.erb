@@ -26,8 +26,8 @@
         inherit: true,
         inherit_checked: category.file_types_inherited?,
         inherit_label: "Use site default file types",
-        selected_groups: category.file_types_inherited? ? SiteSetting.selected_file_type_groups : category.selected_file_type_groups,
-        custom_upload_types: category.file_types_inherited? ? SiteSetting.custom_upload_types_text : category.custom_upload_types_text,
+        selected_groups: category.selected_file_type_groups,
+        custom_upload_types: category.custom_upload_types_text,
         field_prefix: "category-" %>
   <div style="display:flex; gap:8px;">
     <%= f.submit category.new_record? ? "Create" : "Save", class: "btn btn-primary" %>

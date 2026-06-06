@@ -5,12 +5,15 @@ module FileTypeRestrictions
 
   def file_types_inherited?
     return true unless file_type_rules_supported?
+    return true if allowed_file_types.blank?
 
-    allowed_file_types.blank?
+    AllowedFileTypes.inherit_groups_only?(allowed_file_types)
   end
 
   def selected_file_type_groups
-    AllowedFileTypes.selected_groups_for(file_type_rules_supported? ? allowed_file_types : nil)
+    return SiteSetting.selected_file_type_groups if file_types_inherited?
+
+    AllowedFileTypes.selected_groups_for(allowed_file_types)
   end
 
   def custom_upload_types_text

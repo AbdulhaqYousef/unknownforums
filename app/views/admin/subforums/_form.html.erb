@@ -31,8 +31,8 @@
         inherit: true,
         inherit_checked: subforum.file_types_inherited?,
         inherit_label: "Use category default file types",
-        selected_groups: subforum.file_types_inherited? ? AllowedFileTypes.selected_groups_for(subforum.category&.allowed_file_types) : subforum.selected_file_type_groups,
-        custom_upload_types: subforum.file_types_inherited? ? AllowedFileTypes.custom_text_for(subforum.category&.allowed_file_types) : subforum.custom_upload_types_text,
+        selected_groups: subforum.selected_file_type_groups,
+        custom_upload_types: subforum.custom_upload_types_text,
         field_prefix: "subforum-" %>
   <div style="display:flex; gap:8px;">
     <%= f.submit subforum.new_record? ? "Create" : "Save", class: "btn btn-primary" %>
