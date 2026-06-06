@@ -1,8 +1,12 @@
 <% content_for :title, "Site Settings" %>
 
-<div style="max-width:500px;">
+<div style="max-width:560px;">
+  <div style="background:#1a2a2a; border:1px solid #2a4a4a; padding:8px 10px; margin-bottom:10px; font-size:11px; color:#8fd0d8;">
+    Site-wide upload rules: <strong style="color:#c8eef4;"><%= AllowedFileTypes.global_policy_label %></strong>
+  </div>
+
   <div class="panel" style="margin-bottom:12px;">
-    <div class="panel-header">Allowed Upload Types</div>
+    <div class="panel-header">Allowed Upload Types (Site-wide)</div>
     <div class="panel-body">
       <%= form_with url: admin_site_settings_path, method: :patch do |f| %>
         <%= hidden_field_tag :save_upload_types, "1" %>

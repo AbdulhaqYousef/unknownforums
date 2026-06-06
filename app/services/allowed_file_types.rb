@@ -122,5 +122,35 @@ class AllowedFileTypes
 
       keys.to_json
     end
+
+    def group_labels(group_keys)
+      Array(group_keys).filter_map { |key| GROUPS[key]&.dig(:label)&.split(" (")&.first }
+    end
+
+    def global_policy_label
+      raw = SiteSetting.allowed_file_type_groups_raw
+      return "All types allowed" if raw.blank?
+
+      "Custom: #{group_labels(parse_groups(raw)).join(', ')}"
+    end
+
+    def admin_policy_label(record)
+      case record
+      when Category
+        if record.file_types_inherited?
+          "Site default"
+        else
+          "Custom: #{group_labels(parse_groups(record.allowed_file_types)).join(', ')}"
+        end
+      when Subforum
+        if record.file_types_inherited?
+          "Category default"
+        else
+          "Custom: #{group_labels(parse_groups(record.allowed_file_types)).join(', ')}"
+        end
+      else
+        global_policy_label
+      end
+    end
   end
 end

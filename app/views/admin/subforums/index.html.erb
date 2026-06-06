@@ -2,7 +2,15 @@
 
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
   <span style="font-size:13px; font-weight:bold; color:#e0e0e0;">Subforums</span>
-  <a href="<%= new_admin_subforum_path %>" class="btn btn-primary">+ New Subforum</a>
+  <div class="action-group">
+    <a href="<%= admin_site_settings_path %>" class="btn btn-sm">Site Upload Types</a>
+    <a href="<%= new_admin_subforum_path %>" class="btn btn-primary">+ New Subforum</a>
+  </div>
+</div>
+
+<div style="background:#1a242a; border:1px solid #2a3a44; padding:8px 10px; margin-bottom:10px; font-size:11px; color:#9ab;">
+  Per-subforum upload rules are on each subforum's <strong>Edit</strong> page. Site-wide default:
+  <strong style="color:#c8d8e8;"><%= AllowedFileTypes.global_policy_label %></strong>
 </div>
 
 <div class="panel" style="margin-bottom:10px;">
@@ -27,10 +35,11 @@
       <th style="padding:3px 10px; text-align:left;">Category</th>
       <th style="padding:3px 10px; text-align:center;">Position</th>
       <th style="padding:3px 10px; text-align:center;">Threads</th>
+      <th style="padding:3px 10px; text-align:left;">Upload Types</th>
       <th style="padding:3px 10px; text-align:center;">Actions</th>
     </tr>
     <% if @subforums.empty? %>
-      <tr><td colspan="5" style="padding:20px; text-align:center; color:#666; font-size:12px;">No subforums matched your search.</td></tr>
+      <tr><td colspan="6" style="padding:20px; text-align:center; color:#666; font-size:12px;">No subforums matched your search.</td></tr>
     <% end %>
     <% @subforums.each_with_index do |sf, i| %>
       <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
@@ -38,6 +47,7 @@
         <td style="padding:5px 10px; font-size:11px; color:#888;"><%= sf.category.name %></td>
         <td style="padding:5px 10px; text-align:center; font-size:12px;"><%= sf.position %></td>
         <td style="padding:5px 10px; text-align:center; font-size:12px;"><%= sf.threads_count %></td>
+        <td style="padding:5px 10px; font-size:10px; color:#888;"><%= AllowedFileTypes.admin_policy_label(sf) %></td>
         <td style="padding:5px 10px; text-align:center;">
           <div class="action-group" style="justify-content:center;">
             <a href="<%= admin_subforum_threads_path(sf) %>" class="btn btn-sm">Threads</a>
