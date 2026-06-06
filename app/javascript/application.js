@@ -446,9 +446,60 @@ function prepareDirectUploadForm(form) {
     ;(holder || form).appendChild(hidden)
   })
 
-  if (input) {
-    input.removeAttribute("name")
-    input.value = ""
+  if (input) input.removeAttribute("name")
+}
+
+function directUploadFormHasFiles(input) {
+  if (input?.files?.length) return true
+  const state = directUploadState()
+  return state.enabled && state.signedIds.length > 0
+}
+
+function resetStuckFileUploadForms() {
+  document.querySelectorAll("form").forEach(form => {
+    delete form._awaitingSubmit
+    delete form.dataset.directUploadSubmitting
+    delete form.dataset.directUploadReady
+    form.querySelectorAll("[type=submit]").forEach(btn => {
+      btn.disabled = false
+      delete btn._fileSizeBlock
+    })
+  })
+  setUploadStatus("", "info")
+}
+
+async function finishDirectUploadPost(form) {
+  if (form.dataset.directUploadSubmitting === "1") return
+  form.dataset.directUploadSubmitting = "1"
+
+  prepareDirectUploadForm(form)
+  setUploadStatus("Finishing post…", "info")
+  const buttons = Array.from(form.querySelectorAll("[type=submit]"))
+  buttons.forEach(btn => { btn.disabled = true })
+
+  try {
+    const response = await fetch(form.action, {
+      method: (form.method || "post").toUpperCase(),
+      body: new FormData(form),
+      credentials: "same-origin",
+      redirect: "follow",
+      cache: "no-store",
+      headers: { Accept: "text/html" }
+    })
+
+    if (response.redirected || response.ok) {
+      window.location.assign(response.url)
+      return
+    }
+
+    const html = await response.text()
+    document.open()
+    document.write(html)
+    document.close()
+  } catch (_err) {
+    delete form.dataset.directUploadSubmitting
+    setUploadStatus("Connection interrupted while finishing the post. Check whether it was created, or try again.", "error")
+    buttons.forEach(btn => { btn.disabled = false })
   }
 }
 
@@ -457,20 +508,21 @@ function initFileUploadForms() {
   if (_fileUploadFormsInit) return
   _fileUploadFormsInit = true
 
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) resetStuckFileUploadForms()
+  })
+
   document.addEventListener("submit", async (event) => {
     const form = event.target
-    if (form.dataset.directUploadReady === "1") {
-      delete form.dataset.directUploadReady
-      return
-    }
+    if (!(form instanceof HTMLFormElement)) return
 
     const input = form.querySelector("#file-upload-input")
-    if (!input || !input.files.length) return
-
     const zone = document.getElementById("file-drop-zone")
     const usesDirectUpload = zone && zone.dataset.directUpload === "true"
 
     if (usesDirectUpload) {
+      if (!directUploadFormHasFiles(input)) return
+
       event.preventDefault()
       const state = directUploadState()
       if (state.errors.length) {
@@ -483,13 +535,11 @@ function initFileUploadForms() {
         return
       }
 
-      prepareDirectUploadForm(form)
-      setUploadStatus("Finishing post…", "info")
-      form.querySelectorAll("[type=submit]").forEach(btn => { btn.disabled = true })
-      form.dataset.directUploadReady = "1"
-      form.submit()
+      await finishDirectUploadPost(form)
       return
     }
+
+    if (!input || !input.files.length) return
 
     const oversized = Array.from(input.files).filter(f => f.size > maxFileBytes())
     const blocked   = Array.from(input.files).filter(f => !fileTypeAllowed(f))

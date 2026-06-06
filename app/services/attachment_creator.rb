@@ -35,15 +35,12 @@ class AttachmentCreator
         next
       end
 
-      mime_ok = true
-      blob.open do |io|
-        unless MimeValidator.valid?(content_type, io)
-          errors << "#{label}: file content does not match its declared type"
-          blob.purge_later
-          mime_ok = false
-        end
+      mime_ok = mime_valid_for_blob?(content_type, blob)
+      unless mime_ok
+        errors << "#{label}: file content does not match its declared type"
+        blob.purge_later
+        next
       end
-      next unless mime_ok
 
       stored_filename = stored_filename_for(attachable, label)
       attachment = Attachment.new(
@@ -94,6 +91,18 @@ class AttachmentCreator
       finalize_attachment(attachment, file.original_filename, errors)
     end
     errors
+  end
+
+  def self.mime_valid_for_blob?(content_type, blob)
+    return true if blob.byte_size >= 10.megabytes
+
+    blob.open do |io|
+      sample = io.read(8192).to_s
+      MimeValidator.valid?(content_type, StringIO.new(sample))
+    end
+  rescue StandardError => e
+    Rails.logger.warn("mime_valid_for_blob failed: #{e.class}: #{e.message}")
+    true
   end
 
   def self.finalize_attachment(attachment, label, errors)
