@@ -12,7 +12,8 @@
         <%= hidden_field_tag :save_upload_types, "1" %>
         <%= render "admin/shared/file_type_restrictions",
               inherit: false,
-              selected_groups: @selected_file_type_groups %>
+              selected_groups: @selected_file_type_groups,
+              custom_upload_types: SiteSetting.custom_upload_types_text %>
         <%= f.submit "Save Upload Types", class: "btn btn-primary" %>
       <% end %>
     </div>

@@ -2,7 +2,9 @@
 <% inherit_checked = local_assigns.fetch(:inherit_checked, false) %>
 <% inherit_label = local_assigns.fetch(:inherit_label, "Inherit from parent") %>
 <% selected = local_assigns.fetch(:selected_groups, AllowedFileTypes.group_keys) %>
+<% custom_text = local_assigns.fetch(:custom_upload_types, "") %>
 <% field_prefix = local_assigns.fetch(:field_prefix, "") %>
+<% fields_disabled = inherit && inherit_checked %>
 
 <div style="background:#1e1e1e; border:1px solid #333; padding:10px; margin-bottom:12px;">
   <div style="font-size:10px; color:#888; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Allowed Upload Types</div>
@@ -17,18 +19,31 @@
       </span>
     </label>
   <% else %>
-    <div style="font-size:10px; color:#666; margin-bottom:8px;">Leave all checked to allow every supported file type site-wide. Uncheck groups to block them everywhere unless a category or subforum overrides.</div>
+    <div style="font-size:10px; color:#666; margin-bottom:8px;">Leave all groups checked to allow every built-in type site-wide. Uncheck groups to block them unless a category or subforum overrides.</div>
   <% end %>
 
-  <div id="<%= field_prefix %>file-type-groups" style="<%= inherit && inherit_checked ? "opacity:0.45; pointer-events:none;" : "" %>">
-    <% AllowedFileTypes::GROUPS.each do |key, meta| %>
-      <label style="display:flex; align-items:flex-start; gap:8px; font-size:11px; color:#bbb; cursor:pointer; margin-bottom:6px;">
-        <input type="checkbox" name="file_type_groups[]" value="<%= key %>"
-          <%= selected.include?(key) ? "checked" : "" %>
-          class="file-type-group-checkbox" style="width:14px; height:14px; margin-top:1px;">
-        <span><%= meta[:label] %></span>
-      </label>
-    <% end %>
+  <div id="<%= field_prefix %>file-type-fields" style="<%= fields_disabled ? "opacity:0.45; pointer-events:none;" : "" %>">
+    <div id="<%= field_prefix %>file-type-groups" style="margin-bottom:10px;">
+      <% AllowedFileTypes::GROUPS.each do |key, meta| %>
+        <label style="display:flex; align-items:flex-start; gap:8px; font-size:11px; color:#bbb; cursor:pointer; margin-bottom:6px;">
+          <input type="checkbox" name="file_type_groups[]" value="<%= key %>"
+            <%= selected.include?(key) ? "checked" : "" %>
+            class="file-type-group-checkbox" style="width:14px; height:14px; margin-top:1px;">
+          <span><%= meta[:label] %></span>
+        </label>
+      <% end %>
+    </div>
+
+    <div>
+      <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Additional extensions or MIME types</label>
+      <textarea name="custom_upload_types" id="<%= field_prefix %>custom-upload-types" rows="4"
+        style="width:100%; resize:vertical; font-family:Consolas, monospace; font-size:11px;"
+        placeholder=".rar&#10;.7z&#10;.mcpack&#10;application/vnd.rar"><%= custom_text %></textarea>
+      <div style="font-size:10px; color:#555; margin-top:4px;">
+        One per line. Use <code style="color:#888;">.ext</code> (example: <code style="color:#888;">.rar</code>) or a full MIME type (example: <code style="color:#888;">application/vnd.rar</code>).
+        Lines starting with <code style="color:#888;">#</code> are ignored.
+      </div>
+    </div>
   </div>
 </div>
 
@@ -36,11 +51,11 @@
   <script>
     (function() {
       const inheritBox = document.getElementById("<%= field_prefix %>file-type-inherit")
-      const groupsBox = document.getElementById("<%= field_prefix %>file-type-groups")
-      if (!inheritBox || !groupsBox) return
+      const fieldsBox = document.getElementById("<%= field_prefix %>file-type-fields")
+      if (!inheritBox || !fieldsBox) return
       inheritBox.addEventListener("change", function() {
-        groupsBox.style.opacity = this.checked ? "0.45" : ""
-        groupsBox.style.pointerEvents = this.checked ? "none" : ""
+        fieldsBox.style.opacity = this.checked ? "0.45" : ""
+        fieldsBox.style.pointerEvents = this.checked ? "none" : ""
       })
     })()
   </script>

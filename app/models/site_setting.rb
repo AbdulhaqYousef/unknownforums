@@ -34,8 +34,12 @@ class SiteSetting < ApplicationRecord
     AllowedFileTypes.selected_groups_for(allowed_file_type_groups_raw)
   end
 
-  def self.set_allowed_file_type_groups(group_keys)
-    value = AllowedFileTypes.store_groups(group_keys) || ""
+  def self.set_allowed_file_type_groups(group_keys, custom: nil)
+    value = AllowedFileTypes.store_policy(groups: group_keys, custom: custom) || ""
     set(ALLOWED_FILE_TYPES_KEY, value)
+  end
+
+  def self.custom_upload_types_text
+    AllowedFileTypes.custom_text_for(allowed_file_type_groups_raw)
   end
 end

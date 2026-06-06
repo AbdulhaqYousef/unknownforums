@@ -1,14 +1,18 @@
 <% direct_upload = local_assigns.fetch(:direct_upload, true) %>
-<% allowed_types = local_assigns.fetch(:allowed_types, AllowedFileTypes.global_types) %>
+<% upload_rules = local_assigns.fetch(:upload_rules, AllowedFileTypes.global_rules) %>
+<% allowed_types = upload_rules[:types] %>
+<% accept_list = upload_rules[:accept] %>
+<% types_label = upload_rules[:summary] %>
+<% custom_exts = upload_rules[:policy][:custom].filter_map { |entry| entry[:ext] }.join(",") %>
 <% max_label = number_to_human_size(Attachment::MAX_SIZE) %>
-<% types_label = AllowedFileTypes.human_summary(allowed_types) %>
 <div style="background:#1e1e1e; border:1px solid #333; padding:8px 10px;">
   <div style="font-size:10px; color:#666; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Attach Files</div>
 
   <div id="file-drop-zone"
        data-max-bytes="<%= Attachment::MAX_SIZE %>"
        data-direct-upload="<%= direct_upload ? "true" : "false" %>"
-       data-allowed-types="<%= AllowedFileTypes.accept_attribute(allowed_types) %>"
+       data-allowed-types="<%= allowed_types.join(",") %>"
+       data-allowed-extensions="<%= custom_exts %>"
        style="border:2px dashed #444; border-radius:3px; padding:16px 12px; text-align:center; cursor:pointer; transition:border-color .15s, background .15s;">
     <svg width="20" height="20" fill="none" stroke="#3d9faf" stroke-width="1.5" viewBox="0 0 24 24" style="display:block; margin:0 auto 6px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
     <div style="font-size:11px; color:#888;">Drag &amp; drop files here</div>
@@ -16,7 +20,7 @@
   </div>
 
   <input id="file-upload-input" type="file" <%= direct_upload ? "" : 'name="files[]"' %> multiple
-    accept="<%= AllowedFileTypes.accept_attribute(allowed_types) %>"
+    accept="<%= accept_list %>"
     style="display:none;">
 
   <div id="file-size-error" style="display:none; margin-top:5px; padding:5px 7px; background:#3a1a1a; border:1px solid #6a2a2a; border-radius:2px; font-size:10px; color:#f08080;"></div>

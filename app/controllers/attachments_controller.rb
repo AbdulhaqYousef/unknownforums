@@ -39,7 +39,7 @@ class AttachmentsController < ApplicationController
   def new_version
     require_login
     require_owner_or_moderator(@attachment.root_attachment.user)
-    @allowed_types = AllowedFileTypes.for_attachable(@attachment.root_attachment.attachable)
+    @allowed_types = AllowedFileTypes.rules_for_attachable(@attachment.root_attachment.attachable)
   end
 
   def upload_version
@@ -53,8 +53,9 @@ class AttachmentsController < ApplicationController
     end
 
     content_type = file.content_type.presence || "application/octet-stream"
-    allowed_types = AllowedFileTypes.for_attachable(root.attachable)
-    unless allowed_types.include?(content_type)
+    allowed_rules = AllowedFileTypes.rules_for_attachable(root.attachable)
+    allowed_types = allowed_rules[:types]
+    unless AllowedFileTypes.type_allowed?(content_type, file.original_filename, allowed_rules)
       return redirect_to new_version_attachment_path(@attachment),
         alert: "That file type is not allowed in this forum."
     end

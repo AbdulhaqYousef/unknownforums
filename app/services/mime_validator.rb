@@ -41,6 +41,7 @@ class MimeValidator
   def valid?
     detected = Marcel::MimeType.for(@file_io)
     acceptable = ACCEPTABLE_DETECTIONS[@declared_type] || [ @declared_type ]
+    acceptable += [ "application/octet-stream" ] unless acceptable.include?("application/octet-stream")
     acceptable.include?(detected.to_s)
   rescue StandardError => e
     Rails.logger.warn("MimeValidator failed: #{e.class}: #{e.message}")

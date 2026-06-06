@@ -13,6 +13,12 @@ module FileTypeRestrictions
     AllowedFileTypes.selected_groups_for(file_type_rules_supported? ? allowed_file_types : nil)
   end
 
+  def custom_upload_types_text
+    return "" unless file_type_rules_supported?
+
+    AllowedFileTypes.custom_text_for(allowed_file_types)
+  end
+
   private
 
   def file_type_rules_supported?

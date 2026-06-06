@@ -2,15 +2,17 @@ require "securerandom"
 
 class AttachmentCreator
   def self.attach(attachable:, user:, files:, signed_ids: nil)
-    allowed_types = AllowedFileTypes.for_attachable(attachable)
+    allowed_rules = AllowedFileTypes.rules_for_attachable(attachable)
+    allowed_types = allowed_rules[:types]
     if signed_ids.present?
-      attach_from_signed_ids(attachable: attachable, user: user, signed_ids: signed_ids, allowed_types: allowed_types)
+      attach_from_signed_ids(attachable: attachable, user: user, signed_ids: signed_ids, allowed_rules: allowed_rules)
     else
-      attach_from_uploads(attachable: attachable, user: user, files: files, allowed_types: allowed_types)
+      attach_from_uploads(attachable: attachable, user: user, files: files, allowed_rules: allowed_rules)
     end
   end
 
-  def self.attach_from_signed_ids(attachable:, user:, signed_ids:, allowed_types:)
+  def self.attach_from_signed_ids(attachable:, user:, signed_ids:, allowed_rules:)
+    allowed_types = allowed_rules[:types]
     errors = []
     Array(signed_ids).compact.each do |signed_id|
       blob = ActiveStorage::Blob.find_signed(signed_id)
@@ -27,7 +29,7 @@ class AttachmentCreator
       end
 
       content_type = blob.content_type.presence || "application/octet-stream"
-      unless allowed_types.include?(content_type)
+      unless AllowedFileTypes.type_allowed?(content_type, label, allowed_rules)
         errors << "#{label}: content type is not allowed in this forum"
         blob.purge_later
         next
@@ -59,12 +61,13 @@ class AttachmentCreator
     errors
   end
 
-  def self.attach_from_uploads(attachable:, user:, files:, allowed_types:)
+  def self.attach_from_uploads(attachable:, user:, files:, allowed_rules:)
+    allowed_types = allowed_rules[:types]
     errors = []
     Array(files).compact.select { |f| f.respond_to?(:original_filename) }.each do |file|
       content_type = file.content_type.presence || "application/octet-stream"
 
-      unless allowed_types.include?(content_type)
+      unless AllowedFileTypes.type_allowed?(content_type, file.original_filename, allowed_rules)
         errors << "#{file.original_filename}: content type is not allowed in this forum"
         next
       end

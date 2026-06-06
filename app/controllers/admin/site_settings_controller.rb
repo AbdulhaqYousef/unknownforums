@@ -15,11 +15,12 @@ class Admin::SiteSettingsController < ApplicationController
 
     if params[:save_upload_types] == "1"
       groups = Array(params[:file_type_groups]).compact_blank
-      if groups.empty?
-        redirect_to admin_site_settings_path, alert: "Select at least one file type group."
+      custom = params[:custom_upload_types]
+      if groups.empty? && custom.to_s.strip.blank?
+        redirect_to admin_site_settings_path, alert: "Select at least one file type group or add custom extensions."
         return
       end
-      SiteSetting.set_allowed_file_type_groups(groups)
+      SiteSetting.set_allowed_file_type_groups(groups, custom: custom)
     end
 
     redirect_to admin_site_settings_path, notice: "Settings saved."

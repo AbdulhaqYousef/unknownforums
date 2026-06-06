@@ -32,11 +32,11 @@
       <div style="margin-bottom:10px;">
         <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Select file (replaces current version):</label>
         <input type="file" name="file"
-          accept="<%= AllowedFileTypes.accept_attribute(@allowed_types) %>"
+          accept="<%= @allowed_types[:accept] %>"
           style="font-size:12px;">
       </div>
       <div style="font-size:10px; color:#666; margin-bottom:8px;">
-        Allowed here: <%= AllowedFileTypes.human_summary(@allowed_types) %>.<br>
+        Allowed here: <%= @allowed_types[:summary] %>.<br>
         Executables, scripts, and archives will be scanned by VirusTotal.<br>
         Max size: <%= number_to_human_size(Attachment::MAX_SIZE) %>.
       </div>

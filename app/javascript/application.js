@@ -260,11 +260,26 @@ function allowedMimeTypes() {
   return raw.split(",").map(s => s.trim()).filter(Boolean)
 }
 
+function allowedExtensions() {
+  const zone = document.getElementById("file-drop-zone")
+  const raw  = zone?.dataset.allowedExtensions
+  if (!raw) return []
+  return raw.split(",").map(s => s.trim().toLowerCase()).filter(Boolean)
+}
+
+function fileExtension(file) {
+  const match = file.name.toLowerCase().match(/\.[^.]+$/)
+  return match ? match[0] : ""
+}
+
 function fileTypeAllowed(file) {
   const allowed = allowedMimeTypes()
+  const extensions = allowedExtensions()
+  const ext = fileExtension(file)
+  if (ext && extensions.includes(ext)) return true
   if (!allowed.length) return true
   if (file.type && allowed.includes(file.type)) return true
-  return allowed.includes("application/octet-stream") && (!file.type || file.type === "application/octet-stream")
+  return allowed.includes("application/octet-stream") && (!file.type || file.type === "application/octet-stream") && ext && extensions.includes(ext)
 }
 
 function fileKey(file) {
