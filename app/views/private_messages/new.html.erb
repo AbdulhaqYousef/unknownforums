@@ -14,7 +14,7 @@
         </div>
       <% end %>
 
-      <%= form_with model: @message, url: private_messages_path, multipart: true do |f| %>
+      <%= form_with model: @message, url: private_messages_path, multipart: true, data: { turbo: false } do |f| %>
         <div style="margin-bottom:10px;">
           <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">To (username):</label>
           <input type="text" name="private_message[recipient_username]"
@@ -30,7 +30,7 @@
           <%= f.text_area :body, rows: 10, style: "width:100%; resize:vertical;" %>
         </div>
         <div style="margin-bottom:10px;">
-          <%= render "shared/file_upload_field" %>
+          <%= render "shared/file_upload_field", direct_upload: false %>
         </div>
         <div style="display:flex; gap:8px;">
           <%= f.submit "Send Message", class: "btn btn-primary" %>

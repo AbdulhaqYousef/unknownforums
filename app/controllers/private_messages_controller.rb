@@ -33,7 +33,12 @@ class PrivateMessagesController < ApplicationController
 
     @message = PrivateMessage.new(message_params.merge(sender: current_user, recipient: recipient))
     if @message.save
-      attach_errors = AttachmentCreator.attach(attachable: @message, user: current_user, files: params[:files])
+      attach_errors = AttachmentCreator.attach(
+        attachable: @message,
+        user: current_user,
+        files: params[:files],
+        signed_ids: params[:file_signed_ids]
+      )
       broadcast_message
       broadcast_message_badge(recipient)
       flash[:alert] = "Some files could not be attached: #{attach_errors.join('; ')}" if attach_errors.any?

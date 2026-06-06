@@ -1,7 +1,63 @@
 require "securerandom"
 
 class AttachmentCreator
-  def self.attach(attachable:, user:, files:)
+  def self.attach(attachable:, user:, files:, signed_ids: nil)
+    if signed_ids.present?
+      attach_from_signed_ids(attachable: attachable, user: user, signed_ids: signed_ids)
+    else
+      attach_from_uploads(attachable: attachable, user: user, files: files)
+    end
+  end
+
+  def self.attach_from_signed_ids(attachable:, user:, signed_ids:)
+    errors = []
+    Array(signed_ids).compact.each do |signed_id|
+      blob = ActiveStorage::Blob.find_signed(signed_id)
+      unless blob
+        errors << "Invalid upload reference"
+        next
+      end
+      label = blob.filename.to_s
+
+      if blob.byte_size > Attachment::MAX_SIZE
+        errors << "#{label}: file is too large — maximum upload size is 500 MB"
+        blob.purge_later
+        next
+      end
+
+      content_type = blob.content_type.presence || "application/octet-stream"
+      unless Attachment::ALLOWED_TYPES.include?(content_type)
+        errors << "#{label}: content type is not allowed"
+        blob.purge_later
+        next
+      end
+
+      mime_ok = true
+      blob.open do |io|
+        unless MimeValidator.valid?(content_type, io)
+          errors << "#{label}: file content does not match its declared type"
+          blob.purge_later
+          mime_ok = false
+        end
+      end
+      next unless mime_ok
+
+      stored_filename = stored_filename_for(attachable, label)
+      attachment = Attachment.new(
+        attachable: attachable,
+        user: user,
+        filename: stored_filename,
+        content_type: content_type,
+        byte_size: blob.byte_size,
+        is_video: content_type.start_with?("video/")
+      )
+      attachment.file.attach(blob)
+      finalize_attachment(attachment, label, errors)
+    end
+    errors
+  end
+
+  def self.attach_from_uploads(attachable:, user:, files:)
     errors = []
     Array(files).compact.select { |f| f.respond_to?(:original_filename) }.each do |file|
       content_type = file.content_type.presence || "application/octet-stream"
@@ -24,17 +80,22 @@ class AttachmentCreator
         is_video: content_type.start_with?("video/")
       )
       attach_file(attachment, io, attachable, user, content_type)
-      if attachment.save
-        if attachment.vt_scannable?
-          VirusTotalScanJob.perform_later(attachment.id)
-        else
-          attachment.update_columns(vt_status: "skipped", approved: true)
-        end
-      else
-        errors << "#{file.original_filename}: #{attachment.errors.full_messages.join(', ')}"
-      end
+      finalize_attachment(attachment, file.original_filename, errors)
     end
     errors
+  end
+
+  def self.finalize_attachment(attachment, label, errors)
+    if attachment.save
+      if attachment.vt_scannable?
+        VirusTotalScanJob.perform_later(attachment.id)
+      else
+        attachment.update_columns(vt_status: "skipped", approved: true)
+      end
+    else
+      attachment.file.purge if attachment.file.attached?
+      errors << "#{label}: #{attachment.errors.full_messages.join(', ')}"
+    end
   end
 
   def self.attach_file(attachment, io, attachable, user, content_type)

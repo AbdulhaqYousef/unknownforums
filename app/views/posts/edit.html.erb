@@ -9,7 +9,7 @@
     Edit Post
   </div>
   <div style="padding:12px;">
-    <%= form_with model: [@thread, @post], method: :patch, multipart: true do |f| %>
+    <%= form_with model: [@thread, @post], method: :patch, multipart: true, data: { turbo: false } do |f| %>
       <div style="margin-bottom:10px;">
         <%= f.text_area :body, rows: 12, style: "width:100%; resize:vertical;" %>
         <div style="font-size:10px; color:#666; margin-top:3px;">Markdown supported: **bold**, *italic*, `code`, lists, links, quotes, headings.</div>

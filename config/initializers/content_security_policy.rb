@@ -16,7 +16,7 @@ Rails.application.configure do
     policy.base_uri    :self
     policy.form_action :self
     policy.frame_ancestors :none
-    policy.connect_src :self, "https://cloudflareinsights.com"
+    policy.connect_src :self, "https://cloudflareinsights.com", "https://*.r2.cloudflarestorage.com"
     policy.media_src   :self, :https
   end
 

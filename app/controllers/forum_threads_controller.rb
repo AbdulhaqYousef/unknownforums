@@ -41,7 +41,12 @@ class ForumThreadsController < ApplicationController
 
     result = service.call
     if result
-      attach_errors = AttachmentCreator.attach(attachable: result.first_post, user: current_user, files: params[:files])
+      attach_errors = AttachmentCreator.attach(
+        attachable: result.first_post,
+        user: current_user,
+        files: params[:files],
+        signed_ids: params[:file_signed_ids]
+      )
       flash[:alert] = "Some files could not be attached: #{attach_errors.join('; ')}" if attach_errors.any?
       redirect_to forum_thread_path(result), notice: "Thread created."
     else

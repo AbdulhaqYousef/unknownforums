@@ -12,7 +12,7 @@ class Attachment < ApplicationRecord
     application/x-apple-diskimage
   ].freeze
 
-  MAX_SIZE = 100.megabytes
+  MAX_SIZE = 500.megabytes
 
   VT_SCAN_TYPES = %w[
     application/zip application/x-zip-compressed
@@ -35,7 +35,7 @@ class Attachment < ApplicationRecord
 
   validates :filename, presence: true
   validates :content_type, inclusion: { in: ALLOWED_TYPES, message: "is not an allowed type. Allowed: images, videos, ZIP, PDF, executables, scripts, plain text, torrent" }
-  validates :byte_size, numericality: { less_than_or_equal_to: MAX_SIZE, message: "is too large — maximum upload size is 100 MB" }
+  validates :byte_size, numericality: { less_than_or_equal_to: MAX_SIZE, message: "is too large — maximum upload size is 500 MB" }
 
   VT_STATUSES = %w[pending scanning clean suspicious malicious skipped].freeze
 

@@ -11,7 +11,7 @@
     Post New Thread &mdash; <%= @subforum.name %>
   </div>
   <div style="padding:12px;">
-    <%= form_with url: subforum_forum_threads_path(@subforum), multipart: true do |f| %>
+    <%= form_with url: subforum_forum_threads_path(@subforum), multipart: true, data: { turbo: false } do |f| %>
       <!-- Thread title -->
       <div style="margin-bottom:10px;">
         <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Thread Title:</label>

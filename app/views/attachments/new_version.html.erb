@@ -28,7 +28,7 @@
       </div>
     </div>
 
-    <%= form_with url: upload_version_attachment_path(@attachment), method: :post, multipart: true do |f| %>
+    <%= form_with url: upload_version_attachment_path(@attachment), method: :post, multipart: true, data: { turbo: false } do |f| %>
       <div style="margin-bottom:10px;">
         <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Select file (replaces current version):</label>
         <input type="file" name="file"
@@ -38,7 +38,7 @@
       <div style="font-size:10px; color:#666; margin-bottom:8px;">
         Allowed: images, videos, PDF, ZIP, torrent, executables (.exe, .dll, .msi, .sh, .bat, .ps1, .js, .vbs, .dmg).<br>
         Executables, scripts, and archives will be scanned by VirusTotal.<br>
-        Max size: 100MB.
+        Max size: <%= number_to_human_size(Attachment::MAX_SIZE) %>.
       </div>
       <div style="display:flex; gap:8px;">
         <%= f.submit "Upload New Version", class: "btn btn-primary" %>

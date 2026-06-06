@@ -1,5 +1,6 @@
 // Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
 import "@hotwired/turbo-rails"
+import { DirectUpload } from "@rails/activestorage"
 import "controllers"
 
 document.addEventListener("turbo:load", () => {
@@ -70,6 +71,7 @@ document.addEventListener("turbo:load", () => {
   }
   initMentionAutocomplete()
   initFileUpload()
+  initFileUploadForms()
   initVideoJS()
   initCategoryToggle()
   initBulkPosts()
@@ -241,11 +243,26 @@ function initVideoJS() {
 }
 
 /* ── File upload drop zone ── */
+function maxFileBytes() {
+  const zone = document.getElementById("file-drop-zone")
+  const raw  = zone ? parseInt(zone.dataset.maxBytes, 10) : NaN
+  return Number.isFinite(raw) && raw > 0 ? raw : 500 * 1024 * 1024
+}
+
+function maxFileLabel() {
+  return fmtSize(maxFileBytes())
+}
+
+function fileKey(file) {
+  return `${file.name}:${file.size}:${file.lastModified}`
+}
+
 function initFileUpload() {
   const zone  = document.getElementById("file-drop-zone")
   const input = document.getElementById("file-upload-input")
   if (!zone || !input || zone._init) return
   zone._init = true
+  zone._uploads = new Map()
 
   zone.addEventListener("click", () => input.click())
 
@@ -268,12 +285,162 @@ function initFileUpload() {
     Array.from(input.files).forEach(f => dt.items.add(f))
     dropped.forEach(f => dt.items.add(f))
     input.files = dt.files
-    renderFilePreview(input.files)
+    handleSelectedFiles(input)
   })
-  input.addEventListener("change", function() { renderFilePreview(this.files) })
+  input.addEventListener("change", function() { handleSelectedFiles(this) })
 }
 
-const MAX_FILE_BYTES = 100 * 1024 * 1024
+function handleSelectedFiles(input) {
+  const zone = document.getElementById("file-drop-zone")
+  if (zone && zone.dataset.directUpload === "true") {
+    queueDirectUploads(input)
+  }
+  renderFilePreview(input.files)
+}
+
+function queueDirectUploads(input) {
+  const zone = document.getElementById("file-drop-zone")
+  if (!zone) return
+
+  Array.from(input.files).forEach(file => {
+    const key = fileKey(file)
+    if (file.size > maxFileBytes()) return
+    if (zone._uploads.has(key) && zone._uploads.get(key).status !== "error") return
+
+    zone._uploads.set(key, { status: "uploading", progress: 0, signedId: null, error: null })
+    renderFilePreview(input.files)
+
+    const delegate = {
+      directUploadWillStoreFileWithXHR(xhr) {
+        xhr.upload.addEventListener("progress", (event) => {
+          if (!event.lengthComputable) return
+          const entry = zone._uploads.get(key)
+          if (!entry) return
+          entry.progress = event.loaded / event.total
+          renderFilePreview(input.files)
+        })
+      }
+    }
+
+    const upload = new DirectUpload(file, "/rails/active_storage/direct_uploads", delegate)
+    upload.create((error, blob) => {
+      const entry = zone._uploads.get(key)
+      if (!entry) return
+      if (error) {
+        entry.status = "error"
+        entry.error = error
+      } else {
+        entry.status = "done"
+        entry.progress = 1
+        entry.signedId = blob.signed_id
+      }
+      renderFilePreview(input.files)
+
+      const form = input.closest("form")
+      if (form?._awaitingSubmit && directUploadState().pending === 0 && directUploadState().errors.length === 0) {
+        form._awaitingSubmit = false
+        form.requestSubmit()
+      }
+    })
+  })
+}
+
+function directUploadState() {
+  const zone = document.getElementById("file-drop-zone")
+  if (!zone || zone.dataset.directUpload !== "true") return { enabled: false, pending: 0, errors: [] }
+
+  const entries = Array.from(zone._uploads?.values() || [])
+  return {
+    enabled: true,
+    pending: entries.filter(e => e.status === "uploading").length,
+    errors: entries.filter(e => e.status === "error"),
+    signedIds: entries.filter(e => e.status === "done" && e.signedId).map(e => e.signedId)
+  }
+}
+
+function setUploadStatus(message, tone) {
+  const box = document.getElementById("file-upload-status")
+  if (!box) return
+  if (!message) {
+    box.style.display = "none"
+    box.textContent = ""
+    return
+  }
+  box.style.display = "block"
+  box.style.color = tone === "error" ? "#f08080" : "#8fd0d8"
+  box.style.background = tone === "error" ? "#3a1a1a" : "#1a2a2a"
+  box.style.borderColor = tone === "error" ? "#6a2a2a" : "#2a4a4a"
+  box.textContent = message
+}
+
+function prepareDirectUploadForm(form) {
+  const holder = document.getElementById("file-signed-ids")
+  const input  = document.getElementById("file-upload-input")
+  if (holder) holder.innerHTML = ""
+
+  directUploadState().signedIds.forEach((signedId) => {
+    const hidden = document.createElement("input")
+    hidden.type = "hidden"
+    hidden.name = "file_signed_ids[]"
+    hidden.value = signedId
+    ;(holder || form).appendChild(hidden)
+  })
+
+  if (input) {
+    input.removeAttribute("name")
+    input.value = ""
+  }
+}
+
+let _fileUploadFormsInit = false
+function initFileUploadForms() {
+  if (_fileUploadFormsInit) return
+  _fileUploadFormsInit = true
+
+  document.addEventListener("submit", async (event) => {
+    const form = event.target
+    if (form.dataset.directUploadReady === "1") {
+      delete form.dataset.directUploadReady
+      return
+    }
+
+    const input = form.querySelector("#file-upload-input")
+    if (!input || !input.files.length) return
+
+    const zone = document.getElementById("file-drop-zone")
+    const usesDirectUpload = zone && zone.dataset.directUpload === "true"
+
+    if (usesDirectUpload) {
+      event.preventDefault()
+      const state = directUploadState()
+      if (state.errors.length) {
+        setUploadStatus("Some files failed to upload. Remove them and try again.", "error")
+        return
+      }
+      if (state.pending > 0) {
+        form._awaitingSubmit = true
+        setUploadStatus("Still uploading to storage — please wait…", "info")
+        return
+      }
+
+      prepareDirectUploadForm(form)
+      setUploadStatus("Finishing post…", "info")
+      form.querySelectorAll("[type=submit]").forEach(btn => { btn.disabled = true })
+      form.dataset.directUploadReady = "1"
+      form.submit()
+      return
+    }
+
+    const oversized = Array.from(input.files).filter(f => f.size > maxFileBytes())
+    if (oversized.length) {
+      event.preventDefault()
+      return
+    }
+
+    setUploadStatus("Uploading — keep this page open until it finishes.", "info")
+    form.querySelectorAll("[type=submit]").forEach(btn => { btn.disabled = true })
+  })
+}
 
 function renderFilePreview(files) {
   const label   = document.getElementById("file-list-label")
@@ -284,32 +451,49 @@ function renderFilePreview(files) {
   preview.innerHTML = ""
   if (errBox) { errBox.style.display = "none"; errBox.innerHTML = "" }
 
-  if (!files.length) { label.textContent = "No files selected"; return }
+  if (!files.length) {
+    label.textContent = "No files selected"
+    setUploadStatus("", "info")
+    return
+  }
 
-  const oversized = Array.from(files).filter(f => f.size > MAX_FILE_BYTES)
+  const limit = maxFileBytes()
+  const oversized = Array.from(files).filter(f => f.size > limit)
   const input     = document.getElementById("file-upload-input")
   const form      = input ? input.closest("form") : null
+  const uploads   = directUploadState()
 
   if (oversized.length) {
     if (errBox) {
       errBox.style.display = "block"
-      errBox.innerHTML = "<strong>File size exceeded (100 MB limit):</strong><ul style='margin:3px 0 0 14px;padding:0;'>"
+      errBox.innerHTML = "<strong>File size exceeded (" + maxFileLabel() + " limit):</strong><ul style='margin:3px 0 0 14px;padding:0;'>"
         + oversized.map(f => `<li>${f.name} — ${fmtSize(f.size)}</li>`).join("")
         + "</ul>"
     }
     if (form) form.querySelectorAll("[type=submit]").forEach(btn => { btn.disabled = true; btn._fileSizeBlock = true })
-  } else {
+  } else if (!uploads.enabled || uploads.pending === 0) {
     if (form) form.querySelectorAll("[type=submit]").forEach(btn => {
       if (btn._fileSizeBlock) { btn.disabled = false; delete btn._fileSizeBlock }
     })
   }
 
-  const ok = Array.from(files).filter(f => f.size <= MAX_FILE_BYTES)
-  label.textContent = ok.length + " file" + (ok.length !== 1 ? "s" : "") + " ready"
-    + (oversized.length ? ` · ${oversized.length} too large` : "")
+  const ok = Array.from(files).filter(f => f.size <= limit)
+  let labelText = ok.length + " file" + (ok.length !== 1 ? "s" : "") + " ready"
+  if (oversized.length) labelText += ` · ${oversized.length} too large`
+  if (uploads.enabled && uploads.pending > 0) labelText += ` · uploading ${uploads.pending}…`
+  label.textContent = labelText
 
+  if (uploads.enabled && uploads.pending > 0) {
+    setUploadStatus("Uploading to storage…", "info")
+  } else if (uploads.enabled && ok.length && uploads.errors.length === 0) {
+    setUploadStatus("Files uploaded — ready to post.", "info")
+  }
+
+  const zone = document.getElementById("file-drop-zone")
   Array.from(files).forEach(file => {
-    const tooBig = file.size > MAX_FILE_BYTES
+    const tooBig = file.size > limit
+    const key    = fileKey(file)
+    const entry  = zone?._uploads?.get(key)
     const isImg  = file.type.startsWith("image/")
     const isVid  = file.type.startsWith("video/")
     const tag    = isImg ? "IMG" : isVid ? "VID" : "FILE"
@@ -317,11 +501,21 @@ function renderFilePreview(files) {
     row.style.cssText = `font-size:10px;padding:3px 5px;margin-bottom:2px;display:flex;align-items:center;gap:6px;`
       + `background:${tooBig ? "rgba(192,80,80,0.08)" : "rgba(255,255,255,0.02)"};`
       + `border:1px solid ${tooBig ? "#803030" : "#2e2e2e"};border-radius:2px;`
+
+    let statusText = fmtSize(file.size)
+    if (entry?.status === "uploading") {
+      statusText = `${Math.round((entry.progress || 0) * 100)}% uploaded`
+    } else if (entry?.status === "done") {
+      statusText = "Ready"
+    } else if (entry?.status === "error") {
+      statusText = "Upload failed"
+    }
+
     row.innerHTML = `<span style="border:1px solid #555;padding:1px 4px;font-size:9px;color:${tooBig?"#e07070":"#aaa"};">${tag}</span>`
       + `<span style="flex:1;color:${tooBig?"#e07070":"#a8c8f0"};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${file.name}">${file.name}</span>`
-      + `<span style="color:${tooBig?"#e07070":"#555"};flex-shrink:0;">${fmtSize(file.size)}</span>`
+      + `<span style="color:${tooBig || entry?.status === "error" ? "#e07070" : "#555"};flex-shrink:0;">${statusText}</span>`
       + (tooBig ? `<span style="color:#e07070;font-weight:bold;flex-shrink:0;">✕ Too large</span>` : "")
-    if (isImg && !tooBig) {
+    if (isImg && !tooBig && (!entry || entry.status === "done")) {
       const img = document.createElement("img")
       img.style.cssText = "height:34px;width:auto;border:1px solid #333;flex-shrink:0;"
       img.src = URL.createObjectURL(file)

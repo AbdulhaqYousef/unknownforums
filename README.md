@@ -74,7 +74,14 @@ sudo nano /etc/caddy/Caddyfile
 
 ```
 unknownforums.fun, www.unknownforums.fun {
-    reverse_proxy 127.0.0.1:4251
+    reverse_proxy 127.0.0.1:4251 {
+        health_uri /up
+        health_interval 15s
+        transport http {
+            read_timeout 30m
+            write_timeout 30m
+        }
+    }
 
     header {
         -Server
@@ -84,9 +91,23 @@ unknownforums.fun, www.unknownforums.fun {
     encode gzip
 
     request_body {
-        max_size 100MB
+        max_size 500MB
     }
 }
+```
+
+Forum uploads go **directly to Cloudflare R2** from the browser. Configure R2 CORS on your bucket:
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://unknownforums.fun", "https://www.unknownforums.fun"],
+    "AllowedMethods": ["GET", "PUT", "POST", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
 ```
 
 ```bash

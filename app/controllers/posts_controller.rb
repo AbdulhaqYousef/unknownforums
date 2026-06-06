@@ -8,7 +8,12 @@ class PostsController < ApplicationController
     @post = service.call
 
     if @post
-      attach_errors = AttachmentCreator.attach(attachable: @post, user: current_user, files: params[:files])
+      attach_errors = AttachmentCreator.attach(
+        attachable: @post,
+        user: current_user,
+        files: params[:files],
+        signed_ids: params[:file_signed_ids]
+      )
       broadcast_post
       flash[:alert] = "Some files could not be attached: #{attach_errors.join('; ')}" if attach_errors.any?
       redirect_to forum_thread_path(@thread, anchor: "post-#{@post.id}"), notice: "Reply posted."
@@ -26,7 +31,12 @@ class PostsController < ApplicationController
     @post.assign_attributes(post_params)
     @post.edited_at = Time.current if @post.body_changed?
     if @post.save
-      attach_errors = AttachmentCreator.attach(attachable: @post, user: current_user, files: params[:files])
+      attach_errors = AttachmentCreator.attach(
+        attachable: @post,
+        user: current_user,
+        files: params[:files],
+        signed_ids: params[:file_signed_ids]
+      )
       flash[:alert] = "Some files could not be attached: #{attach_errors.join('; ')}" if attach_errors.any?
       redirect_to forum_thread_path(@thread, anchor: "post-#{@post.id}"), notice: "Post updated."
     else
