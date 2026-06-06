@@ -135,6 +135,10 @@ class AllowedFileTypes
     end
 
     def admin_policy_label(record)
+      unless record.class.column_names.include?("allowed_file_types")
+        return "Site default (migration pending)"
+      end
+
       case record
       when Category
         if record.file_types_inherited?

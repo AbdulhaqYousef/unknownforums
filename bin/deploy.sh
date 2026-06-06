@@ -5,7 +5,7 @@
 #
 # Options:
 #   --no-cache    Build without cache (slower, use when gems/base image changed)
-#   --full        Full rebuild including db migrate and asset precompile
+#   --full        Also clear application cache after deploy
 #
 
 set -e
@@ -33,7 +33,7 @@ for arg in "$@"; do
       echo ""
       echo "Options:"
       echo "  --no-cache    Build without cache (slower, use when gems/Dockerfile changed)"
-      echo "  --full        Full deploy with db migrate and cache clear"
+      echo "  --full        Also clear application cache after deploy"
       echo "  --help, -h    Show this help"
       exit 0
       ;;
@@ -74,12 +74,9 @@ echo "🔄 Restarting containers..."
 docker compose up -d
 echo ""
 
-# Run migrations if full deploy
-if [ "$FULL" = true ]; then
-  echo "🗄️  Running database migrations..."
-  docker compose exec web bin/rails db:migrate
-  echo ""
-fi
+echo "🗄️  Running database migrations..."
+docker compose exec web bin/rails db:migrate
+echo ""
 
 # Clear cache if full deploy
 if [ "$FULL" = true ]; then
