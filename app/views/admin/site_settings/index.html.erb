@@ -1,10 +1,24 @@
 <% content_for :title, "Site Settings" %>
 
 <div style="max-width:500px;">
+  <div class="panel" style="margin-bottom:12px;">
+    <div class="panel-header">Allowed Upload Types</div>
+    <div class="panel-body">
+      <%= form_with url: admin_site_settings_path, method: :patch do |f| %>
+        <%= hidden_field_tag :save_upload_types, "1" %>
+        <%= render "admin/shared/file_type_restrictions",
+              inherit: false,
+              selected_groups: @selected_file_type_groups %>
+        <%= f.submit "Save Upload Types", class: "btn btn-primary" %>
+      <% end %>
+    </div>
+  </div>
+
   <div class="panel">
     <div class="panel-header">Maintenance Mode</div>
     <div class="panel-body">
       <%= form_with url: admin_site_settings_path, method: :patch do |f| %>
+        <%= hidden_field_tag :save_maintenance, "1" %>
         <div style="margin-bottom:12px; background:#1e1e1e; border:1px solid #333; padding:10px;">
           <label style="display:flex; align-items:flex-start; gap:8px; font-size:11px; color:#cfcfcf; cursor:pointer;">
             <input type="checkbox" name="maintenance_mode" value="1" <%= @maintenance ? "checked" : "" %> style="width:14px; height:14px; margin-top:1px;">

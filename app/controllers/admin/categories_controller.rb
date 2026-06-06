@@ -1,4 +1,6 @@
 class Admin::CategoriesController < ApplicationController
+  include AdminFileTypeParams
+
   before_action :require_admin
   before_action :set_category, only: %i[edit update destroy]
 
@@ -16,6 +18,8 @@ class Admin::CategoriesController < ApplicationController
 
   def create
     @category = Category.new(category_params)
+    return render(:new, status: :unprocessable_entity) unless apply_record_file_type_settings(@category)
+
     if @category.save
       redirect_to admin_categories_path, notice: "Category created."
     else
@@ -27,7 +31,10 @@ class Admin::CategoriesController < ApplicationController
   end
 
   def update
-    if @category.update(category_params)
+    @category.assign_attributes(category_params)
+    return render(:edit, status: :unprocessable_entity) unless apply_record_file_type_settings(@category)
+
+    if @category.save
       redirect_to admin_categories_path, notice: "Category updated."
     else
       render :edit, status: :unprocessable_entity

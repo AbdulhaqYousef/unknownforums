@@ -2,14 +2,15 @@ require "securerandom"
 
 class AttachmentCreator
   def self.attach(attachable:, user:, files:, signed_ids: nil)
+    allowed_types = AllowedFileTypes.for_attachable(attachable)
     if signed_ids.present?
-      attach_from_signed_ids(attachable: attachable, user: user, signed_ids: signed_ids)
+      attach_from_signed_ids(attachable: attachable, user: user, signed_ids: signed_ids, allowed_types: allowed_types)
     else
-      attach_from_uploads(attachable: attachable, user: user, files: files)
+      attach_from_uploads(attachable: attachable, user: user, files: files, allowed_types: allowed_types)
     end
   end
 
-  def self.attach_from_signed_ids(attachable:, user:, signed_ids:)
+  def self.attach_from_signed_ids(attachable:, user:, signed_ids:, allowed_types:)
     errors = []
     Array(signed_ids).compact.each do |signed_id|
       blob = ActiveStorage::Blob.find_signed(signed_id)
@@ -26,8 +27,8 @@ class AttachmentCreator
       end
 
       content_type = blob.content_type.presence || "application/octet-stream"
-      unless Attachment::ALLOWED_TYPES.include?(content_type)
-        errors << "#{label}: content type is not allowed"
+      unless allowed_types.include?(content_type)
+        errors << "#{label}: content type is not allowed in this forum"
         blob.purge_later
         next
       end
@@ -49,7 +50,8 @@ class AttachmentCreator
         filename: stored_filename,
         content_type: content_type,
         byte_size: blob.byte_size,
-        is_video: content_type.start_with?("video/")
+        is_video: content_type.start_with?("video/"),
+        allowed_content_types: allowed_types
       )
       attachment.file.attach(blob)
       finalize_attachment(attachment, label, errors)
@@ -57,10 +59,15 @@ class AttachmentCreator
     errors
   end
 
-  def self.attach_from_uploads(attachable:, user:, files:)
+  def self.attach_from_uploads(attachable:, user:, files:, allowed_types:)
     errors = []
     Array(files).compact.select { |f| f.respond_to?(:original_filename) }.each do |file|
       content_type = file.content_type.presence || "application/octet-stream"
+
+      unless allowed_types.include?(content_type)
+        errors << "#{file.original_filename}: content type is not allowed in this forum"
+        next
+      end
 
       io = file.respond_to?(:tempfile) ? file.tempfile : file.to_io
       io.rewind if io.respond_to?(:rewind)
@@ -77,7 +84,8 @@ class AttachmentCreator
         filename: stored_filename,
         content_type: content_type,
         byte_size: file.size,
-        is_video: content_type.start_with?("video/")
+        is_video: content_type.start_with?("video/"),
+        allowed_content_types: allowed_types
       )
       attach_file(attachment, io, attachable, user, content_type)
       finalize_attachment(attachment, file.original_filename, errors)

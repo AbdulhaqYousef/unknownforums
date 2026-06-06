@@ -1,5 +1,5 @@
 class Attachment < ApplicationRecord
-  ALLOWED_TYPES = %w[
+  DEFAULT_ALLOWED_TYPES = %w[
     image/jpeg image/png image/gif image/webp
     application/pdf text/plain
     application/zip application/x-zip-compressed
@@ -11,6 +11,10 @@ class Attachment < ApplicationRecord
     application/javascript text/javascript
     application/x-apple-diskimage
   ].freeze
+
+  ALLOWED_TYPES = DEFAULT_ALLOWED_TYPES
+
+  attr_accessor :allowed_content_types
 
   MAX_SIZE = 500.megabytes
 
@@ -34,7 +38,7 @@ class Attachment < ApplicationRecord
   has_one_attached :file
 
   validates :filename, presence: true
-  validates :content_type, inclusion: { in: ALLOWED_TYPES, message: "is not an allowed type. Allowed: images, videos, ZIP, PDF, executables, scripts, plain text, torrent" }
+  validate :content_type_is_allowed
   validates :byte_size, numericality: { less_than_or_equal_to: MAX_SIZE, message: "is too large — maximum upload size is 500 MB" }
 
   VT_STATUSES = %w[pending scanning clean suspicious malicious skipped].freeze
@@ -125,4 +129,12 @@ class Attachment < ApplicationRecord
   end
 
   private
+
+  def content_type_is_allowed
+    allowed = allowed_content_types.presence || AllowedFileTypes.for_attachable(attachable)
+    return if allowed.include?(content_type)
+
+    summary = AllowedFileTypes.human_summary(allowed)
+    errors.add(:content_type, "is not allowed here. Allowed: #{summary}")
+  end
 end

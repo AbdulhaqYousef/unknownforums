@@ -1,4 +1,6 @@
 class Category < ApplicationRecord
+  include FileTypeRestrictions
+
   has_many :subforums, -> { order(:position) }, dependent: :destroy
   has_many :category_moderators, dependent: :destroy
   has_many :staff, through: :category_moderators, source: :user

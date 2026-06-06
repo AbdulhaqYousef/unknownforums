@@ -39,6 +39,7 @@ class AttachmentsController < ApplicationController
   def new_version
     require_login
     require_owner_or_moderator(@attachment.root_attachment.user)
+    @allowed_types = AllowedFileTypes.for_attachable(@attachment.root_attachment.attachable)
   end
 
   def upload_version
@@ -52,6 +53,12 @@ class AttachmentsController < ApplicationController
     end
 
     content_type = file.content_type.presence || "application/octet-stream"
+    allowed_types = AllowedFileTypes.for_attachable(root.attachable)
+    unless allowed_types.include?(content_type)
+      return redirect_to new_version_attachment_path(@attachment),
+        alert: "That file type is not allowed in this forum."
+    end
+
     next_version  = root.versions.maximum(:version).to_i + 2
     stored_filename = AttachmentCreator.stored_filename_for(root.attachable, file.original_filename)
 
@@ -64,7 +71,8 @@ class AttachmentsController < ApplicationController
       is_video:             content_type.start_with?("video/"),
       parent_attachment_id: root.id,
       version:              next_version,
-      approved:             false
+      approved:             false,
+      allowed_content_types: allowed_types
     )
     AttachmentCreator.attach_file(new_att, file, root.attachable, current_user, content_type)
 

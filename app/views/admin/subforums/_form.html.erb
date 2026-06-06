@@ -27,6 +27,12 @@
     <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Position:</label>
     <%= f.number_field :position, style: "width:80px;", min: 0 %>
   </div>
+  <%= render "admin/shared/file_type_restrictions",
+        inherit: true,
+        inherit_checked: subforum.file_types_inherited?,
+        inherit_label: "Use category default file types",
+        selected_groups: subforum.file_types_inherited? ? AllowedFileTypes.selected_groups_for(subforum.category&.allowed_file_types) : subforum.selected_file_type_groups,
+        field_prefix: "subforum-" %>
   <div style="display:flex; gap:8px;">
     <%= f.submit subforum.new_record? ? "Create" : "Save", class: "btn btn-primary" %>
     <a href="<%= admin_subforums_path %>" class="btn">Cancel</a>

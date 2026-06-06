@@ -30,7 +30,7 @@
       <% end %>
 
       <div style="margin-bottom:12px;">
-        <%= render "shared/file_upload_field" %>
+        <%= render "shared/file_upload_field", allowed_types: AllowedFileTypes.for_subforum(@thread.subforum) %>
       </div>
 
       <div style="display:flex; gap:8px;">

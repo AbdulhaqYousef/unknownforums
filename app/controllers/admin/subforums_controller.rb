@@ -1,4 +1,6 @@
 class Admin::SubforumsController < ApplicationController
+  include AdminFileTypeParams
+
   before_action :require_admin
   before_action :set_subforum, only: %i[edit update destroy]
 
@@ -17,6 +19,8 @@ class Admin::SubforumsController < ApplicationController
 
   def create
     @subforum = Subforum.new(subforum_params)
+    return render(:new, status: :unprocessable_entity) unless apply_record_file_type_settings(@subforum)
+
     if @subforum.save
       redirect_to admin_subforums_path, notice: "Subforum created."
     else
@@ -30,7 +34,10 @@ class Admin::SubforumsController < ApplicationController
   end
 
   def update
-    if @subforum.update(subforum_params)
+    @subforum.assign_attributes(subforum_params)
+    return render(:edit, status: :unprocessable_entity) unless apply_record_file_type_settings(@subforum)
+
+    if @subforum.save
       redirect_to admin_subforums_path, notice: "Subforum updated."
     else
       @categories = Category.all

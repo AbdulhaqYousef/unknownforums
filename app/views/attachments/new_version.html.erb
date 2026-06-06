@@ -32,11 +32,11 @@
       <div style="margin-bottom:10px;">
         <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Select file (replaces current version):</label>
         <input type="file" name="file"
-          accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/ogg,application/pdf,text/plain,application/zip,application/x-zip-compressed,application/x-bittorrent,application/x-msdownload,application/x-msdos-program,application/x-dosexec,application/octet-stream,application/x-sh,application/x-powershell,application/javascript,text/javascript,application/x-apple-diskimage"
+          accept="<%= AllowedFileTypes.accept_attribute(@allowed_types) %>"
           style="font-size:12px;">
       </div>
       <div style="font-size:10px; color:#666; margin-bottom:8px;">
-        Allowed: images, videos, PDF, ZIP, torrent, executables (.exe, .dll, .msi, .sh, .bat, .ps1, .js, .vbs, .dmg).<br>
+        Allowed here: <%= AllowedFileTypes.human_summary(@allowed_types) %>.<br>
         Executables, scripts, and archives will be scanned by VirusTotal.<br>
         Max size: <%= number_to_human_size(Attachment::MAX_SIZE) %>.
       </div>

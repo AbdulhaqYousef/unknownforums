@@ -253,6 +253,20 @@ function maxFileLabel() {
   return fmtSize(maxFileBytes())
 }
 
+function allowedMimeTypes() {
+  const zone = document.getElementById("file-drop-zone")
+  const raw  = zone?.dataset.allowedTypes
+  if (!raw) return []
+  return raw.split(",").map(s => s.trim()).filter(Boolean)
+}
+
+function fileTypeAllowed(file) {
+  const allowed = allowedMimeTypes()
+  if (!allowed.length) return true
+  if (file.type && allowed.includes(file.type)) return true
+  return allowed.includes("application/octet-stream") && (!file.type || file.type === "application/octet-stream")
+}
+
 function fileKey(file) {
   return `${file.name}:${file.size}:${file.lastModified}`
 }
@@ -304,7 +318,7 @@ function queueDirectUploads(input) {
 
   Array.from(input.files).forEach(file => {
     const key = fileKey(file)
-    if (file.size > maxFileBytes()) return
+    if (file.size > maxFileBytes() || !fileTypeAllowed(file)) return
     if (zone._uploads.has(key) && zone._uploads.get(key).status !== "error") return
 
     zone._uploads.set(key, { status: "uploading", progress: 0, signedId: null, error: null })
@@ -432,7 +446,8 @@ function initFileUploadForms() {
     }
 
     const oversized = Array.from(input.files).filter(f => f.size > maxFileBytes())
-    if (oversized.length) {
+    const blocked   = Array.from(input.files).filter(f => !fileTypeAllowed(f))
+    if (oversized.length || blocked.length) {
       event.preventDefault()
       return
     }
@@ -459,16 +474,27 @@ function renderFilePreview(files) {
 
   const limit = maxFileBytes()
   const oversized = Array.from(files).filter(f => f.size > limit)
+  const blocked   = Array.from(files).filter(f => f.size <= limit && !fileTypeAllowed(f))
   const input     = document.getElementById("file-upload-input")
   const form      = input ? input.closest("form") : null
   const uploads   = directUploadState()
+  const hasErrors = oversized.length > 0 || blocked.length > 0
 
-  if (oversized.length) {
+  if (hasErrors) {
     if (errBox) {
       errBox.style.display = "block"
-      errBox.innerHTML = "<strong>File size exceeded (" + maxFileLabel() + " limit):</strong><ul style='margin:3px 0 0 14px;padding:0;'>"
-        + oversized.map(f => `<li>${f.name} — ${fmtSize(f.size)}</li>`).join("")
-        + "</ul>"
+      let html = ""
+      if (oversized.length) {
+        html += "<strong>File size exceeded (" + maxFileLabel() + " limit):</strong><ul style='margin:3px 0 0 14px;padding:0;'>"
+          + oversized.map(f => `<li>${f.name} — ${fmtSize(f.size)}</li>`).join("")
+          + "</ul>"
+      }
+      if (blocked.length) {
+        html += "<strong>File type not allowed here:</strong><ul style='margin:3px 0 0 14px;padding:0;'>"
+          + blocked.map(f => `<li>${f.name}${f.type ? ` (${f.type})` : ""}</li>`).join("")
+          + "</ul>"
+      }
+      errBox.innerHTML = html
     }
     if (form) form.querySelectorAll("[type=submit]").forEach(btn => { btn.disabled = true; btn._fileSizeBlock = true })
   } else if (!uploads.enabled || uploads.pending === 0) {
@@ -477,9 +503,10 @@ function renderFilePreview(files) {
     })
   }
 
-  const ok = Array.from(files).filter(f => f.size <= limit)
+  const ok = Array.from(files).filter(f => f.size <= limit && fileTypeAllowed(f))
   let labelText = ok.length + " file" + (ok.length !== 1 ? "s" : "") + " ready"
   if (oversized.length) labelText += ` · ${oversized.length} too large`
+  if (blocked.length) labelText += ` · ${blocked.length} blocked type`
   if (uploads.enabled && uploads.pending > 0) labelText += ` · uploading ${uploads.pending}…`
   label.textContent = labelText
 
@@ -492,6 +519,8 @@ function renderFilePreview(files) {
   const zone = document.getElementById("file-drop-zone")
   Array.from(files).forEach(file => {
     const tooBig = file.size > limit
+    const badType = !tooBig && !fileTypeAllowed(file)
+    const blocked = tooBig || badType
     const key    = fileKey(file)
     const entry  = zone?._uploads?.get(key)
     const isImg  = file.type.startsWith("image/")
@@ -499,8 +528,8 @@ function renderFilePreview(files) {
     const tag    = isImg ? "IMG" : isVid ? "VID" : "FILE"
     const row    = document.createElement("div")
     row.style.cssText = `font-size:10px;padding:3px 5px;margin-bottom:2px;display:flex;align-items:center;gap:6px;`
-      + `background:${tooBig ? "rgba(192,80,80,0.08)" : "rgba(255,255,255,0.02)"};`
-      + `border:1px solid ${tooBig ? "#803030" : "#2e2e2e"};border-radius:2px;`
+      + `background:${blocked ? "rgba(192,80,80,0.08)" : "rgba(255,255,255,0.02)"};`
+      + `border:1px solid ${blocked ? "#803030" : "#2e2e2e"};border-radius:2px;`
 
     let statusText = fmtSize(file.size)
     if (entry?.status === "uploading") {
@@ -511,11 +540,12 @@ function renderFilePreview(files) {
       statusText = "Upload failed"
     }
 
-    row.innerHTML = `<span style="border:1px solid #555;padding:1px 4px;font-size:9px;color:${tooBig?"#e07070":"#aaa"};">${tag}</span>`
-      + `<span style="flex:1;color:${tooBig?"#e07070":"#a8c8f0"};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${file.name}">${file.name}</span>`
-      + `<span style="color:${tooBig || entry?.status === "error" ? "#e07070" : "#555"};flex-shrink:0;">${statusText}</span>`
+    row.innerHTML = `<span style="border:1px solid #555;padding:1px 4px;font-size:9px;color:${blocked?"#e07070":"#aaa"};">${tag}</span>`
+      + `<span style="flex:1;color:${blocked?"#e07070":"#a8c8f0"};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${file.name}">${file.name}</span>`
+      + `<span style="color:${blocked || entry?.status === "error" ? "#e07070" : "#555"};flex-shrink:0;">${statusText}</span>`
       + (tooBig ? `<span style="color:#e07070;font-weight:bold;flex-shrink:0;">✕ Too large</span>` : "")
-    if (isImg && !tooBig && (!entry || entry.status === "done")) {
+      + (badType ? `<span style="color:#e07070;font-weight:bold;flex-shrink:0;">✕ Not allowed</span>` : "")
+    if (isImg && !blocked && (!entry || entry.status === "done")) {
       const img = document.createElement("img")
       img.style.cssText = "height:34px;width:auto;border:1px solid #333;flex-shrink:0;"
       img.src = URL.createObjectURL(file)

@@ -22,6 +22,12 @@
     <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Position (lower = first):</label>
     <%= f.number_field :position, style: "width:80px;", min: 0 %>
   </div>
+  <%= render "admin/shared/file_type_restrictions",
+        inherit: true,
+        inherit_checked: category.file_types_inherited?,
+        inherit_label: "Use site default file types",
+        selected_groups: category.file_types_inherited? ? SiteSetting.selected_file_type_groups : category.selected_file_type_groups,
+        field_prefix: "category-" %>
   <div style="display:flex; gap:8px;">
     <%= f.submit category.new_record? ? "Create" : "Save", class: "btn btn-primary" %>
     <a href="<%= admin_categories_path %>" class="btn">Cancel</a>
