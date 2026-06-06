@@ -38,7 +38,7 @@ class Admin::SubforumsController < ApplicationController
     return render(:edit, status: :unprocessable_entity) unless apply_record_file_type_settings(@subforum)
 
     if @subforum.save
-      redirect_to admin_subforums_path, notice: "Subforum updated."
+      redirect_to edit_admin_subforum_path(@subforum), notice: "Subforum updated."
     else
       @categories = Category.all
       render :edit, status: :unprocessable_entity

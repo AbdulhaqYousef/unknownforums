@@ -67,6 +67,7 @@ class AllowedFileTypes
     ".m4a" => "audio/mp4",
     ".md" => "text/markdown",
     ".mkv" => "video/x-matroska",
+    ".mcpack" => "application/octet-stream",
     ".mod" => "application/octet-stream",
     ".mp3" => "audio/mpeg",
     ".msi" => "application/x-msdownload",
@@ -309,18 +310,24 @@ class AllowedFileTypes
       }.to_json
     end
 
+    def store_record_policy(groups:, custom: nil, inherit_groups: false)
+      return store_inherit_custom(custom: custom) if inherit_groups
+
+      group_keys = Array(groups).map(&:to_s).select { |key| GROUPS.key?(key) }
+      custom_entries = parse_custom_input(custom)
+      payload = {
+        "inherit_groups" => false,
+        "groups" => group_keys
+      }
+      payload["custom"] = custom_entries.map { |entry| entry[:input] } if custom_entries.any?
+      payload.to_json
+    end
+
     def store_policy(groups:, custom: nil)
       group_keys = Array(groups).map(&:to_s).select { |key| GROUPS.key?(key) }
       custom_entries = parse_custom_input(custom)
-      payload = {}
-
-      if group_keys.sort != self.group_keys.sort
-        payload["groups"] = group_keys
-      end
+      payload = { "groups" => group_keys }
       payload["custom"] = custom_entries.map { |entry| entry[:input] } if custom_entries.any?
-
-      return nil if payload.empty?
-
       payload.to_json
     end
 

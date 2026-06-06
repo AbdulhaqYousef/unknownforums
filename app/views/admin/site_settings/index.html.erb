@@ -8,7 +8,7 @@
   <div class="panel" style="margin-bottom:12px;">
     <div class="panel-header">Allowed Upload Types (Site-wide)</div>
     <div class="panel-body">
-      <%= form_with url: admin_site_settings_path, method: :patch do |f| %>
+      <%= form_with url: admin_site_settings_path, method: :patch, data: { turbo: false } do |f| %>
         <%= hidden_field_tag :save_upload_types, "1" %>
         <%= render "admin/shared/file_type_restrictions",
               inherit: false,

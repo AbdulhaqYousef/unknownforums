@@ -19,7 +19,11 @@ module AdminFileTypeParams
       return false
     end
 
-    record.allowed_file_types = AllowedFileTypes.store_policy(groups: groups, custom: custom)
+    record.allowed_file_types = AllowedFileTypes.store_record_policy(
+      groups: groups.presence || [],
+      custom: custom,
+      inherit_groups: false
+    )
     true
   end
 end

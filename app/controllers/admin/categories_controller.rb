@@ -35,7 +35,7 @@ class Admin::CategoriesController < ApplicationController
     return render(:edit, status: :unprocessable_entity) unless apply_record_file_type_settings(@category)
 
     if @category.save
-      redirect_to admin_categories_path, notice: "Category updated."
+      redirect_to edit_admin_category_path(@category), notice: "Category updated."
     else
       render :edit, status: :unprocessable_entity
     end
