@@ -77,6 +77,37 @@ document.addEventListener("turbo:load", () => {
   initBulkPosts()
   initQuotePost()
   initAdminThreadBulk()
+  initAdminFileTypeInherit()
+})
+
+/* ── Admin file type inherit toggle ── */
+let _adminFileTypeInheritInit = false
+
+function syncFileTypeInherit(inheritBox) {
+  const groupsBox = document.getElementById(inheritBox.dataset.fileTypeGroups)
+  const hintBox   = inheritBox.dataset.fileTypeHint ? document.getElementById(inheritBox.dataset.fileTypeHint) : null
+  const locked      = inheritBox.checked
+
+  if (groupsBox) {
+    groupsBox.style.opacity = locked ? "0.45" : ""
+    groupsBox.style.pointerEvents = locked ? "none" : ""
+  }
+  if (hintBox) hintBox.style.display = locked ? "" : "none"
+}
+
+function initAdminFileTypeInherit() {
+  if (_adminFileTypeInheritInit) return
+  _adminFileTypeInheritInit = true
+
+  document.addEventListener("change", (event) => {
+    const inheritBox = event.target.closest("[data-file-type-inherit-toggle]")
+    if (!inheritBox) return
+    syncFileTypeInherit(inheritBox)
+  })
+}
+
+document.addEventListener("turbo:load", () => {
+  document.querySelectorAll("[data-file-type-inherit-toggle]").forEach(syncFileTypeInherit)
 })
 
 /* ── Category collapse ── */
