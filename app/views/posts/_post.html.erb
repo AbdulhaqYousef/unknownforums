@@ -5,8 +5,8 @@
 <div id="post-<%= post.id %>" class="uc-post">
   <div class="uc-post-user">
     <% if post.user.badges.any? %>
-      <div class="uc-badges" style="margin-bottom:6px;">
-        <%= render "shared/user_badges", badges: post.user.badges.includes(image_attachment: :blob).ordered, size: 44 %>
+      <div class="uc-badges">
+        <%= render "shared/user_badges", badges: post.user.badges.includes(image_attachment: :blob).ordered, size: 180, featured: true %>
       </div>
     <% end %>
     <div class="uc-username">

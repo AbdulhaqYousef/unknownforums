@@ -175,13 +175,23 @@
       .uc-post { display: flex; border-top: 1px solid var(--border-dim); }
       .uc-post:first-child { border-top: none; }
       .uc-post-user {
-        width: 168px;
-        min-width: 168px;
+        width: 210px;
+        min-width: 210px;
         background: #1d1d1d;
         border-right: 1px solid var(--border-dim);
         padding: 10px 8px;
         text-align: center;
       }
+      .uc-post-user .user-badges-display { width: 100%; margin-bottom: 8px; }
+      .user-badges-display--featured .user-badge-item { width: 100%; }
+      .user-badges-display--featured .user-badge-img {
+        width: 100% !important;
+        height: auto !important;
+        min-width: 0 !important;
+        min-height: 130px !important;
+        max-height: 200px !important;
+      }
+      .user-badges-display .user-badge-img { image-rendering: auto; }
       .uc-post-user .uc-username { font-size: 12px; font-weight: bold; }
       .uc-post-user .uc-username a { color: var(--link-hover); }
       .uc-post-user .uc-rank { font-size: 10px; color: var(--text-dim); margin-top: 2px; }

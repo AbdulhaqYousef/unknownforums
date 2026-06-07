@@ -17,14 +17,14 @@
 
 <div style="display:flex; gap:12px; align-items:flex-start;">
   <!-- User card -->
-  <div style="width:200px; flex-shrink:0;">
+  <div style="width:240px; flex-shrink:0;">
     <div style="background:#242424; border:1px solid #444;">
       <div style="background:#303030; border-bottom:1px solid #444; padding:5px 8px; font-size:12px; font-weight:bold; color:#e0e0e0; text-align:center;">
         <%= @user.username %>
       </div>
       <div style="padding:10px; text-align:center;">
         <% if @badges.any? %>
-          <%= render "shared/user_badges", badges: @badges, size: 52 %>
+          <%= render "shared/user_badges", badges: @badges, size: 160, featured: true %>
         <% end %>
         <% if @user.profile_gif.attached? %>
           <div style="margin-bottom:8px;"><%= profile_gif_tag @user %></div>
@@ -83,7 +83,7 @@
     <% if @badges.any? %>
       <div style="background:#242424; border:1px solid #444; padding:10px 12px; margin-bottom:8px;">
         <div style="font-size:10px; color:#666; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.05em;">Badges</div>
-        <%= render "shared/user_badges", badges: @badges, size: 56, show_names: true %>
+        <%= render "shared/user_badges", badges: @badges, size: 112, show_names: true %>
       </div>
     <% end %>
     <% if @trophies.any? %>
