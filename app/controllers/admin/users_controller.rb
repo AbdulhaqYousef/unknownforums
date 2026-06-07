@@ -19,11 +19,11 @@ class Admin::UsersController < ApplicationController
                         .select(:ip_address)
                         .distinct
                         .pluck(:ip_address)
-    @user_badges = @user.user_badges.includes(:badge, badge: { image_attachment: :blob }).recent
-    @available_badges = Badge.ordered.where.not(id: @user.badge_ids)
+    load_user_badges
   end
 
   def edit
+    load_user_badges
   end
 
   def update
@@ -69,6 +69,11 @@ class Admin::UsersController < ApplicationController
 
   def set_user
     @user = User.find(params[:id])
+  end
+
+  def load_user_badges
+    @user_badges = @user.user_badges.includes(:badge, badge: { image_attachment: :blob }).recent
+    @available_badges = Badge.ordered.where.not(id: @user.badge_ids)
   end
 
   def user_params

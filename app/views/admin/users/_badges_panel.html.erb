@@ -1,0 +1,60 @@
+<div class="panel" style="margin-top:14px;">
+  <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <span>Badges (<%= user_badges.size %>)</span>
+    <a href="<%= admin_badges_path %>" class="btn btn-sm">Manage Badges</a>
+  </div>
+  <div class="panel-body" style="padding:0;">
+    <% if user_badges.any? %>
+      <table>
+        <tr style="background:#222; font-size:10px; color:#666; text-transform:uppercase;">
+          <th style="text-align:left;">Badge</th>
+          <th style="text-align:left;">Awarded</th>
+          <th style="text-align:left;">By</th>
+          <th style="text-align:center;">Actions</th>
+        </tr>
+        <% user_badges.each do |ub| %>
+          <tr>
+            <td style="padding:6px 10px; font-size:12px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <%= badge_image_tag ub.badge, size: 28 if ub.badge.image.attached? %>
+                <span><%= ub.badge.name %></span>
+              </div>
+            </td>
+            <td style="padding:6px 10px; font-size:11px; color:#888;"><%= ub.awarded_at.strftime("%m/%d/%Y") %></td>
+            <td style="padding:6px 10px; font-size:11px; color:#888;"><%= ub.awarded_by&.username || "—" %></td>
+            <td style="padding:6px 10px; text-align:center;">
+              <div class="action-group" style="justify-content:center;">
+                <%= button_to "Remove", admin_user_user_badge_path(user, ub), method: :delete, class: "btn btn-danger btn-sm", data: { turbo_confirm: "Remove badge \"#{ub.badge.name}\"?" } %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    <% else %>
+      <div style="padding:12px; color:#666; font-size:12px;">No badges awarded yet.</div>
+    <% end %>
+  </div>
+  <div class="panel-body" style="border-top:1px solid #333;">
+    <% if available_badges.any? %>
+      <%= form_with url: admin_user_user_badges_path(user), method: :post, style: "display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap;" do %>
+        <div>
+          <label style="font-size:10px; color:#888;">Award badge</label><br>
+          <select name="badge_id" style="min-width:180px;">
+            <% available_badges.each do |badge| %>
+              <option value="<%= badge.id %>"><%= badge.name %></option>
+            <% end %>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">Award</button>
+      <% end %>
+    <% else %>
+      <div style="font-size:11px; color:#666;">
+        <% if Badge.any? %>
+          This user has every badge. <a href="<%= admin_badges_path %>" style="color:#7aabde;">Create another badge</a>
+        <% else %>
+          No badges exist yet. <a href="<%= new_admin_badge_path %>" style="color:#7aabde;">Create a badge</a> first.
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

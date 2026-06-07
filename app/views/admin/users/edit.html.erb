@@ -2,9 +2,11 @@
 
 <div style="font-size:11px; color:#888; margin-bottom:6px;">
   <a href="<%= admin_users_path %>">← Users</a>
+  &middot;
+  <a href="<%= admin_user_path(@user) %>">User details</a>
 </div>
 
-<div style="max-width:400px;">
+<div style="max-width:520px;">
   <div style="background:#242424; border:1px solid #444;">
     <div style="background:#303030; border-bottom:1px solid #444; padding:6px 10px; font-size:13px; font-weight:bold; color:#e0e0e0;">
       Edit User: <%= @user.username %>
@@ -56,3 +58,5 @@
     </div>
   </div>
 </div>
+
+<%= render "badges_panel", user: @user, user_badges: @user_badges, available_badges: @available_badges %>

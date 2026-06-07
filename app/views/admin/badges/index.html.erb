@@ -4,7 +4,7 @@
 </div>
 
 <div style="background:#1a242a; border:1px solid #2a3a44; padding:8px 10px; margin-bottom:10px; font-size:11px; color:#9ab;">
-  Create custom badges with GIF or image icons. Award them to users from their admin profile page.
+  Create custom badges with GIF or image icons. Award them from a user's <strong>Manage</strong> or <strong>Edit</strong> page in Users.
   Users earn <strong>15 XP per post</strong>; every <strong>100 XP = 1 level</strong>.
 </div>
 
@@ -35,8 +35,10 @@
         <td style="padding:5px 10px; text-align:center; font-size:12px;"><%= badge.position %></td>
         <td style="padding:5px 10px; text-align:center; font-size:12px;"><%= badge.user_badges.count %></td>
         <td style="padding:5px 10px; text-align:center; white-space:nowrap;">
-          <a href="<%= edit_admin_badge_path(badge) %>" class="btn btn-sm">Edit</a>
-          <%= button_to "Delete", admin_badge_path(badge), method: :delete, class: "btn btn-danger btn-sm", data: { turbo_confirm: "Delete badge \"#{badge.name}\"?" } %>
+          <div class="action-group" style="justify-content:center;">
+            <a href="<%= edit_admin_badge_path(badge) %>" class="btn btn-sm">Edit</a>
+            <%= button_to "Delete", admin_badge_path(badge), method: :delete, class: "btn btn-danger btn-sm", data: { turbo_confirm: "Delete badge \"#{badge.name}\"?" } %>
+          </div>
         </td>
       </tr>
     <% end %>
