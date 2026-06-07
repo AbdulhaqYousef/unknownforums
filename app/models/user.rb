@@ -238,6 +238,20 @@ class User < ApplicationRecord
     update_columns(password_reset_token: nil, password_reset_sent_at: nil)
   end
 
+  def has_display_badges?
+    custom = custom_badge.attached?
+    return custom unless Badge.feature_available?
+
+    custom || badges.exists?
+  end
+
+  def display_badges_for_render
+    return [] unless Badge.feature_available?
+
+    collection = badges.loaded? ? badges : badges.includes(image_attachment: :blob).ordered
+    collection.to_a.sort_by { |badge| [ badge.position, badge.name ] }
+  end
+
   private
 
   def normalize_registration_fields
@@ -306,19 +320,5 @@ class User < ApplicationRecord
     return if LevelPerks.custom_badge_allowed?(self)
 
     errors.add(:custom_badge, LevelPerks.unlock_message(self, :custom_badge))
-  end
-
-  def has_display_badges?
-    custom = custom_badge.attached?
-    return custom unless Badge.feature_available?
-
-    custom || badges.exists?
-  end
-
-  def display_badges_for_render
-    return [] unless Badge.feature_available?
-
-    collection = badges.loaded? ? badges : badges.includes(image_attachment: :blob).ordered
-    collection.to_a.sort_by { |badge| [ badge.position, badge.name ] }
   end
 end
