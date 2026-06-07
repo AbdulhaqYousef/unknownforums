@@ -30,7 +30,7 @@ class UploadLimits
 
     def max_bytes_for_category(category)
       return global_max_bytes unless category
-      return global_max_bytes unless category.upload_limit_supported?
+      return global_max_bytes unless upload_limit_column?(category)
       return global_max_bytes if category.max_upload_bytes.blank?
 
       cap(category.max_upload_bytes)
@@ -38,6 +38,7 @@ class UploadLimits
 
     def max_bytes_for_subforum(subforum)
       return global_max_bytes unless subforum
+      return max_bytes_for_category(subforum.category) unless upload_limit_column?(subforum)
       return max_bytes_for_category(subforum.category) if subforum.max_upload_bytes.blank?
 
       cap(subforum.max_upload_bytes)
@@ -106,7 +107,7 @@ class UploadLimits
     end
 
     def admin_label(record)
-      unless record.class.column_names.include?("max_upload_bytes")
+      unless upload_limit_column?(record)
         return "Site default (#{global_label})"
       end
 
@@ -129,6 +130,10 @@ class UploadLimits
     end
 
     private
+
+    def upload_limit_column?(record)
+      record.class.column_names.include?("max_upload_bytes")
+    end
 
     def cap(bytes)
       [[bytes.to_i, MIN_BYTES].max, ABSOLUTE_MAX].min

@@ -78,6 +78,10 @@ echo "🗄️  Running database migrations..."
 docker compose exec web bin/rails db:migrate
 echo ""
 
+echo "🔄 Reloading app after migrations..."
+docker compose restart web worker 2>/dev/null || docker compose restart web
+echo ""
+
 # Clear cache if full deploy
 if [ "$FULL" = true ]; then
   echo "🧹 Clearing application cache..."
