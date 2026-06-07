@@ -17,12 +17,6 @@
       <% end %>
     </div>
 
-    <% if post.user.badges.any? %>
-      <div class="uc-badges">
-        <%= render "shared/user_badges", badges: post.user.badges.includes(image_attachment: :blob).ordered, size: 180, featured: true %>
-      </div>
-    <% end %>
-
     <div class="uc-info-row">
       <span class="uc-info-label">Join Date:</span>
       <span><%= post.user.created_at.strftime("%b %Y") %></span>
@@ -53,6 +47,12 @@
         <div class="uc-progress-bar"><div class="uc-progress-fill activity" style="width:<%= user_activity(post.user) %>%"></div></div>
       </div>
     </div>
+
+    <% if post.user.badges.any? %>
+      <div class="uc-badges" style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border-dim);">
+        <%= render "shared/user_badges", badges: post.user.badges.includes(image_attachment: :blob).ordered, size: 180, featured: true %>
+      </div>
+    <% end %>
   </div>
 
   <div class="uc-post-content">

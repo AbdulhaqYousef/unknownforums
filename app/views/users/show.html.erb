@@ -47,9 +47,6 @@
             Presence hidden
           <% end %>
         </div>
-        <% if @badges.any? %>
-          <%= render "shared/user_badges", badges: @badges, size: 160, featured: true %>
-        <% end %>
         <table style="font-size:10px; color:#666; width:100%; text-align:left;">
           <tr><td>Posts:</td><td><strong><%= @user.post_count %></strong></td></tr>
           <tr><td>Threads:</td><td><strong><%= @user.forum_threads.count %></strong></td></tr>
@@ -58,6 +55,11 @@
           <tr><td>Downloads:</td><td><strong><%= @user.downloaded_files_count %></strong></td></tr>
           <tr><td>Joined:</td><td><strong><%= @user.created_at.strftime("%m/%d/%Y") %></strong></td></tr>
         </table>
+        <% if @badges.any? %>
+          <div style="margin-top:10px; padding-top:10px; border-top:1px solid #333;">
+            <%= render "shared/user_badges", badges: @badges, size: 160, featured: true %>
+          </div>
+        <% end %>
       </div>
       <div class="action-stack" style="border-top:1px solid #333; padding:8px;">
         <% if logged_in? && current_user != @user %>
