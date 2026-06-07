@@ -1,4 +1,5 @@
 <% content_for :title, @query.present? ? "Search: #{@query}" : "Search" %>
+<% noindex_page if @query.present? %>
 
 <div class="panel" style="margin-bottom:10px;">
   <div class="panel-body">

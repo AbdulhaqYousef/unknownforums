@@ -56,6 +56,6 @@ class Admin::CategoriesController < ApplicationController
   end
 
   def category_params
-    params.require(:category).permit(:name, :description, :position)
+    params.require(:category).permit(:name, :description, :position, :public_read)
   end
 end

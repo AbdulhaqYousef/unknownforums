@@ -24,11 +24,12 @@ class SearchService
 
   Result = Struct.new(:featured, :threads, :posts, :filters, keyword_init: true)
 
-  attr_reader :query, :params
+  attr_reader :query, :params, :user
 
-  def initialize(query:, params: {})
+  def initialize(query:, params: {}, user: nil)
     @query = query.to_s.strip
     @params = params
+    @user = user
   end
 
   def call
@@ -137,6 +138,7 @@ class SearchService
   end
 
   def apply_thread_filters(scope, filters)
+    scope = scope.where(forum_threads: { subforum_id: readable_subforum_ids })
     scope = scope.where(forum_threads: { subforum_id: filters[:subforum_id] }) if filters[:subforum_id].present?
     scope = scope.where(users: { username: filters[:author] }) if filters[:author].present?
     scope = scope.where("forum_threads.created_at >= ?", filters[:from].beginning_of_day) if filters[:from]
@@ -145,11 +147,16 @@ class SearchService
   end
 
   def apply_post_filters(scope, filters)
+    scope = scope.where(forum_threads: { subforum_id: readable_subforum_ids })
     scope = scope.where(forum_threads: { subforum_id: filters[:subforum_id] }) if filters[:subforum_id].present?
     scope = scope.where(users: { username: filters[:author] }) if filters[:author].present?
     scope = scope.where("posts.created_at >= ?", filters[:from].beginning_of_day) if filters[:from]
     scope = scope.where("posts.created_at <= ?", filters[:to].end_of_day) if filters[:to]
     scope = scope.joins(:attachments).distinct if filters[:with_attachments]
     scope
+  end
+
+  def readable_subforum_ids
+    @readable_subforum_ids ||= Subforum.readable_by(user).pluck(:id)
   end
 end

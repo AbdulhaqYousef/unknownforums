@@ -60,6 +60,6 @@ class Admin::SubforumsController < ApplicationController
   end
 
   def subforum_params
-    params.require(:subforum).permit(:name, :description, :category_id, :position)
+    params.require(:subforum).permit(:name, :description, :category_id, :position, :public_read)
   end
 end

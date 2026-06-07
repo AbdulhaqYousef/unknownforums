@@ -6,6 +6,7 @@ class AttachmentsController < ApplicationController
   def show
     @comments   = @attachment.file_comments.visible.includes(:user).order(:created_at)
     @avg_rating = @attachment.file_comments.visible.where.not(rating: nil).average(:rating)
+    @thread     = @attachment.forum_thread
   end
 
   def download
@@ -110,6 +111,12 @@ class AttachmentsController < ApplicationController
   end
 
   def authorize_attachment_access!
+    if @attachment.public_forum_file?
+      thread = @attachment.forum_thread
+      ensure_subforum_readable!(thread.subforum) if thread
+      return if performed?
+    end
+
     return unless @attachment.dm_file?
     return if moderator_or_admin?
 

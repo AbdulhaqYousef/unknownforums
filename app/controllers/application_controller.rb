@@ -93,7 +93,7 @@ class ApplicationController < ActionController::Base
   def check_maintenance_mode
     return if admin?
     return unless SiteSetting.maintenance_mode?
-    return if controller_path.start_with?("sessions", "admin")
+    return if controller_path.start_with?("sessions", "admin", "sitemaps")
     @maintenance_message = SiteSetting.maintenance_message
     render "shared/maintenance", layout: "application", status: :service_unavailable
   end

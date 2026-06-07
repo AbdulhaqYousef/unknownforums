@@ -1,6 +1,7 @@
 class Subforum < ApplicationRecord
   include FileTypeRestrictions
   include UploadSizeRestrictions
+  include ForumReadable
 
   belongs_to :category
   has_many :forum_threads, dependent: :destroy

@@ -1,6 +1,7 @@
 class Category < ApplicationRecord
   include FileTypeRestrictions
   include UploadSizeRestrictions
+  include ForumReadable
 
   has_many :subforums, -> { order(:position) }, dependent: :destroy
   has_many :category_moderators, dependent: :destroy

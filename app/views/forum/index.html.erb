@@ -1,14 +1,16 @@
-<% content_for :title, "Forum Index" %>
-<% meta_description "#{forum_name} — Browse categories and subforums." %>
-<% meta_keywords [forum_name, "forum", "community", "discussion", "threads"] %>
+<% seo_homepage! %>
+<% meta_description forum_description %>
+<% meta_keywords default_meta_keywords %>
 <% canonical_url root_url %>
+<% og_title seo_page_title %>
+<% og_description forum_description %>
 <% content_for :structured_data do %>
-  <script type="application/ld+json"><%= website_jsonld %></script>
+  <script type="application/ld+json"><%= homepage_jsonld %></script>
 <% end %>
 
 <!-- Welcome bar -->
 <div style="background:var(--bg3); border:1px solid var(--border); border-left:3px solid var(--accent); padding:7px 12px; margin-bottom:10px; font-size:11px; color:var(--text-dim); display:flex; justify-content:space-between; align-items:center; border-radius:0 3px 3px 0;">
-  <span><strong style="color:var(--text-bright);">Welcome to <%= forum_name %></strong></span>
+  <span><h1 style="font-size:11px; font-weight:bold; color:var(--text-bright); margin:0; display:inline;">Welcome to <%= forum_name %></h1></span>
   <span>
     <% if logged_in? %>
       Welcome back, <a href="<%= user_path(current_user) %>" style="color:var(--accent); font-weight:bold;"><%= current_user.username %></a>
@@ -62,6 +64,7 @@
                 </div>
                 <div>
                   <a href="<%= subforum_path(subforum) %>" style="font-size:13px; font-weight:bold; color:var(--link-hover);"><%= subforum.name %></a>
+                  <%= forum_access_badge(subforum) %>
                   <% if subforum.description.present? %>
                     <div style="font-size:11px; color:var(--text-dim); margin-top:2px;"><%= subforum.description %></div>
                   <% end %>

@@ -105,6 +105,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_120000) do
     t.bigint "max_upload_bytes"
     t.string "name", null: false
     t.integer "position", default: 0, null: false
+    t.boolean "public_read", default: true, null: false
     t.datetime "updated_at", null: false
     t.index ["position"], name: "index_categories_on_position"
   end
@@ -458,6 +459,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_120000) do
     t.string "name", null: false
     t.integer "position", default: 0, null: false
     t.integer "posts_count", default: 0, null: false
+    t.boolean "public_read", default: true, null: false
     t.integer "threads_count", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["category_id", "position"], name: "index_subforums_on_category_id_and_position"

@@ -1,6 +1,7 @@
 class ForumThreadsController < ApplicationController
   before_action :set_thread, only: %i[show edit update destroy lock unlock pin unpin move bulk_delete_posts]
-  before_action :require_login
+  before_action :ensure_thread_readable, only: :show
+  before_action :require_login, only: %i[new create edit update destroy lock unlock pin unpin move bulk_delete_posts]
   before_action :require_category_staff, only: %i[lock unlock pin unpin move destroy]
 
   def show
@@ -20,6 +21,9 @@ class ForumThreadsController < ApplicationController
     end
     @posts = posts_scope.page(params[:page])
     @post = Post.new
+    @thread_attachments = Attachment.where(attachable_type: "Post", attachable_id: @thread.posts.visible.select(:id))
+                                    .includes(:file_tags)
+    @thread_file_tags = @thread_attachments.flat_map { |attachment| attachment.file_tags.map(&:tag) }.uniq
     @subscription = logged_in? && ThreadSubscription.find_by(user: current_user, forum_thread: @thread)
     @subscription&.mark_read!
   end
@@ -126,6 +130,10 @@ class ForumThreadsController < ApplicationController
 
   def set_thread
     @thread = ForumThread.includes(subforum: :category).find(params[:id])
+  end
+
+  def ensure_thread_readable
+    ensure_subforum_readable!(@thread.subforum)
   end
 
   def require_category_staff

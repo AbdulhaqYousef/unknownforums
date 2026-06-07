@@ -1,5 +1,16 @@
 <% content_for :title, @attachment.filename %>
-<% noindex_page %>
+<% if @attachment.public_forum_file? %>
+  <% meta_description attachment_seo_description(@attachment, thread: @thread) %>
+  <% meta_keywords attachment_seo_keywords(@attachment, thread: @thread) %>
+  <% canonical_url attachment_url(@attachment) %>
+  <% og_type "article" %>
+  <% og_description attachment_seo_description(@attachment, thread: @thread) %>
+  <% content_for :structured_data do %>
+    <script type="application/ld+json"><%= attachment_jsonld(@attachment, thread: @thread) %></script>
+  <% end %>
+<% else %>
+  <% noindex_page %>
+<% end %>
 
 <div style="margin-bottom:8px;">
   <%= link_to "← Back", :back, class: "btn btn-sm" %>
@@ -8,7 +19,7 @@
 <!-- File info panel -->
 <div class="panel" style="margin-bottom:12px;">
   <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
-    <span><%= @attachment.filename %></span>
+    <h1 style="font-size:13px; font-weight:bold; color:#e0e0e0; margin:0;"><%= @attachment.filename %></h1>
     <div class="action-group">
       <% if logged_in? && (moderator_or_admin? || (current_user == @attachment.root_attachment.user || can_moderate_thread?(@attachment.attachable.try(:thread) || ForumThread.new))) %>
         <%= link_to "Upload Version", new_version_attachment_path(@attachment.root_attachment), class: "btn btn-sm" %>
@@ -57,6 +68,14 @@
         </div>
       <% end %>
     </div>
+
+    <% if @thread %>
+      <div style="margin-top:10px; font-size:11px; color:#888;">
+        From thread:
+        <a href="<%= forum_thread_path(@thread) %>" style="color:#a8c8f0; font-weight:bold;"><%= @thread.title %></a>
+        in <%= @thread.subforum.name %>
+      </div>
+    <% end %>
 
     <!-- Tags -->
     <% if @attachment.file_tags.any? %>
@@ -129,6 +148,10 @@
           <%= f.submit "Post Comment", class: "btn btn-primary" %>
         </div>
       <% end %>
+    </div>
+  <% elsif !logged_in? %>
+    <div style="padding:12px; border-top:1px solid #444; background:#1e1e1e; text-align:center; font-size:12px; color:#888;">
+      <a href="<%= login_path %>">Log in</a> or <a href="<%= register_path %>">sign up</a> to leave a comment.
     </div>
   <% end %>
 </div>

@@ -1,7 +1,7 @@
 <% content_for :title, @thread.title %>
 <% first_post = @posts.first %>
-<% meta_description "#{@thread.title} — posted by #{@thread.user.username} in #{@thread.subforum.name}. #{first_post ? truncate(strip_tags(first_post.body.to_s), length: 120) : ''}" %>
-<% meta_keywords [@thread.title, @thread.subforum.name, @thread.subforum.category.name, @thread.user.username, "forum", "thread"] %>
+<% meta_description thread_seo_description(@thread, @posts, attachments: @thread_attachments) %>
+<% meta_keywords thread_seo_keywords(@thread, attachments: @thread_attachments.to_a, tags: @thread_file_tags) %>
 <% canonical_url forum_thread_url(@thread) %>
 <% og_type "article" %>
 <% og_description first_post ? strip_tags(first_post.body.to_s) : @thread.title %>
@@ -25,7 +25,7 @@
 
 <!-- Thread header -->
 <div class="panel-header" style="border:1px solid #444; border-bottom:none;">
-  <span style="font-size:13px; font-weight:bold; color:#e0e0e0;">
+  <h1 style="font-size:13px; font-weight:bold; color:#e0e0e0; margin:0; display:inline;">
     <%= @thread.title %>
     <% if @thread.locked? %>
       <span class="badge">LOCKED</span>
@@ -36,7 +36,7 @@
     <% if @thread.edited? %>
       <span class="badge" title="Edited <%= @thread.edited_at.strftime("%m/%d/%Y %I:%M %p") %>">EDITED</span>
     <% end %>
-  </span>
+  </h1>
   <div class="action-group">
     <!-- Thread tools for mods -->
     <% if can_moderate_thread?(@thread) %>

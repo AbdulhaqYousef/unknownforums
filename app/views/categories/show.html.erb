@@ -1,4 +1,7 @@
 <% content_for :title, @category.name %>
+<% meta_description "#{@category.name} — browse subforums and threads on #{forum_name}." %>
+<% meta_keywords [@category.name, forum_name, "forum", "community", "threads"] %>
+<% canonical_url category_url(@category) %>
 
 <div style="font-size:11px; color:#888; margin-bottom:6px;">
   <a href="<%= root_path %>">Forum</a> &raquo;
@@ -7,6 +10,7 @@
 
 <div style="background:#303030; border:1px solid #444; border-bottom:none; padding:6px 10px; font-size:13px; font-weight:bold; color:#e0e0e0;">
   <%= @category.name %>
+  <%= forum_access_badge(@category) %>
 </div>
 
 <% if @category.description.present? %>
@@ -28,6 +32,7 @@
     <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
       <td style="padding:7px 10px;">
         <a href="<%= subforum_path(subforum) %>" style="font-size:12px; font-weight:bold; color:#a8c8f0;"><%= subforum.name %></a>
+        <%= forum_access_badge(subforum) %>
         <% if subforum.description.present? %>
           <div style="font-size:10px; color:#666; margin-top:2px;"><%= subforum.description.truncate(120) %></div>
         <% end %>

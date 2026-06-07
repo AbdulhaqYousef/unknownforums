@@ -22,6 +22,13 @@
     <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Position (lower = first):</label>
     <%= f.number_field :position, style: "width:80px;", min: 0 %>
   </div>
+  <div style="margin-bottom:12px;">
+    <label style="display:flex; align-items:center; gap:8px; font-size:11px; color:#cfcfcf; cursor:pointer;">
+      <%= f.check_box :public_read %>
+      Allow guests to read this category without signing in
+    </label>
+    <div style="font-size:10px; color:#666; margin-top:4px;">When unchecked, only signed-in members can browse subforums and threads in this category.</div>
+  </div>
   <%= render "admin/shared/file_type_restrictions",
         inherit: true,
         inherit_checked: category.file_types_inherited?,

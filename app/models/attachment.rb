@@ -67,6 +67,12 @@ class Attachment < ApplicationRecord
   scope :vt_malicious,     -> { where(vt_status: "malicious") }
   scope :top_downloads,    -> { order(download_count: :desc) }
   scope :public_downloads, -> { where(attachable_type: "Post") }
+  scope :attached_to_subforums, ->(subforum_scope) {
+    joins("INNER JOIN posts ON posts.id = attachments.attachable_id AND attachments.attachable_type = 'Post'")
+      .joins("INNER JOIN forum_threads ON forum_threads.id = posts.forum_thread_id")
+      .where(forum_threads: { subforum_id: subforum_scope.select(:id) })
+  }
+  scope :in_readable_subforums, ->(user) { attached_to_subforums(Subforum.readable_by(user)) }
 
   def vt_scannable?
     file.attached? && VT_SCAN_TYPES.include?(content_type)
@@ -74,6 +80,15 @@ class Attachment < ApplicationRecord
 
   def dm_file?
     attachable_type == "PrivateMessage"
+  end
+
+  def public_forum_file?
+    attachable_type == "Post"
+  end
+
+  def forum_thread
+    return attachable if attachable.is_a?(ForumThread)
+    attachable.thread if attachable.is_a?(Post)
   end
 
   def vt_clean?()       vt_status == "clean"      end

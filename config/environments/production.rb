@@ -65,6 +65,10 @@ Rails.application.configure do
     host: ENV.fetch("APP_HOST", "unknownforums.fun"),
     protocol: "https"
   }
+  Rails.application.routes.default_url_options = {
+    host: ENV.fetch("APP_HOST", "unknownforums.fun"),
+    protocol: "https"
+  }
   config.action_mailer.default_options = {
     from: ENV.fetch("MAIL_FROM", "UnknownForums <noreply@unknownforums.fun>")
   }

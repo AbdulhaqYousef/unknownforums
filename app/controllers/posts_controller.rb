@@ -1,5 +1,5 @@
 class PostsController < ApplicationController
-  before_action :require_login
+  before_action :require_login, only: %i[create edit update destroy]
   before_action :set_thread
   before_action :set_post, only: %i[edit update destroy]
 

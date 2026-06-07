@@ -21,8 +21,14 @@
 <!-- Subforum header -->
 <div style="background:#303030; border:1px solid #444; border-bottom:none; padding:6px 10px; display:flex; justify-content:space-between; align-items:center;">
   <span style="font-size:13px; font-weight:bold; color:#e0e0e0;"><%= @subforum.name %></span>
+  <%= forum_access_badge(@subforum) %>
   <% if logged_in? %>
     <a href="<%= new_subforum_forum_thread_path(@subforum) %>" class="btn btn-primary">+ New Thread</a>
+  <% else %>
+    <span style="font-size:11px; color:#888;">
+      Browsing as guest —
+      <a href="<%= login_path %>">Log in</a> or <a href="<%= register_path %>">sign up</a> to post
+    </span>
   <% end %>
 </div>
 

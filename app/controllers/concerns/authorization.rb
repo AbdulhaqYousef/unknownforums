@@ -31,4 +31,16 @@ module Authorization
     return false unless current_user
     current_user.can_moderate_category?(thread.subforum.category)
   end
+
+  def ensure_subforum_readable!(subforum)
+    return if subforum.readable_by?(current_user)
+
+    session[:return_to] = request.fullpath unless logged_in?
+    message = if logged_in?
+      "You do not have access to that forum."
+    else
+      "That forum is members only. Sign in to continue."
+    end
+    redirect_to(logged_in? ? root_path : login_path, alert: message)
+  end
 end

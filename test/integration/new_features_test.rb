@@ -85,4 +85,70 @@ class NewFeaturesTest < ActionDispatch::IntegrationTest
     assert_match(/Files Awaiting Review/, response.body)
     refute pending.approved?
   end
+
+  test "guest can browse threads downloads and public attachment pages" do
+    thread = forum_threads(:welcome)
+    get forum_thread_path(thread)
+    assert_response :success
+    assert_match(/Generals Discussion/, response.body)
+    assert_match(/Log in/, response.body)
+
+    get subforum_path(subforums(:lounge))
+    assert_response :success
+    assert_match(/Browsing as guest/, response.body)
+
+    get downloads_path
+    assert_response :success
+
+    attachment = Attachment.create!(
+      attachable: posts(:welcome_post),
+      user: users(:staff),
+      filename: "command and conquer maps.zip",
+      content_type: "application/zip",
+      byte_size: 10,
+      vt_status: "skipped",
+      approved: true,
+      allowed_content_types: AllowedFileTypes.global_rules[:types]
+    )
+
+    get attachment_path(attachment)
+    assert_response :success
+    assert_match(/command and conquer maps\.zip/, response.body)
+    assert_no_match(/noindex, nofollow/, response.body)
+
+    get download_attachment_path(attachment)
+    assert_response :redirect
+  end
+
+  test "guest cannot create posts without logging in" do
+    thread = forum_threads(:welcome)
+    post forum_thread_posts_path(thread), params: { post: { body: "guest spam" } }
+    assert_redirected_to login_path
+  end
+
+  test "members-only subforum requires login for guests" do
+    subforums(:lounge).update!(public_read: false)
+
+    get subforum_path(subforums(:lounge))
+    assert_redirected_to login_path
+    assert_match(/members only/i, flash[:alert])
+
+    get forum_thread_path(forum_threads(:welcome))
+    assert_redirected_to login_path
+
+    sign_in_as(users(:tester))
+    get subforum_path(subforums(:lounge))
+    assert_response :success
+
+    get forum_thread_path(forum_threads(:welcome))
+    assert_response :success
+  end
+
+  test "sitemap returns valid xml" do
+    get sitemap_path(format: :xml)
+    assert_response :success
+    assert_includes response.media_type, "xml"
+    assert_match(/urlset/, response.body)
+    assert_match %r{<loc>https?://[^<]+</loc>}, response.body
+  end
 end

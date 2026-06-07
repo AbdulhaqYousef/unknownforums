@@ -1,6 +1,8 @@
 class SubforumsController < ApplicationController
+  before_action :set_subforum, only: :show
+  before_action :ensure_subforum_access, only: :show
+
   def show
-    @subforum = Subforum.includes(:category).find(params[:id])
 
     @threads = @subforum.forum_threads
                         .includes(:user)
@@ -18,6 +20,14 @@ class SubforumsController < ApplicationController
   end
 
   private
+
+  def set_subforum
+    @subforum = Subforum.includes(:category).find(params[:id])
+  end
+
+  def ensure_subforum_access
+    ensure_subforum_readable!(@subforum)
+  end
 
   def last_post_per_thread(thread_ids)
     return {} if thread_ids.empty?

@@ -1,6 +1,5 @@
 xml.instruct! :xml, version: "1.0", encoding: "UTF-8"
-xml.urlset xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9" do
-  # Homepage
+xml.tag! "urlset", "xmlns" => "http://www.sitemaps.org/schemas/sitemap/0.9" do  # Homepage
   xml.url do
     xml.loc root_url
     xml.changefreq "daily"
@@ -33,8 +32,7 @@ xml.urlset xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9" do
 
   # Subforums
   @subforums.each do |subforum|
-    xml.url do
-      xml.loc subforum_url(subforum)
+    xml.url do      xml.loc subforum_url(subforum)
       xml.changefreq "daily"
       xml.priority "0.8"
     end
@@ -57,6 +55,16 @@ xml.urlset xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9" do
       xml.lastmod user.updated_at.iso8601
       xml.changefreq "monthly"
       xml.priority "0.4"
+    end
+  end
+
+  # Public file pages
+  @attachments.each do |attachment|
+    xml.url do
+      xml.loc attachment_url(attachment)
+      xml.lastmod attachment.updated_at.iso8601
+      xml.changefreq "monthly"
+      xml.priority "0.6"
     end
   end
 end

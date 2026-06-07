@@ -38,10 +38,11 @@
       <th style="padding:3px 10px; text-align:center;">Threads</th>
       <th style="padding:3px 10px; text-align:left;">Upload Types</th>
       <th style="padding:3px 10px; text-align:left;">Upload Limit</th>
+      <th style="padding:3px 10px; text-align:center;">Access</th>
       <th style="padding:3px 10px; text-align:center;">Actions</th>
     </tr>
     <% if @subforums.empty? %>
-      <tr><td colspan="7" style="padding:20px; text-align:center; color:#666; font-size:12px;">No subforums matched your search.</td></tr>
+      <tr><td colspan="8" style="padding:20px; text-align:center; color:#666; font-size:12px;">No subforums matched your search.</td></tr>
     <% end %>
     <% @subforums.each_with_index do |sf, i| %>
       <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
@@ -51,6 +52,13 @@
         <td style="padding:5px 10px; text-align:center; font-size:12px;"><%= sf.threads_count %></td>
         <td style="padding:5px 10px; font-size:10px; color:#888;"><%= AllowedFileTypes.admin_policy_label(sf) %></td>
         <td style="padding:5px 10px; font-size:10px; color:#888;"><%= UploadLimits.admin_label(sf) %></td>
+        <td style="padding:5px 10px; text-align:center; font-size:10px;">
+          <% if sf.publicly_readable? %>
+            <span style="color:#60c060;">Public</span>
+          <% else %>
+            <span style="color:#e0a030;">Members</span>
+          <% end %>
+        </td>
         <td style="padding:5px 10px; text-align:center;">
           <div class="action-group" style="justify-content:center;">
             <a href="<%= admin_subforum_threads_path(sf) %>" class="btn btn-sm">Threads</a>

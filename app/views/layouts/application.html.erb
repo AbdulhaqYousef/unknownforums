@@ -1,24 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title><%= content_for(:title).present? ? "#{content_for(:title)} - #{forum_name}" : forum_name %></title>
+    <title><%= seo_page_title %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta charset="utf-8">
     <meta name="description" content="<%= content_for(:meta_description).presence || forum_description %>">
-    <% if content_for?(:meta_keywords) %><meta name="keywords" content="<%= content_for(:meta_keywords) %>"><% end %>
+    <% keywords = content_for(:meta_keywords).presence || (content_for?(:seo_homepage) ? default_meta_keywords.join(", ") : nil) %>
+    <% if keywords.present? %><meta name="keywords" content="<%= keywords %>"><% end %>
     <% if content_for?(:robots) %><meta name="robots" content="<%= content_for(:robots) %>"><% else %><meta name="robots" content="index, follow"><% end %>
     <% if content_for?(:canonical_url) %><link rel="canonical" href="<%= content_for(:canonical_url) %>"><% end %>
+    <% if ENV["GOOGLE_SITE_VERIFICATION"].present? %><meta name="google-site-verification" content="<%= ENV["GOOGLE_SITE_VERIFICATION"] %>"><% end %>
+    <meta name="application-name" content="<%= forum_name %>">
     <meta property="og:site_name" content="<%= forum_name %>">
-    <meta property="og:title" content="<%= content_for(:og_title).presence || content_for(:title).presence || forum_name %>">
+    <meta property="og:title" content="<%= seo_og_title %>">
     <meta property="og:description" content="<%= content_for(:og_description).presence || content_for(:meta_description).presence || forum_description %>">
     <meta property="og:type" content="<%= content_for(:og_type).presence || 'website' %>">
-    <% if content_for?(:og_image) %><meta property="og:image" content="<%= content_for(:og_image) %>"><% end %>
+    <meta property="og:url" content="<%= content_for(:canonical_url).presence || request.original_url %>">
+    <meta property="og:image" content="<%= content_for(:og_image).presence || image_url('unknown-forums-banner.png') %>">
     <meta name="turbo-cache-control" content="no-preview">
     <% if flash[:notice]&.match?(/Welcome|logged out/i) %>
       <meta name="turbo-clear-cache" content="true">
     <% end %>
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="<%= content_for(:og_title).presence || content_for(:title).presence || forum_name %>">
+    <meta name="twitter:title" content="<%= seo_og_title %>">
+    <meta name="twitter:image" content="<%= content_for(:og_image).presence || image_url('unknown-forums-banner.png') %>">
     <meta name="twitter:description" content="<%= content_for(:og_description).presence || content_for(:meta_description).presence || forum_description %>">
     <link rel="icon" href="/favis/favicon.ico?v=2" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="/favis/favicon-32x32.png?v=2">

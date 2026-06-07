@@ -1,6 +1,6 @@
 class DownloadsController < ApplicationController
   def index
-    public_files = Attachment.approved.public_downloads
+    public_files = Attachment.approved.public_downloads.in_readable_subforums(current_user)
     @attachments = public_files.joins(:user)
                                .includes(:attachable, :file_tags, :file_comments, file_attachment: :blob)
                                .order(created_at: :desc)

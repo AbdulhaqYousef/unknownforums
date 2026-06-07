@@ -9,6 +9,12 @@ module ApplicationHelper
     image_tag rails_blob_path(user.avatar, only_path: true), options.merge(style: style)
   end
 
+  def forum_access_badge(forum)
+    return if forum.publicly_readable?
+
+    content_tag(:span, "Members only", class: "badge", title: "Sign in required to read this forum")
+  end
+
   def role_badge(user)
     klass = if user.admin?
       "badge badge-admin"
