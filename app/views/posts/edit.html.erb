@@ -9,7 +9,16 @@
     Edit Post
   </div>
   <div style="padding:12px;">
-    <%= form_with model: [@thread, @post], method: :patch, multipart: true, data: { turbo: false } do |f| %>
+    <% if @post.attachments.any? %>
+      <div style="border:1px solid #333; padding:8px; margin-bottom:10px;">
+        <div style="font-size:10px; color:#888; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Current Attachments:</div>
+        <% @post.attachments.each do |attachment| %>
+          <%= render "attachments/attachment", attachment: attachment %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%= form_with model: [@thread, @post], method: :patch, multipart: true, id: "edit-post-form", data: { turbo: false } do |f| %>
       <div style="margin-bottom:10px;">
         <%= f.text_area :body, rows: 12, style: "width:100%; resize:vertical;" %>
         <div style="font-size:10px; color:#666; margin-top:3px;">Press Enter for a new line. Plain URLs become clickable links. Markdown supported: **bold**, *italic*, `code`, lists, links.</div>
@@ -19,15 +28,6 @@
           </ul>
         <% end %>
       </div>
-
-      <% if @post.attachments.any? %>
-        <div style="border:1px solid #333; padding:8px; margin-bottom:10px;">
-          <div style="font-size:10px; color:#888; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Current Attachments:</div>
-          <% @post.attachments.each do |attachment| %>
-            <%= render "attachments/attachment", attachment: attachment %>
-          <% end %>
-        </div>
-      <% end %>
 
       <div style="margin-bottom:12px;">
         <%= render "shared/file_upload_field", subforum: @thread.subforum, upload_rules: UploadLimits.rules_for_subforum(@thread.subforum) %>
