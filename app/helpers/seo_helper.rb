@@ -184,7 +184,7 @@ module SeoHelper
           "userInteractionCount" => thread.views_count
         }
       ],
-      "comment" => posts.first(5).map do |post|
+      "comment" => Array(posts).first(5).map do |post|
         {
           "@type" => "Comment",
           "text" => truncate(strip_tags(post.body.to_s), length: 300),
