@@ -31,6 +31,7 @@
           <% end %>
         </div>
         <div style="font-size:11px; color:#888; margin-bottom:4px;"><%= role_badge(@user) %></div>
+        <div style="font-size:11px; color:#888; margin-bottom:4px;">Level Rank: <%= level_rank_label(@user) %></div>
         <div style="font-size:11px; color:#888; margin-bottom:4px;">Reputation Rank: <%= @user.reputation_rank %></div>
         <div style="font-size:11px; color:#888; margin-bottom:4px;">Level <%= user_level(@user) %><% if @user.has_attribute?(:experience_points) %> &middot; <%= @user.xp_value %> XP<% end %> &middot; Uploads: <%= LevelPerks.upload_limit_label_for(@user) %></div>
         <div style="font-size:12px; margin-bottom:6px;">

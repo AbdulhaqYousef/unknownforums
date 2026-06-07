@@ -55,24 +55,33 @@ class LevelsAndBadgesTest < ActionDispatch::IntegrationTest
     user = users(:tester)
     badge = Badge.create!(name: "Tester Badge", description: "For tests", position: 0)
     UserBadge.create!(user: user, badge: badge, awarded_at: Time.current)
-    user.update!(experience_points: 150)
+    user.update!(experience_points: 250)
 
     get user_path(user)
     assert_response :success
     assert_match(/Level 2/, response.body)
-    assert_match(/150 XP/, response.body)
+    assert_match(/250 XP/, response.body)
     assert_match(/Tester Badge/, response.body)
   end
 
-  test "linear leveling uses 100 xp per level" do
+  test "linear leveling uses 250 xp per level" do
     user = users(:tester)
-    user.update!(experience_points: 99, level_override: nil)
+    user.update!(experience_points: 249, level_override: nil)
     assert_equal 1, user.level
     assert_equal 1, user.xp_to_next_level
 
-    user.update!(experience_points: 100)
+    user.update!(experience_points: 250)
     assert_equal 2, user.level
     assert_equal 0, user.level_progress_percent
+  end
+
+  test "level rank reflects activity level not reputation" do
+    user = users(:tester)
+    user.update!(experience_points: 25_000, level_override: nil, reputation: 10)
+
+    assert_equal 101, user.level
+    assert_equal "Master", user.level_rank
+    assert_equal "Member", user.reputation_rank
   end
 
   test "user profile edit includes custom badge upload" do

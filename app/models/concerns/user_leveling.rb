@@ -1,7 +1,7 @@
 module UserLeveling
   extend ActiveSupport::Concern
 
-  XP_PER_LEVEL = 100
+  XP_PER_LEVEL = 250
   XP_PER_POST = 15
 
   def level
@@ -31,5 +31,18 @@ module UserLeveling
 
   def xp_value
     has_attribute?(:experience_points) ? experience_points.to_i : 0
+  end
+
+  def level_rank
+    case level
+    when 1..4 then "Newcomer"
+    when 5..14 then "Member"
+    when 15..29 then "Regular"
+    when 30..49 then "Veteran"
+    when 50..74 then "Expert"
+    when 75..99 then "Elite"
+    when 100..149 then "Master"
+    else "Legend"
+    end
   end
 end

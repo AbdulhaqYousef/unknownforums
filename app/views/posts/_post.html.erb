@@ -36,7 +36,7 @@
 
     <div class="uc-section">
       <div class="uc-progress-row">
-        <span>XP: <%= user_points(post.user) %>, Level: <%= user_level(post.user) %></span>
+        <span>XP: <%= user_points(post.user) %>, Level: <%= user_level(post.user) %> (<%= level_rank_label(post.user) %>)</span>
       </div>
       <div class="uc-progress-row">
         <span>Next level: <%= points_to_next_level(post.user) %> XP (<%= level_progress(post.user) %>%)</span>

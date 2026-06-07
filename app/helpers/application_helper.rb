@@ -78,6 +78,10 @@ module ApplicationHelper
     user.level
   end
 
+  def level_rank_label(user)
+    user.level_rank
+  end
+
   def user_points(user)
     user.xp_value
   end
