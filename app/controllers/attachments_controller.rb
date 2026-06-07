@@ -100,7 +100,7 @@ class AttachmentsController < ApplicationController
   def destroy
     require_login
     require_owner_or_moderator(@attachment.user)
-    @attachment.destroy
+    @attachment.destroy_with_storage!
     redirect_back fallback_location: root_path, notice: "Attachment deleted."
   end
 

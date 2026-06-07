@@ -107,6 +107,25 @@ class UploadPipelineTest < ActiveSupport::TestCase
     end
   end
 
+  test "soft deleting a post removes its attachments" do
+    blob = active_blob("orphan.txt", "text/plain", "should be removed")
+    assert_empty AttachmentCreator.attach(
+      attachable: @post,
+      user: @user,
+      files: nil,
+      signed_ids: [ blob.signed_id ]
+    )
+
+    attachment = @post.attachments.order(:id).last
+
+    assert_difference -> { Attachment.count }, -1 do
+      @post.update!(deleted: true)
+    end
+
+    assert_raises(ActiveRecord::RecordNotFound) { attachment.reload }
+    refute ActiveStorage::Blob.exists?(blob.id)
+  end
+
   private
 
   def active_blob(filename, content_type, contents)

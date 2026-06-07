@@ -104,6 +104,16 @@ module ApplicationHelper
     dots.html_safe
   end
 
+  def post_message_html(post)
+    if post.body.to_s.strip.present?
+      markdown_post_body(post.body)
+    elsif post.attachments.any?
+      content_tag(:p, "(No message — see attachments below)", style: "color:#666; font-style:italic;")
+    else
+      content_tag(:p, "(No message)", style: "color:#666; font-style:italic;")
+    end
+  end
+
   def markdown_post_body(body)
     markdown = body.to_s.gsub("\r\n", "\n").tr("\r", "\n")
     markdown = normalize_markdown_fences(markdown)

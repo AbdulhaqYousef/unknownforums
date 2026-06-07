@@ -40,7 +40,9 @@ class ForumThreadsController < ApplicationController
       subforum: @subforum,
       user: current_user,
       thread_params: thread_params,
-      post_params: post_params
+      post_params: post_params,
+      files: params[:files],
+      signed_ids: params[:file_signed_ids]
     )
 
     result = service.call

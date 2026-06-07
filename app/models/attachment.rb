@@ -70,7 +70,7 @@ class Attachment < ApplicationRecord
   scope :attached_to_subforums, ->(subforum_scope) {
     joins("INNER JOIN posts ON posts.id = attachments.attachable_id AND attachments.attachable_type = 'Post'")
       .joins("INNER JOIN forum_threads ON forum_threads.id = posts.forum_thread_id")
-      .where(forum_threads: { subforum_id: subforum_scope.select(:id) })
+      .where(forum_threads: { subforum_id: subforum_scope.select(:id) }, posts: { deleted: false })
   }
   scope :in_readable_subforums, ->(user) { attached_to_subforums(Subforum.readable_by(user)) }
 
@@ -159,6 +159,18 @@ class Attachment < ApplicationRecord
 
   def increment_download!
     increment!(:download_count)
+  end
+
+  def destroy_with_storage!
+    [ self, *versions.to_a ].each do |record|
+      next unless record.file.attached?
+
+      record.file.purge
+    rescue StandardError => e
+      Rails.logger.error("Failed to purge attachment #{record.id} from storage: #{e.message}")
+    end
+
+    destroy!
   end
 
   private

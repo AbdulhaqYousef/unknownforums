@@ -11,6 +11,7 @@ class PrivateMessage < ApplicationRecord
 
   after_create  :bust_recipient_unread_cache
   after_update  :bust_recipient_unread_cache
+  after_update  :purge_attachments_when_fully_deleted
 
   paginates_per 25
 
@@ -18,5 +19,12 @@ class PrivateMessage < ApplicationRecord
 
   def bust_recipient_unread_cache
     recipient&.bust_unread_cache
+  end
+
+  def purge_attachments_when_fully_deleted
+    return unless sender_deleted? && recipient_deleted?
+    return unless saved_change_to_sender_deleted? || saved_change_to_recipient_deleted?
+
+    attachments.includes(:versions).find_each(&:destroy_with_storage!)
   end
 end

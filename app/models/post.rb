@@ -6,7 +6,10 @@ class Post < ApplicationRecord
   has_many :reputations, dependent: :destroy
   has_many :reports, as: :reportable, dependent: :destroy
 
-  validates :body, presence: true, length: { minimum: 1, maximum: 50_000 }
+  validates :body, length: { maximum: 50_000 }, allow_blank: true
+  validate :body_present_unless_attachments_allowed
+
+  attr_accessor :allow_empty_body
 
   scope :visible, -> { where(deleted: false) }
 
@@ -17,6 +20,7 @@ class Post < ApplicationRecord
   after_destroy :decrement_subforum_posts_count
   after_destroy :decrement_user_posts_count
   after_update  :recalculate_visible_counters_after_soft_delete, if: :saved_change_to_deleted?
+  after_update  :purge_attachments_after_soft_delete, if: :saved_change_to_deleted?
 
   def quoted_body
     return nil unless quote_post
@@ -26,6 +30,10 @@ class Post < ApplicationRecord
 
   def edited?
     edited_at.present?
+  end
+
+  def body_blank?
+    body.to_s.strip.blank?
   end
 
   private
@@ -55,5 +63,18 @@ class Post < ApplicationRecord
     )
     user.update_columns(posts_count: Post.where(user_id: user.id, deleted: false).count)
     Rails.cache.delete("forum_stats")
+  end
+
+  def purge_attachments_after_soft_delete
+    return unless saved_change_to_deleted == [ false, true ]
+
+    attachments.includes(:versions).find_each(&:destroy_with_storage!)
+  end
+
+  def body_present_unless_attachments_allowed
+    return if allow_empty_body
+    return if body.to_s.strip.present?
+
+    errors.add(:body, "can't be blank")
   end
 end

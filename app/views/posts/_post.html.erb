@@ -93,7 +93,7 @@
         </div>
       <% end %>
 
-      <%= markdown_post_body(post.body) %>
+      <%= post_message_html(post) %>
 
       <% if post.attachments.any? %>
         <div style="border-top:1px solid #333; margin-top:8px; padding-top:6px;">

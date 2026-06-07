@@ -4,7 +4,14 @@ class PostsController < ApplicationController
   before_action :set_post, only: %i[edit update destroy]
 
   def create
-    service = PostCreator.new(thread: @thread, user: current_user, params: post_params, ip: request.ip)
+    service = PostCreator.new(
+      thread: @thread,
+      user: current_user,
+      params: post_params,
+      ip: request.ip,
+      files: params[:files],
+      signed_ids: params[:file_signed_ids]
+    )
     @post = service.call
 
     if @post
@@ -30,6 +37,11 @@ class PostsController < ApplicationController
     authorize_post!
     @post.assign_attributes(post_params)
     @post.edited_at = Time.current if @post.body_changed?
+    @post.allow_empty_body = PostBodyRules.allow_empty?(
+      post: @post,
+      files: params[:files],
+      signed_ids: params[:file_signed_ids]
+    )
     if @post.save
       attach_errors = AttachmentCreator.attach(
         attachable: @post,
