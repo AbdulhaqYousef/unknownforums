@@ -8,6 +8,13 @@
       <a href="<%= user_path(post.user) %>"><%= post.user.username %></a>
     </div>
     <div class="uc-rank"><%= role_badge(post.user) %></div>
+    <% if post.user.badges.any? %>
+      <div class="uc-badges" style="display:flex; flex-wrap:wrap; gap:3px; justify-content:center; margin:4px 0;">
+        <% post.user.badges.includes(image_attachment: :blob).ordered.each do |badge| %>
+          <%= badge_image_tag badge, size: 18 %>
+        <% end %>
+      </div>
+    <% end %>
 
     <div class="uc-avatar">
       <% if post.user.avatar.attached? %>
@@ -36,10 +43,10 @@
 
     <div class="uc-section">
       <div class="uc-progress-row">
-        <span>Points: <%= user_points(post.user) %>, Level: <%= user_level(post.user) %></span>
+        <span>XP: <%= user_points(post.user) %>, Level: <%= user_level(post.user) %></span>
       </div>
       <div class="uc-progress-row">
-        <span>Level up: <%= level_progress(post.user) %>%</span>
+        <span>Next level: <%= points_to_next_level(post.user) %> XP (<%= level_progress(post.user) %>%)</span>
         <div class="uc-progress-bar"><div class="uc-progress-fill" style="width:<%= level_progress(post.user) %>%"></div></div>
       </div>
       <div class="uc-progress-row" style="margin-top:4px;">

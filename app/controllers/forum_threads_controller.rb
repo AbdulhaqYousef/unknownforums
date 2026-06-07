@@ -13,7 +13,7 @@ class ForumThreadsController < ApplicationController
     posts_scope = @thread.posts.visible
                          .includes(:user, :quote_post,
                                    attachments: [ :file_attachment, :versions ],
-                                   user: { avatar_attachment: :blob })
+                                   user: { avatar_attachment: :blob, badges: { image_attachment: :blob } })
                          .order(:created_at)
     if params[:q].present?
       query = "%#{ActiveRecord::Base.sanitize_sql_like(params[:q].strip)}%"

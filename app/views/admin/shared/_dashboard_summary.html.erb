@@ -33,6 +33,7 @@
     <a href="<%= admin_subforums_path %>" class="btn <%= active_admin_section == 'subforums' ? 'btn-primary' : '' %>">Subforums</a>
     <a href="<%= downloads_path %>" class="btn <%= active_admin_section == 'downloads' ? 'btn-primary' : '' %>">Downloads</a>
     <a href="<%= admin_users_path %>" class="btn <%= active_admin_section == 'users' ? 'btn-primary' : '' %>">Manage Users</a>
+    <a href="<%= admin_badges_path %>" class="btn <%= active_admin_section == 'badges' ? 'btn-primary' : '' %>">Badges</a>
     <a href="<%= admin_reports_path %>" class="btn <%= active_admin_section == 'reports' ? 'btn-primary' : (@admin_summary[:pending_reports] > 0 ? 'btn-danger' : '') %>">Reports</a>
     <a href="<%= admin_pending_files_path %>" class="btn <%= active_admin_section == 'pending_files' ? 'btn-primary' : (@admin_summary[:pending_files] > 0 ? 'btn-danger' : '') %>">Pending Files</a>
     <a href="<%= admin_attack_events_path %>" class="btn <%= active_admin_section == 'attack_events' ? 'btn-primary' : '' %>">Attack Events</a>

@@ -13,6 +13,8 @@
       <tr><td style="padding:4px 0; color:#888;">Email:</td><td><%= @user.email || "—" %></td></tr>
       <tr><td style="padding:4px 0; color:#888;">Role:</td><td><%= @user.role %></td></tr>
       <tr><td style="padding:4px 0; color:#888;">Reputation:</td><td><%= @user.reputation %></td></tr>
+      <tr><td style="padding:4px 0; color:#888;">Level:</td><td><%= user_level(@user) %><% if @user.level_override.present? %> <span style="color:#f0c060; font-size:10px;">(override)</span><% end %></td></tr>
+      <tr><td style="padding:4px 0; color:#888;">XP:</td><td><%= @user.experience_points %></td></tr>
       <tr><td style="padding:4px 0; color:#888;">Posts:</td><td><%= @user.post_count %></td></tr>
       <tr><td style="padding:4px 0; color:#888;">Old Names:</td><td><%= @user.previous_usernames.any? ? @user.previous_usernames.join(", ") : "—" %></td></tr>
       <tr><td style="padding:4px 0; color:#888;">Status:</td><td><%= [(@user.banned? ? "Banned" : nil), (@user.flagged? ? "Flagged" : nil)].compact.presence&.join(", ") || "Active" %></td></tr>
@@ -52,6 +54,56 @@
     <% end %>
   </div>
 
+</div>
+
+<!-- Badges -->
+<div class="panel" style="margin-top:14px;">
+  <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <span>Badges (<%= @user_badges.size %>)</span>
+    <a href="<%= admin_badges_path %>" class="btn btn-sm">Manage Badges</a>
+  </div>
+  <div class="panel-body" style="padding:0;">
+    <% if @user_badges.any? %>
+      <table>
+        <tr style="background:#222; font-size:10px; color:#666; text-transform:uppercase;">
+          <th style="text-align:left;">Badge</th>
+          <th style="text-align:left;">Awarded</th>
+          <th style="text-align:left;">By</th>
+          <th></th>
+        </tr>
+        <% @user_badges.each do |ub| %>
+          <tr>
+            <td style="padding:6px 10px; font-size:12px; display:flex; align-items:center; gap:8px;">
+              <%= badge_image_tag ub.badge, size: 28 if ub.badge.image.attached? %>
+              <span><%= ub.badge.name %></span>
+            </td>
+            <td style="padding:6px 10px; font-size:11px; color:#888;"><%= ub.awarded_at.strftime("%m/%d/%Y") %></td>
+            <td style="padding:6px 10px; font-size:11px; color:#888;"><%= ub.awarded_by&.username || "—" %></td>
+            <td style="padding:6px 10px;">
+              <%= button_to admin_user_user_badge_path(@user, ub), method: :delete, class: "btn btn-danger btn-sm", data: { turbo_confirm: "Remove badge \"#{ub.badge.name}\"?" } do %><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><% end %>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    <% else %>
+      <div style="padding:12px; color:#666; font-size:12px;">No badges awarded yet.</div>
+    <% end %>
+  </div>
+  <% if @available_badges.any? %>
+    <div class="panel-body" style="border-top:1px solid #333;">
+      <%= form_with url: admin_user_user_badges_path(@user), method: :post, style: "display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap;" do %>
+        <div>
+          <label style="font-size:10px; color:#888;">Award badge</label><br>
+          <select name="badge_id" style="min-width:180px;">
+            <% @available_badges.each do |badge| %>
+              <option value="<%= badge.id %>"><%= badge.name %></option>
+            <% end %>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">Award</button>
+      <% end %>
+    </div>
+  <% end %>
 </div>
 
 <!-- Warnings -->

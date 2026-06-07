@@ -1,0 +1,14 @@
+<% content_for :title, "Edit Badge" %>
+
+<div style="font-size:11px; color:#888; margin-bottom:6px;">
+  <a href="<%= admin_badges_path %>">← Badges</a>
+</div>
+
+<div style="max-width:500px;">
+  <div style="background:#242424; border:1px solid #444;">
+    <div style="background:#303030; border-bottom:1px solid #444; padding:6px 10px; font-size:13px; font-weight:bold; color:#e0e0e0;">Edit Badge: <%= @badge.name %></div>
+    <div style="padding:14px;">
+      <%= render "form", badge: @badge %>
+    </div>
+  </div>
+</div>

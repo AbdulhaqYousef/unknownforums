@@ -17,6 +17,7 @@ class PostCreator
 
     @post = @thread.posts.build(@params.merge(user: @user, ip_address: @ip))
     if @post.save
+      @user.award_post_xp!
       ThreadSubscription.subscribe!(user: @user, thread: @thread)
       NotificationDispatcher.dispatch_for_post(@post)
       Trophy.check_and_award!(@user)

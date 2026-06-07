@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  include UserLeveling
+
   has_secure_password
 
   enum :role, { user: 0, moderator: 1, admin: 2 }
@@ -20,12 +22,17 @@ class User < ApplicationRecord
   has_many :category_moderators, dependent: :destroy
   has_many :moderated_categories, through: :category_moderators, source: :category
   has_many :trophies, dependent: :destroy
+  has_many :user_badges, dependent: :destroy
+  has_many :badges, through: :user_badges
   has_many :download_histories, dependent: :destroy
 
   has_one_attached :avatar
+  has_one_attached :profile_gif
 
   AVATAR_TYPES = %w[image/jpeg image/png image/gif image/webp].freeze
   AVATAR_MAX_SIZE = 10.megabytes
+  PROFILE_GIF_TYPES = %w[image/gif].freeze
+  PROFILE_GIF_MAX_SIZE = 15.megabytes
   MAX_LOGIN_ATTEMPTS = 5
   LOCKOUT_DURATION = 15.minutes
   ONLINE_WINDOW = 10.minutes
@@ -40,10 +47,13 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: { case_sensitive: false }
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: -> { email.present? }
   validates :reputation, numericality: { only_integer: true }
+  validates :experience_points, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :level_override, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :password, length: { minimum: 8 }, if: -> { password.present? }
   validate :password_complexity, if: -> { password.present? }
   validate :password_not_pwned,  if: -> { password.present? }
   validate :avatar_format, if: -> { avatar.attached? }
+  validate :profile_gif_format, if: -> { profile_gif.attached? }
   before_validation :normalize_registration_fields
   before_update :clear_email_verification_on_email_change, if: :will_save_change_to_email?
   before_update :track_previous_username, if: :will_save_change_to_username?
@@ -272,6 +282,15 @@ class User < ApplicationRecord
     end
     if avatar.byte_size > AVATAR_MAX_SIZE
       errors.add(:avatar, "must be smaller than 10MB")
+    end
+  end
+
+  def profile_gif_format
+    unless PROFILE_GIF_TYPES.include?(profile_gif.content_type)
+      errors.add(:profile_gif, "must be a GIF")
+    end
+    if profile_gif.byte_size > PROFILE_GIF_MAX_SIZE
+      errors.add(:profile_gif, "must be smaller than 15MB")
     end
   end
 end

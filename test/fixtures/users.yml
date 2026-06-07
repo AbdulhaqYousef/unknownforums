@@ -5,6 +5,7 @@ tester:
   role: 0
   reputation: 0
   posts_count: 0
+  experience_points: 0
   email_verified_at: <%= Time.current %>
 
 staff:
@@ -14,4 +15,15 @@ staff:
   role: 1
   reputation: 50
   posts_count: 0
+  experience_points: 0
+  email_verified_at: <%= Time.current %>
+
+administrator:
+  username: siteadmin
+  email: admin@example.com
+  password_digest: <%= BCrypt::Password.create("Password1!") %>
+  role: 2
+  reputation: 100
+  posts_count: 0
+  experience_points: 500
   email_verified_at: <%= Time.current %>

@@ -1,0 +1,44 @@
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+  <span style="font-size:13px; font-weight:bold; color:#e0e0e0;">Badges</span>
+  <a href="<%= new_admin_badge_path %>" class="btn btn-primary">+ New Badge</a>
+</div>
+
+<div style="background:#1a242a; border:1px solid #2a3a44; padding:8px 10px; margin-bottom:10px; font-size:11px; color:#9ab;">
+  Create custom badges with GIF or image icons. Award them to users from their admin profile page.
+  Users earn <strong>15 XP per post</strong>; every <strong>100 XP = 1 level</strong>.
+</div>
+
+<div style="background:#242424; border:1px solid #444;">
+  <table>
+    <tr style="background:#222; font-size:10px; color:#666; text-transform:uppercase;">
+      <th style="padding:3px 10px; text-align:left;">Icon</th>
+      <th style="padding:3px 10px; text-align:left;">Name</th>
+      <th style="padding:3px 10px; text-align:left;">Description</th>
+      <th style="padding:3px 10px; text-align:center;">Position</th>
+      <th style="padding:3px 10px; text-align:center;">Users</th>
+      <th style="padding:3px 10px; text-align:center;">Actions</th>
+    </tr>
+    <% if @badges.empty? %>
+      <tr><td colspan="6" style="padding:20px; text-align:center; color:#666; font-size:12px;">No badges yet.</td></tr>
+    <% end %>
+    <% @badges.each_with_index do |badge, i| %>
+      <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
+        <td style="padding:5px 10px;">
+          <% if badge.image.attached? %>
+            <%= badge_image_tag badge, size: 32 %>
+          <% else %>
+            <span style="color:#555; font-size:11px;">—</span>
+          <% end %>
+        </td>
+        <td style="padding:5px 10px; font-size:12px;"><strong><%= badge.name %></strong></td>
+        <td style="padding:5px 10px; font-size:11px; color:#888;"><%= badge.description.presence || "—" %></td>
+        <td style="padding:5px 10px; text-align:center; font-size:12px;"><%= badge.position %></td>
+        <td style="padding:5px 10px; text-align:center; font-size:12px;"><%= badge.user_badges.count %></td>
+        <td style="padding:5px 10px; text-align:center; white-space:nowrap;">
+          <a href="<%= edit_admin_badge_path(badge) %>" class="btn btn-sm">Edit</a>
+          <%= button_to "Delete", admin_badge_path(badge), method: :delete, class: "btn btn-danger btn-sm", data: { turbo_confirm: "Delete badge \"#{badge.name}\"?" } %>
+        </td>
+      </tr>
+    <% end %>
+  </table>
+</div>

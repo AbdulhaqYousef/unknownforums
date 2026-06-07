@@ -9,6 +9,27 @@ module ApplicationHelper
     image_tag rails_blob_path(user.avatar, only_path: true), options.merge(style: style)
   end
 
+  def profile_gif_tag(user, **options)
+    return unless user.profile_gif.attached?
+
+    style = options.delete(:style).presence || "max-width:100%; max-height:120px; object-fit:contain;"
+    image_tag rails_blob_path(user.profile_gif, only_path: true), options.merge(style: style, alt: "#{user.username} profile GIF")
+  end
+
+  def badge_image_tag(badge, size: 24, **options)
+    return unless badge.image.attached?
+
+    style = "width:#{size}px; height:#{size}px; object-fit:contain; vertical-align:middle;"
+    style = "#{style} #{options.delete(:style)}" if options[:style].present?
+    image_tag rails_blob_path(badge.image, only_path: true), options.merge(style: style, alt: badge.name, title: badge.description.presence || badge.name)
+  end
+
+  def user_badges_list(user, size: 20)
+    user.badges.includes(image_attachment: :blob).ordered.map do |badge|
+      badge_image_tag(badge, size: size)
+    end.join(" ").html_safe
+  end
+
   def forum_access_badge(forum)
     return if forum.publicly_readable?
 
@@ -47,41 +68,19 @@ module ApplicationHelper
   end
 
   def user_level(user)
-    points = user_points(user)
-    level = 1
-    threshold = 400
-    while points >= threshold
-      level += 1
-      points -= threshold
-      threshold = (threshold * 1.5).to_i
-    end
-    level
+    user.level
   end
 
   def user_points(user)
-    user.post_count * 5 + user.reputation * 3 + ((Time.current - user.created_at) / 1.day).to_i
+    user.experience_points
   end
 
   def level_progress(user)
-    points = user_points(user)
-    threshold = 400
-    loop do
-      break if points < threshold
-      points -= threshold
-      threshold = (threshold * 1.5).to_i
-    end
-    ((points.to_f / threshold) * 100).round
+    user.level_progress_percent
   end
 
   def points_to_next_level(user)
-    points = user_points(user)
-    threshold = 400
-    loop do
-      break if points < threshold
-      points -= threshold
-      threshold = (threshold * 1.5).to_i
-    end
-    threshold - points
+    user.xp_to_next_level
   end
 
   def user_activity(user)

@@ -30,11 +30,32 @@
             <div>
               <%= f.file_field :avatar, accept: "image/jpeg,image/png,image/gif,image/webp",
                 style: "font-size:11px; color:#888;" %>
-              <div style="font-size:10px; color:#666; margin-top:3px;">JPEG, PNG, GIF or WebP &mdash; max 10MB</div>
+              <div style="font-size:10px; color:#666; margin-top:3px;">JPEG, PNG, GIF or WebP &mdash; max 10MB. GIF avatars animate in posts and on your profile.</div>
               <% if @user.avatar.attached? %>
                 <label style="display:flex; align-items:center; gap:4px; margin-top:6px; font-size:11px; color:#c08080; cursor:pointer;">
                   <input type="checkbox" name="user[remove_avatar]" value="1" style="width:12px; height:12px;">
                   Remove current picture
+                </label>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #333;">
+          <label style="display:block; font-size:11px; color:#888; margin-bottom:6px;">Profile GIF (optional banner):</label>
+          <div style="display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+            <% if @user.profile_gif.attached? %>
+              <div style="background:#303030; border:1px solid #444; padding:6px; max-width:200px;">
+                <%= profile_gif_tag @user, style: "max-width:180px; max-height:100px; object-fit:contain;" %>
+              </div>
+            <% end %>
+            <div>
+              <%= f.file_field :profile_gif, accept: "image/gif", style: "font-size:11px; color:#888;" %>
+              <div style="font-size:10px; color:#666; margin-top:3px;">Animated GIF only &mdash; max 15MB. Shown on your profile above your avatar.</div>
+              <% if @user.profile_gif.attached? %>
+                <label style="display:flex; align-items:center; gap:4px; margin-top:6px; font-size:11px; color:#c08080; cursor:pointer;">
+                  <input type="checkbox" name="user[remove_profile_gif]" value="1" style="width:12px; height:12px;">
+                  Remove profile GIF
                 </label>
               <% end %>
             </div>

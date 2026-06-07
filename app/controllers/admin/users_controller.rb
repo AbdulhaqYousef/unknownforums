@@ -19,13 +19,17 @@ class Admin::UsersController < ApplicationController
                         .select(:ip_address)
                         .distinct
                         .pluck(:ip_address)
+    @user_badges = @user.user_badges.includes(:badge, badge: { image_attachment: :blob }).recent
+    @available_badges = Badge.ordered.where.not(id: @user.badge_ids)
   end
 
   def edit
   end
 
   def update
-    if @user.update(user_params)
+    attrs = user_params.to_h
+    attrs["level_override"] = nil if attrs["level_override"].blank?
+    if @user.update(attrs)
       redirect_to admin_user_path(@user), notice: "User updated."
     else
       render :edit, status: :unprocessable_entity
@@ -68,6 +72,6 @@ class Admin::UsersController < ApplicationController
   end
 
   def user_params
-    params.require(:user).permit(:role, :banned, :flagged, :flag_reason, :moderation_note, :reputation) # brakeman: ignore
+    params.require(:user).permit(:role, :banned, :flagged, :flag_reason, :moderation_note, :reputation, :experience_points, :level_override) # brakeman: ignore
   end
 end

@@ -15,6 +15,7 @@ class UsersController < ApplicationController
     @recent_posts = @user.posts.visible.includes(thread: :subforum).order(created_at: :desc).limit(10)
     Trophy.check_and_award!(@user)
     @trophies = @user.trophies.recent
+    @badges = @user.badges.includes(image_attachment: :blob).ordered
   end
 
   def edit
@@ -24,6 +25,7 @@ class UsersController < ApplicationController
   def update
     require_owner_or_moderator(@user)
     @user.avatar.purge if params[:user][:remove_avatar] == "1"
+    @user.profile_gif.purge if params[:user][:remove_profile_gif] == "1"
     changing_password = user_params[:password].present?
     changing_email    = user_params[:email].present? && user_params[:email] != @user.email
     if @user.update(user_params)
@@ -52,7 +54,7 @@ class UsersController < ApplicationController
   end
 
   def user_params
-    permitted = params.require(:user).permit(:email, :email_two_factor_enabled, :show_presence, :email_on_reply, :email_on_mention, :email_on_thread_reply, :signature, :password, :password_confirmation, :avatar)
+    permitted = params.require(:user).permit(:email, :email_two_factor_enabled, :show_presence, :email_on_reply, :email_on_mention, :email_on_thread_reply, :signature, :password, :password_confirmation, :avatar, :profile_gif)
     if permitted[:password].blank?
       permitted.delete(:password)
       permitted.delete(:password_confirmation)

@@ -108,7 +108,9 @@ Rails.application.routes.draw do
       end
       resources :user_warnings, only: %i[create destroy], shallow: true
       resources :staff_notes,   only: %i[create destroy], shallow: true
+      resources :user_badges,     only: %i[create destroy]
     end
+    resources :badges, except: :show
     resources :reports,       only: %i[index show update]
     resources :site_pages,    only: %i[index edit update]
     resources :attack_events, only: %i[index]
