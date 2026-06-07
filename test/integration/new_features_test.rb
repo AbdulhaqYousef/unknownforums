@@ -148,7 +148,10 @@ class NewFeaturesTest < ActionDispatch::IntegrationTest
     get sitemap_path(format: :xml)
     assert_response :success
     assert_includes response.media_type, "xml"
+    assert_operator response.body.bytesize, :>, 1000
     assert_match(/urlset/, response.body)
     assert_match %r{<loc>https?://[^<]+</loc>}, response.body
+    assert_match(/public/, response.headers["Cache-Control"])
+    assert_equal response.body.bytesize.to_s, response.headers["Content-Length"]
   end
 end

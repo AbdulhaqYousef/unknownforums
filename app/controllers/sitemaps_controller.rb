@@ -16,9 +16,11 @@ class SitemapsController < ApplicationController
                      .order(updated_at: :desc)
                      .limit(5000)
 
-    respond_to do |format|
-      format.xml
-    end
+    xml = render_to_string(formats: [ :xml ], layout: false)
+    response.headers["Content-Type"] = "application/xml; charset=utf-8"
+    response.headers["Cache-Control"] = "public, max-age=3600, s-maxage=86400"
+    response.headers["Content-Length"] = xml.bytesize.to_s
+    render plain: xml, content_type: "application/xml"
   end
 
   private
