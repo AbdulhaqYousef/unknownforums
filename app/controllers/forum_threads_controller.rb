@@ -13,7 +13,7 @@ class ForumThreadsController < ApplicationController
     posts_scope = @thread.posts.visible
                          .includes(:user, :quote_post,
                                    attachments: [ :file_attachment, :versions ],
-                                   user: { avatar_attachment: :blob, custom_badge_attachment: :blob, badges: { image_attachment: :blob } })
+                                   user: post_user_includes)
                          .order(:created_at)
     if params[:q].present?
       query = "%#{ActiveRecord::Base.sanitize_sql_like(params[:q].strip)}%"
@@ -158,5 +158,11 @@ class ForumThreadsController < ApplicationController
 
   def post_params
     params.require(:post).permit(:body, :quote_post_id)
+  end
+
+  def post_user_includes
+    includes = { avatar_attachment: :blob, custom_badge_attachment: :blob }
+    includes[:badges] = { image_attachment: :blob } if Badge.feature_available?
+    includes
   end
 end

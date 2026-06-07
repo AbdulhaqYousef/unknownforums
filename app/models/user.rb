@@ -310,8 +310,15 @@ class User < ApplicationRecord
 
   def has_display_badges?
     custom = custom_badge.attached?
-    return custom unless self.class.connection.data_source_exists?("user_badges")
+    return custom unless Badge.feature_available?
 
     custom || badges.exists?
+  end
+
+  def display_badges_for_render
+    return [] unless Badge.feature_available?
+
+    collection = badges.loaded? ? badges : badges.includes(image_attachment: :blob).ordered
+    collection.to_a.sort_by { |badge| [ badge.position, badge.name ] }
   end
 end

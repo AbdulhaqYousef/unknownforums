@@ -50,7 +50,7 @@
 
     <% if post.user.has_display_badges? %>
       <div class="uc-badges" style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border-dim);">
-        <%= render "shared/user_badges", user: post.user, badges: post.user.badges.to_a.sort_by { |badge| [badge.position, badge.name] }, size: 180, featured: true %>
+        <%= render "shared/user_badges", user: post.user, badges: post.user.display_badges_for_render, size: 180, featured: true %>
       </div>
     <% end %>
   </div>

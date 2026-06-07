@@ -15,7 +15,7 @@ class UsersController < ApplicationController
     @recent_posts = @user.posts.visible.includes(thread: :subforum).order(created_at: :desc).limit(10)
     Trophy.check_and_award!(@user)
     @trophies = @user.trophies.recent
-    @badges = @user.badges.includes(image_attachment: :blob).ordered
+    @badges = Badge.feature_available? ? @user.badges.includes(image_attachment: :blob).ordered : []
   end
 
   def edit

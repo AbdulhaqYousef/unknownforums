@@ -3,6 +3,15 @@ class Badge < ApplicationRecord
   has_many :user_badges, dependent: :destroy
   has_many :users, through: :user_badges
 
+  def self.feature_available?
+    return @feature_available unless @feature_available.nil?
+
+    @feature_available = connection.data_source_exists?("badges") &&
+                         connection.data_source_exists?("user_badges")
+  rescue ActiveRecord::ConnectionNotEstablished, ActiveRecord::NoDatabaseError
+    @feature_available = false
+  end
+
   IMAGE_TYPES = %w[image/gif image/png image/jpeg image/webp].freeze
   IMAGE_MAX_SIZE = 10.megabytes
 

@@ -30,6 +30,8 @@ module ApplicationHelper
   end
 
   def user_badges_list(user, size: 20)
+    return [] unless Badge.feature_available?
+
     user.badges.includes(image_attachment: :blob).ordered.map do |badge|
       badge_image_tag(badge, size: size)
     end.join(" ").html_safe

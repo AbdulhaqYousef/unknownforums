@@ -93,6 +93,12 @@ class NewFeaturesTest < ActionDispatch::IntegrationTest
     assert_match(/Generals Discussion/, response.body)
     assert_match(/Log in/, response.body)
 
+    Badge.stub(:feature_available?, false) do
+      get forum_thread_path(thread)
+      assert_response :success
+      assert_match(/Generals Discussion/, response.body)
+    end
+
     get subforum_path(subforums(:lounge))
     assert_response :success
     assert_match(/Browsing as guest/, response.body)
