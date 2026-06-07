@@ -3,18 +3,23 @@
 <div style="max-width:560px;">
   <div style="background:#1a2a2a; border:1px solid #2a4a4a; padding:8px 10px; margin-bottom:10px; font-size:11px; color:#8fd0d8;">
     Site-wide upload rules: <strong style="color:#c8eef4;"><%= AllowedFileTypes.global_policy_label %></strong>
+    &middot; max <strong style="color:#c8eef4;"><%= UploadLimits.global_label %></strong>
   </div>
 
   <div class="panel" style="margin-bottom:12px;">
-    <div class="panel-header">Allowed Upload Types (Site-wide)</div>
+    <div class="panel-header">Upload Settings (Site-wide)</div>
     <div class="panel-body">
       <%= form_with url: admin_site_settings_path, method: :patch, data: { turbo: false } do |f| %>
         <%= hidden_field_tag :save_upload_types, "1" %>
+        <%= render "admin/shared/upload_size_limit",
+              inherit: false,
+              upload_max_gb: @site_upload_max_gb,
+              effective_label: UploadLimits.global_label %>
         <%= render "admin/shared/file_type_restrictions",
               inherit: false,
               selected_groups: @selected_file_type_groups,
               custom_upload_types: SiteSetting.custom_upload_types_text %>
-        <%= f.submit "Save Upload Types", class: "btn btn-primary" %>
+        <%= f.submit "Save Upload Settings", class: "btn btn-primary" %>
       <% end %>
     </div>
   </div>

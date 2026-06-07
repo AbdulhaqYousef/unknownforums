@@ -14,12 +14,23 @@ class Attachment < ApplicationRecord
 
   ALLOWED_TYPES = DEFAULT_ALLOWED_TYPES
 
-  attr_accessor :allowed_content_types
+  attr_accessor :allowed_content_types, :max_byte_size
 
-  MAX_SIZE = 2.gigabytes
+  MAX_SIZE = 100.gigabytes
+  MULTIPART_THRESHOLD = 5.gigabytes
 
   def self.max_size_label
     ActiveSupport::NumberHelper.number_to_human_size(MAX_SIZE)
+  end
+
+  def self.multipart_enabled?
+    ActiveStorage::Blob.service.is_a?(ActiveStorage::Service::S3Service)
+  rescue StandardError
+    false
+  end
+
+  def self.multipart_threshold_bytes
+    multipart_enabled? ? MULTIPART_THRESHOLD : 0
   end
 
   VT_SCAN_TYPES = %w[
@@ -43,7 +54,7 @@ class Attachment < ApplicationRecord
 
   validates :filename, presence: true
   validate :content_type_is_allowed
-  validates :byte_size, numericality: { less_than_or_equal_to: MAX_SIZE, message: ->(_object, _data) { "is too large — maximum upload size is #{Attachment.max_size_label}" } }
+  validate :byte_size_within_limit
 
   VT_STATUSES = %w[pending scanning clean suspicious malicious skipped].freeze
 
@@ -133,6 +144,15 @@ class Attachment < ApplicationRecord
   end
 
   private
+
+  def byte_size_within_limit
+    return if byte_size.blank?
+
+    limit = max_byte_size || UploadLimits.max_bytes_for_attachable(attachable)
+    return if byte_size <= limit
+
+    errors.add(:byte_size, "is too large — maximum upload size is #{UploadLimits.label_for(limit)}")
+  end
 
   def content_type_is_allowed
     allowed = allowed_content_types.presence || AllowedFileTypes.for_attachable(attachable)

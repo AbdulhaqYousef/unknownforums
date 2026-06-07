@@ -22,8 +22,9 @@ class AttachmentCreator
       end
       label = blob.filename.to_s
 
-      if blob.byte_size > Attachment::MAX_SIZE
-        errors << "#{label}: file is too large — maximum upload size is #{Attachment.max_size_label}"
+      if blob.byte_size > UploadLimits.max_bytes_for_attachable(attachable)
+        limit = UploadLimits.max_bytes_for_attachable(attachable)
+        errors << "#{label}: file is too large — maximum upload size is #{UploadLimits.label_for(limit)}"
         blob.purge_later
         next
       end
@@ -50,7 +51,8 @@ class AttachmentCreator
         content_type: content_type,
         byte_size: blob.byte_size,
         is_video: content_type.start_with?("video/"),
-        allowed_content_types: allowed_types
+        allowed_content_types: allowed_types,
+        max_byte_size: UploadLimits.max_bytes_for_attachable(attachable)
       )
       attachment.file.attach(blob)
       finalize_attachment(attachment, label, errors)
@@ -85,7 +87,8 @@ class AttachmentCreator
         content_type: content_type,
         byte_size: file.size,
         is_video: content_type.start_with?("video/"),
-        allowed_content_types: allowed_types
+        allowed_content_types: allowed_types,
+        max_byte_size: UploadLimits.max_bytes_for_attachable(attachable)
       )
       attach_file(attachment, io, attachable, user, content_type)
       finalize_attachment(attachment, file.original_filename, errors)

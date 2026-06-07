@@ -29,6 +29,13 @@
         selected_groups: category.selected_file_type_groups,
         custom_upload_types: category.custom_upload_types_text,
         field_prefix: "category-" %>
+  <%= render "admin/shared/upload_size_limit",
+        inherit: true,
+        inherit_checked: category.upload_limit_inherited?,
+        inherit_label: "Use site default upload limit",
+        upload_max_gb: category.upload_limit_gb_input,
+        effective_label: category.effective_upload_limit_label,
+        field_prefix: "category-" %>
   <div style="display:flex; gap:8px;">
     <%= f.submit category.new_record? ? "Create" : "Save", class: "btn btn-primary" %>
     <a href="<%= admin_categories_path %>" class="btn">Cancel</a>

@@ -1,0 +1,47 @@
+<% inherit = local_assigns.fetch(:inherit, false) %>
+<% inherit_checked = local_assigns.fetch(:inherit_checked, false) %>
+<% inherit_label = local_assigns.fetch(:inherit_label, "Inherit from parent") %>
+<% gb_value = local_assigns.fetch(:upload_max_gb, "") %>
+<% field_prefix = local_assigns.fetch(:field_prefix, "") %>
+<% effective_label = local_assigns.fetch(:effective_label, UploadLimits.global_label) %>
+<% absolute_gb = UploadLimits.gb_input_value(UploadLimits.absolute_max_bytes) %>
+<% limit_disabled = inherit && inherit_checked %>
+
+<div style="background:#1e1e1e; border:1px solid #333; padding:10px; margin-bottom:12px;">
+  <div style="font-size:10px; color:#888; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Upload Size Limit</div>
+
+  <% if inherit %>
+    <label style="display:flex; align-items:flex-start; gap:8px; font-size:11px; color:#cfcfcf; cursor:pointer; margin-bottom:10px;">
+      <%= check_box_tag "upload_limit_inherit", "1", inherit_checked,
+            id: "#{field_prefix}upload-limit-inherit",
+            data: {
+              upload_limit_inherit_toggle: true,
+              upload_limit_field: "#{field_prefix}upload-limit-field",
+              upload_limit_hint: "#{field_prefix}upload-limit-hint"
+            },
+            style: "width:14px; height:14px; margin-top:1px;" %>
+      <span>
+        <strong><%= inherit_label %></strong>
+        <span style="display:block; color:#666; font-size:10px; margin-top:2px;">When checked, the limit comes from the parent. Uncheck to set a lower (or higher) limit for this <%= field_prefix.include?("subforum") ? "subforum" : "category" %> only.</span>
+      </span>
+    </label>
+  <% else %>
+    <div style="font-size:10px; color:#666; margin-bottom:8px;">Default maximum file size for the whole site. Cannot exceed <%= absolute_gb %> GB.</div>
+  <% end %>
+
+  <div id="<%= field_prefix %>upload-limit-field" style="<%= limit_disabled ? "opacity:0.45; pointer-events:none;" : "" %>">
+    <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Maximum file size (GB)</label>
+    <input type="number" name="upload_max_gb" id="<%= field_prefix %>upload-max-gb"
+      value="<%= gb_value %>"
+      min="0.01" max="<%= absolute_gb %>" step="0.01"
+      placeholder="<%= inherit ? "e.g. 10" : absolute_gb %>"
+      style="width:120px;">
+    <div style="font-size:10px; color:#555; margin-top:4px;">Use decimals for partial GB (example: 2.5). Hard ceiling: <%= absolute_gb %> GB.</div>
+  </div>
+
+  <% if inherit %>
+    <div id="<%= field_prefix %>upload-limit-hint" style="font-size:10px; color:#7aabde; margin-top:8px;<%= inherit_checked ? "" : " display:none;" %>">Uncheck the box above to set a custom upload limit here.</div>
+  <% end %>
+
+  <div style="font-size:10px; color:#666; margin-top:8px;">Effective limit: <strong style="color:#aaa;"><%= effective_label %></strong></div>
+</div>

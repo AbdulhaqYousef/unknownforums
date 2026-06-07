@@ -39,7 +39,7 @@ class AttachmentsController < ApplicationController
   def new_version
     require_login
     require_owner_or_moderator(@attachment.root_attachment.user)
-    @allowed_types = AllowedFileTypes.rules_for_attachable(@attachment.root_attachment.attachable)
+    @allowed_types = UploadLimits.rules_for_attachable(@attachment.root_attachment.attachable)
   end
 
   def upload_version
@@ -53,8 +53,13 @@ class AttachmentsController < ApplicationController
     end
 
     content_type = file.content_type.presence || "application/octet-stream"
-    allowed_rules = AllowedFileTypes.rules_for_attachable(root.attachable)
+    allowed_rules = UploadLimits.rules_for_attachable(root.attachable)
     allowed_types = allowed_rules[:types]
+    max_bytes = allowed_rules[:max_bytes]
+    if file.size > max_bytes
+      return redirect_to new_version_attachment_path(@attachment),
+        alert: "File is too large — maximum upload size is #{UploadLimits.label_for(max_bytes)}."
+    end
     unless AllowedFileTypes.type_allowed?(content_type, file.original_filename, allowed_rules)
       return redirect_to new_version_attachment_path(@attachment),
         alert: "That file type is not allowed in this forum."
@@ -73,7 +78,8 @@ class AttachmentsController < ApplicationController
       parent_attachment_id: root.id,
       version:              next_version,
       approved:             false,
-      allowed_content_types: allowed_types
+      allowed_content_types: allowed_types,
+      max_byte_size: max_bytes
     )
     AttachmentCreator.attach_file(new_att, file, root.attachable, current_user, content_type)
 

@@ -77,6 +77,11 @@ Rails.application.routes.draw do
 
   get "my/downloads", to: "download_histories#index", as: :my_downloads
 
+  post "direct_multipart_uploads", to: "direct_multipart_uploads#create"
+  post "direct_multipart_uploads/presign_part", to: "direct_multipart_uploads#presign_part"
+  post "direct_multipart_uploads/complete", to: "direct_multipart_uploads#complete"
+  post "direct_multipart_uploads/abort", to: "direct_multipart_uploads#abort"
+
   namespace :admin do
     root "dashboard#index"
     resources :categories, except: :show do

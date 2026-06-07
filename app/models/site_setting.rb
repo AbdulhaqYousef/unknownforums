@@ -2,6 +2,7 @@ class SiteSetting < ApplicationRecord
   MAINTENANCE_KEY = "maintenance_mode".freeze
   MAINTENANCE_MESSAGE_KEY = "maintenance_message".freeze
   ALLOWED_FILE_TYPES_KEY = "allowed_file_types".freeze
+  MAX_UPLOAD_BYTES_KEY = "max_upload_bytes".freeze
 
   validates :key, presence: true, uniqueness: true
 
@@ -41,5 +42,16 @@ class SiteSetting < ApplicationRecord
 
   def self.custom_upload_types_text
     AllowedFileTypes.custom_text_for(allowed_file_type_groups_raw)
+  end
+
+  def self.upload_max_gb_input
+    UploadLimits.gb_input_value(UploadLimits.global_max_bytes)
+  end
+
+  def self.set_upload_max_gb!(value)
+    bytes = UploadLimits.parse_gb_param(value)
+    raise ArgumentError, "Invalid upload size" unless bytes
+
+    UploadLimits.set_global_max_bytes!(bytes)
   end
 end

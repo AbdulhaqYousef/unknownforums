@@ -96,6 +96,10 @@ class Rack::Attack
     normalized_ip(req) if req.path.match?(%r{/attachments}) && req.post?
   end
 
+  throttle("multipart_uploads/ip", limit: 15_000, period: 24.hours) do |req|
+    normalized_ip(req) if req.path.start_with?("/direct_multipart_uploads") && req.post?
+  end
+
   # Reports.
   throttle("reports/ip", limit: 10, period: 15.minutes) do |req|
     normalized_ip(req) if req.path == "/reports" && req.post?

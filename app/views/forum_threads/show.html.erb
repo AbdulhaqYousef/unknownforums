@@ -149,7 +149,7 @@
         <%= f.text_area :body, rows: 8, style: "width:100%; resize:vertical;", placeholder: "Write your reply here..." %>
         <div style="font-size:10px; color:#666; margin-top:3px;">Markdown supported: **bold**, *italic*, `code`, lists, links, quotes, headings.</div>
         <div style="margin-top:8px;">
-          <%= render "shared/file_upload_field", upload_rules: AllowedFileTypes.rules_for_subforum(@thread.subforum) %>
+          <%= render "shared/file_upload_field", subforum: @thread.subforum, upload_rules: UploadLimits.rules_for_subforum(@thread.subforum) %>
         </div>
         <div style="margin-top:8px; display:flex; gap:8px; align-items:center; justify-content:space-between;">
           <%= f.submit "Post Reply", class: "btn btn-primary" %>

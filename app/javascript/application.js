@@ -78,6 +78,7 @@ document.addEventListener("turbo:load", () => {
   initQuotePost()
   initAdminThreadBulk()
   initAdminFileTypeInherit()
+  initAdminUploadLimitInherit()
 })
 
 /* ── Admin file type inherit toggle ── */
@@ -108,7 +109,34 @@ function initAdminFileTypeInherit() {
 
 document.addEventListener("turbo:load", () => {
   document.querySelectorAll("[data-file-type-inherit-toggle]").forEach(syncFileTypeInherit)
+  document.querySelectorAll("[data-upload-limit-inherit-toggle]").forEach(syncUploadLimitInherit)
 })
+
+/* ── Admin upload limit inherit toggle ── */
+let _adminUploadLimitInheritInit = false
+
+function syncUploadLimitInherit(inheritBox) {
+  const fieldBox = document.getElementById(inheritBox.dataset.uploadLimitField)
+  const hintBox  = inheritBox.dataset.uploadLimitHint ? document.getElementById(inheritBox.dataset.uploadLimitHint) : null
+  const locked   = inheritBox.checked
+
+  if (fieldBox) {
+    fieldBox.style.opacity = locked ? "0.45" : ""
+    fieldBox.style.pointerEvents = locked ? "none" : ""
+  }
+  if (hintBox) hintBox.style.display = locked ? "" : "none"
+}
+
+function initAdminUploadLimitInherit() {
+  if (_adminUploadLimitInheritInit) return
+  _adminUploadLimitInheritInit = true
+
+  document.addEventListener("change", (event) => {
+    const inheritBox = event.target.closest("[data-upload-limit-inherit-toggle]")
+    if (!inheritBox) return
+    syncUploadLimitInherit(inheritBox)
+  })
+}
 
 /* ── Category collapse ── */
 function initCategoryToggle() {
@@ -277,7 +305,17 @@ function initVideoJS() {
 function maxFileBytes() {
   const zone = document.getElementById("file-drop-zone")
   const raw  = zone ? parseInt(zone.dataset.maxBytes, 10) : NaN
-  return Number.isFinite(raw) && raw > 0 ? raw : 2 * 1024 * 1024 * 1024
+  return Number.isFinite(raw) && raw > 0 ? raw : 100 * 1024 * 1024 * 1024
+}
+
+function multipartThresholdBytes() {
+  const zone = document.getElementById("file-drop-zone")
+  const raw  = zone ? parseInt(zone.dataset.multipartThreshold, 10) : NaN
+  return Number.isFinite(raw) && raw > 0 ? raw : Number.POSITIVE_INFINITY
+}
+
+function usesMultipartUpload(file) {
+  return file.size > multipartThresholdBytes()
 }
 
 function maxFileLabel() {
@@ -358,6 +396,155 @@ function handleSelectedFiles(input) {
   renderFilePreview(input.files)
 }
 
+function csrfToken() {
+  return document.querySelector('meta[name="csrf-token"]')?.content || ""
+}
+
+function maybeSubmitAfterUpload(input) {
+  const form = input.closest("form")
+  if (form?._awaitingSubmit && directUploadState().pending === 0 && directUploadState().errors.length === 0) {
+    form._awaitingSubmit = false
+    form.requestSubmit()
+  }
+}
+
+function markUploadError(zone, key, input, message) {
+  const entry = zone._uploads.get(key)
+  if (!entry) return
+  entry.status = "error"
+  entry.error = message
+  renderFilePreview(input.files)
+}
+
+async function uploadFileMultipart(file, zone, key, input) {
+  const entry = zone._uploads.get(key)
+  if (!entry) return
+
+  let uploadId = null
+  let objectKey = null
+
+  try {
+    setUploadStatus(`Preparing multipart upload for ${file.name}…`, "info")
+
+    const initRes = await fetch("/direct_multipart_uploads", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "X-CSRF-Token": csrfToken()
+      },
+      body: JSON.stringify({
+        filename: file.name,
+        content_type: file.type,
+        byte_size: file.size,
+        subforum_id: zone.dataset.subforumId || null
+      })
+    })
+
+    const initData = await initRes.json()
+    if (!initRes.ok) throw new Error(initData.error || "Could not start multipart upload")
+
+    const { blob_id, upload_id, key: storageKey, part_size, part_count } = initData
+    uploadId = upload_id
+    objectKey = storageKey
+
+    const parts = []
+    let uploadedBytes = 0
+
+    for (let partNumber = 1; partNumber <= part_count; partNumber++) {
+      const start = (partNumber - 1) * part_size
+      const end = Math.min(start + part_size, file.size)
+      const chunk = file.slice(start, end)
+
+      setUploadStatus(`Uploading ${file.name} — part ${partNumber} of ${part_count}…`, "info")
+
+      const presignRes = await fetch("/direct_multipart_uploads/presign_part", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-CSRF-Token": csrfToken()
+        },
+        body: JSON.stringify({
+          upload_id: uploadId,
+          key: objectKey,
+          part_number: partNumber
+        })
+      })
+
+      const presignData = await presignRes.json()
+      if (!presignRes.ok) throw new Error(presignData.error || `Could not presign part ${partNumber}`)
+
+      const etag = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open("PUT", presignData.url, true)
+        xhr.upload.addEventListener("progress", (event) => {
+          if (!event.lengthComputable) return
+          entry.progress = (uploadedBytes + event.loaded) / file.size
+          renderFilePreview(input.files)
+        })
+        xhr.addEventListener("load", () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            uploadedBytes += chunk.size
+            entry.progress = uploadedBytes / file.size
+            renderFilePreview(input.files)
+            resolve(xhr.getResponseHeader("ETag"))
+          } else {
+            reject(new Error(`Part ${partNumber} upload failed (${xhr.status})`))
+          }
+        })
+        xhr.addEventListener("error", () => reject(new Error(`Part ${partNumber} upload failed`)))
+        xhr.send(chunk)
+      })
+
+      parts.push({ part_number: partNumber, etag: etag })
+    }
+
+    const completeRes = await fetch("/direct_multipart_uploads/complete", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "X-CSRF-Token": csrfToken()
+      },
+      body: JSON.stringify({
+        blob_id,
+        upload_id: uploadId,
+        key: objectKey,
+        parts
+      })
+    })
+
+    const completeData = await completeRes.json()
+    if (!completeRes.ok) throw new Error(completeData.error || "Could not finalize multipart upload")
+
+    entry.status = "done"
+    entry.progress = 1
+    entry.signedId = completeData.signed_id
+    renderFilePreview(input.files)
+    setUploadStatus("Files uploaded — ready to post.", "info")
+    maybeSubmitAfterUpload(input)
+  } catch (err) {
+    if (uploadId && objectKey) {
+      fetch("/direct_multipart_uploads/abort", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-CSRF-Token": csrfToken()
+        },
+        body: JSON.stringify({ upload_id: uploadId, key: objectKey })
+      }).catch(() => {})
+    }
+    markUploadError(zone, key, input, err.message || "Multipart upload failed")
+    setUploadStatus(err.message || "Multipart upload failed", "error")
+  }
+}
+
 function queueDirectUploads(input) {
   const zone = document.getElementById("file-drop-zone")
   if (!zone) return
@@ -369,6 +556,11 @@ function queueDirectUploads(input) {
 
     zone._uploads.set(key, { status: "uploading", progress: 0, signedId: null, error: null })
     renderFilePreview(input.files)
+
+    if (usesMultipartUpload(file)) {
+      uploadFileMultipart(file, zone, key, input)
+      return
+    }
 
     const delegate = {
       directUploadWillStoreFileWithXHR(xhr) {
@@ -395,12 +587,7 @@ function queueDirectUploads(input) {
         entry.signedId = blob.signed_id
       }
       renderFilePreview(input.files)
-
-      const form = input.closest("form")
-      if (form?._awaitingSubmit && directUploadState().pending === 0 && directUploadState().errors.length === 0) {
-        form._awaitingSubmit = false
-        form.requestSubmit()
-      }
+      maybeSubmitAfterUpload(input)
     })
   })
 }
@@ -652,7 +839,10 @@ function renderFilePreview(files) {
 }
 
 function fmtSize(b) {
-  return b >= 1048576 ? (b/1048576).toFixed(1)+" MB" : (b/1024).toFixed(0)+" KB"
+  if (b >= 1099511627776) return (b / 1099511627776).toFixed(2) + " TB"
+  if (b >= 1073741824) return (b / 1073741824).toFixed(2) + " GB"
+  if (b >= 1048576) return (b / 1048576).toFixed(1) + " MB"
+  return (b / 1024).toFixed(0) + " KB"
 }
 
 /* ── Image lightbox ── */

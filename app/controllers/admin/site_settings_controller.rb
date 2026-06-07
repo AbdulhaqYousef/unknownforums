@@ -5,6 +5,7 @@ class Admin::SiteSettingsController < ApplicationController
     @maintenance = SiteSetting.maintenance_mode?
     @maintenance_message = SiteSetting.maintenance_message
     @selected_file_type_groups = SiteSetting.selected_file_type_groups
+    @site_upload_max_gb = SiteSetting.upload_max_gb_input
   end
 
   def update
@@ -21,6 +22,13 @@ class Admin::SiteSettingsController < ApplicationController
         return
       end
       SiteSetting.set_allowed_file_type_groups(groups, custom: custom)
+
+      begin
+        SiteSetting.set_upload_max_gb!(params[:upload_max_gb])
+      rescue ArgumentError => e
+        redirect_to admin_site_settings_path, alert: e.message
+        return
+      end
     end
 
     redirect_to admin_site_settings_path, notice: "Settings saved."

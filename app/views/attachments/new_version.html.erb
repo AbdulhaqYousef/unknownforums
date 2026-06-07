@@ -38,7 +38,7 @@
       <div style="font-size:10px; color:#666; margin-bottom:8px;">
         Allowed here: <%= @allowed_types[:summary] %>.<br>
         Executables, scripts, and archives will be scanned by VirusTotal.<br>
-        Max size: <%= number_to_human_size(Attachment::MAX_SIZE) %>.
+        Max size: <%= @allowed_types[:max_label] %>.
       </div>
       <div style="display:flex; gap:8px;">
         <%= f.submit "Upload New Version", class: "btn btn-primary" %>

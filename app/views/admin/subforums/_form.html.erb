@@ -34,6 +34,13 @@
         selected_groups: subforum.selected_file_type_groups,
         custom_upload_types: subforum.custom_upload_types_text,
         field_prefix: "subforum-" %>
+  <%= render "admin/shared/upload_size_limit",
+        inherit: true,
+        inherit_checked: subforum.upload_limit_inherited?,
+        inherit_label: "Use category default upload limit",
+        upload_max_gb: subforum.upload_limit_gb_input,
+        effective_label: subforum.effective_upload_limit_label,
+        field_prefix: "subforum-" %>
   <div style="display:flex; gap:8px;">
     <%= f.submit subforum.new_record? ? "Create" : "Save", class: "btn btn-primary" %>
     <a href="<%= admin_subforums_path %>" class="btn">Cancel</a>

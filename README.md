@@ -78,8 +78,8 @@ unknownforums.fun, www.unknownforums.fun {
         health_uri /up
         health_interval 15s
         transport http {
-            read_timeout 30m
-            write_timeout 30m
+            read_timeout 24h
+            write_timeout 24h
         }
     }
 
@@ -91,12 +91,16 @@ unknownforums.fun, www.unknownforums.fun {
     encode gzip
 
     request_body {
-        max_size 2GB
+        max_size 100MB
     }
 }
 ```
 
-Forum uploads go **directly to Cloudflare R2** from the browser. Configure R2 CORS on your bucket:
+Forum uploads go **directly to Cloudflare R2** from the browser (not through Caddy). Files over 5 GB use R2 multipart upload automatically. The `request_body` limit only applies to normal form posts (thread text, signed upload IDs, etc.).
+
+For a **100 GB** upload on a 100 Mbps connection, expect roughly 2–3 hours of upload time — keep the tab open until it finishes.
+
+Configure R2 CORS on your bucket:
 
 ```json
 [
