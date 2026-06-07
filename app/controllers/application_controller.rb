@@ -12,6 +12,7 @@ class ApplicationController < ActionController::Base
   before_action :check_banned
   before_action :check_ip_banned
   before_action :set_admin_summary, if: :show_admin_summary?
+  before_action :set_active_warnings, if: :logged_in?
 
   helper_method :current_user, :logged_in?, :admin?, :moderator_or_admin?, :can_moderate_thread?
 
@@ -83,6 +84,10 @@ class ApplicationController < ActionController::Base
         pending_files: Attachment.pending_approval.count
       }
     end
+  end
+
+  def set_active_warnings
+    @active_warnings = current_user.warnings.active.where(acknowledged: false).recent.limit(5).includes(:warned_by)
   end
 
   def check_maintenance_mode

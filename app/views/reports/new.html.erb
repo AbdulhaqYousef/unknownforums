@@ -7,7 +7,11 @@
       Submit Report
     </div>
     <div style="padding:14px;">
-      <% if @reportable_type.present? %>
+      <% if @reportable.present? %>
+        <div style="font-size:11px; color:#888; margin-bottom:10px; padding:6px 8px; background:#1e1e1e; border:1px solid #333;">
+          Reporting: <strong style="color:#cfcfcf;"><%= reportable_label(@reportable) %></strong>
+        </div>
+      <% elsif @reportable_type.present? %>
         <div style="font-size:11px; color:#888; margin-bottom:10px; padding:6px 8px; background:#1e1e1e; border:1px solid #333;">
           Reporting: <strong style="color:#cfcfcf;"><%= @reportable_type %> #<%= @reportable_id %></strong>
         </div>

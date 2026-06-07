@@ -1,5 +1,5 @@
 class Report < ApplicationRecord
-  REPORTABLE_TYPES = %w[Post ForumThread User].freeze
+  REPORTABLE_TYPES = %w[Post ForumThread User Attachment].freeze
 
   belongs_to :reporter, class_name: "User"
   belongs_to :reportable, polymorphic: true

@@ -112,5 +112,29 @@
         <% end %>
       </table>
     </div>
+
+    <div style="background:#242424; border:1px solid #444; margin-top:8px;">
+      <div style="background:#303030; border-bottom:1px solid #444; padding:5px 10px; font-size:12px; font-weight:bold; color:#e0e0e0;">
+        Recent Posts
+      </div>
+      <table>
+        <% if @recent_posts.empty? %>
+          <tr><td style="padding:10px; color:#666; font-size:12px;">No posts yet.</td></tr>
+        <% end %>
+        <% @recent_posts.each_with_index do |post, i| %>
+          <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
+            <td style="padding:5px 10px;">
+              <a href="<%= forum_thread_path(post.thread, anchor: "post-#{post.id}") %>" style="font-size:12px; color:#a8c8f0;">
+                <%= post.thread.title.truncate(60) %>
+              </a>
+              <div style="font-size:10px; color:#666; margin-top:2px;">
+                in <%= post.thread.subforum.name %> &mdash; <%= post.created_at.strftime("%m/%d/%Y") %>
+              </div>
+              <div style="font-size:11px; color:#888; margin-top:3px;"><%= truncate(post.body, length: 120) %></div>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
   </div>
 </div>

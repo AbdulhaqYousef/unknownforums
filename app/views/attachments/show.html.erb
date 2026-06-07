@@ -77,8 +77,11 @@
       </div>
     <% end %>
 
-    <div style="margin-top:12px;">
+    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
       <a href="<%= download_attachment_path(@attachment) %>" class="btn btn-primary" data-turbo="false">Download</a>
+      <% if logged_in? && current_user != @attachment.user %>
+        <a href="<%= new_report_path(reportable_type: 'Attachment', reportable_id: @attachment.id) %>" class="btn" style="color:#c08080;">Report File</a>
+      <% end %>
     </div>
   </div>
 </div>

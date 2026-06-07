@@ -13,6 +13,9 @@
       <table style="font-size:12px; width:100%;">
         <tr><td style="padding:3px 0; color:#888; width:120px;">Reporter:</td><td><a href="<%= user_path(@report.reporter) %>"><%= @report.reporter.username %></a></td></tr>
         <tr><td style="padding:3px 0; color:#888;">Type:</td><td><%= @report.reportable_type %> #<%= @report.reportable_id %></td></tr>
+        <% if @report.reportable.is_a?(Attachment) %>
+          <tr><td style="padding:3px 0; color:#888;">File:</td><td><a href="<%= attachment_path(@report.reportable) %>"><%= @report.reportable.filename %></a></td></tr>
+        <% end %>
         <tr><td style="padding:3px 0; color:#888;">Status:</td><td><%= @report.status %></td></tr>
         <tr><td style="padding:3px 0; color:#888;">Date:</td><td><%= @report.created_at.strftime("%m/%d/%Y %I:%M %p") %></td></tr>
       </table>

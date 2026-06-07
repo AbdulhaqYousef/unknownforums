@@ -3,7 +3,7 @@ class Admin::ReportsController < ApplicationController
   before_action :set_report, only: %i[show update]
 
   def index
-    @reports = Report.includes(:reporter, screenshots_attachments: :blob).joins(:reporter).order(created_at: :desc)
+    @reports = Report.includes(:reporter, :reportable, screenshots_attachments: :blob).joins(:reporter).order(created_at: :desc)
     @reports = @reports.where(status: params[:status]) if params[:status].present?
     if params[:q].present?
       query = "%#{ActiveRecord::Base.sanitize_sql_like(params[:q].strip)}%"
@@ -13,6 +13,7 @@ class Admin::ReportsController < ApplicationController
   end
 
   def show
+    @report = Report.includes(:reportable).find(params[:id])
   end
 
   def update

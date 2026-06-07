@@ -109,6 +109,21 @@ module ApplicationHelper
       attributes: %w[href title class]
   end
 
+  def reportable_label(reportable)
+    case reportable
+    when Attachment
+      "File: #{reportable.filename}"
+    when Post
+      "Post by #{reportable.user.username} in #{reportable.thread.title.truncate(50)}"
+    when ForumThread
+      "Thread: #{reportable.title.truncate(60)}"
+    when User
+      "User: #{reportable.username}"
+    else
+      "#{reportable.class.name} ##{reportable.id}"
+    end
+  end
+
   def autolink_bare_urls(markdown)
     process_outside_code_fences(markdown) do |segment|
       segment.gsub(/(`[^`]*`|(?<![\[(<"'])https?:\/\/[^\s<>\[\]()]+[^\s<>\[\]().,;:!?'"])/i) do |part|

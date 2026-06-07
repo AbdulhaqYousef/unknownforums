@@ -1,0 +1,51 @@
+<% content_for :title, "Pending Files" %>
+
+<div class="panel">
+  <div class="panel-header">
+    Files Awaiting Review
+    <span style="color:#888; font-weight:normal;"> — <%= @attachments.total_count %> pending</span>
+  </div>
+  <div class="panel-body" style="padding:0;">
+    <% if @attachments.empty? %>
+      <div style="padding:20px; text-align:center; color:#666; font-size:12px;">No files waiting for approval.</div>
+    <% else %>
+      <table style="width:100%;">
+        <tr style="background:#222; font-size:10px; color:#666; text-transform:uppercase;">
+          <th style="padding:4px 10px; text-align:left;">File</th>
+          <th style="padding:4px 10px; text-align:left;">Uploader</th>
+          <th style="padding:4px 10px; text-align:center;">Size</th>
+          <th style="padding:4px 10px; text-align:center;">VT</th>
+          <th style="padding:4px 10px; text-align:left;">Uploaded</th>
+          <th style="padding:4px 10px; text-align:center;">Actions</th>
+        </tr>
+        <% @attachments.each_with_index do |attachment, i| %>
+          <tr style="background:<%= i.even? ? '#242424' : '#202020' %>; border-top:1px solid #333;">
+            <td style="padding:6px 10px; font-size:11px;">
+              <a href="<%= attachment_path(attachment) %>" style="color:#a8c8f0;"><%= attachment.filename.truncate(60) %></a>
+            </td>
+            <td style="padding:6px 10px; font-size:11px;">
+              <a href="<%= user_path(attachment.user) %>"><%= attachment.user.username %></a>
+            </td>
+            <td style="padding:6px 10px; text-align:center; font-size:11px; color:#888;"><%= attachment.human_size %></td>
+            <td style="padding:6px 10px; text-align:center;"><%= render "attachments/vt_badge", attachment: attachment %></td>
+            <td style="padding:6px 10px; font-size:10px; color:#666;"><%= attachment.created_at.strftime("%m/%d/%Y %H:%M") %></td>
+            <td style="padding:6px 10px; text-align:center;">
+              <div class="action-group" style="justify-content:center;">
+                <%= button_to "Approve", approve_attachment_path(attachment), method: :patch, class: "btn btn-success btn-sm" %>
+                <a href="<%= attachment_path(attachment) %>" class="btn btn-sm">View</a>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    <% end %>
+  </div>
+</div>
+
+<div style="margin-top:8px; display:flex; justify-content:space-between; font-size:11px; color:#888;">
+  <span>Page <%= @attachments.current_page %> of <%= @attachments.total_pages %></span>
+  <div class="action-group">
+    <%= link_to_prev_page @attachments, "← Prev", class: "btn btn-sm" %>
+    <%= link_to_next_page @attachments, "Next →", class: "btn btn-sm" %>
+  </div>
+</div>

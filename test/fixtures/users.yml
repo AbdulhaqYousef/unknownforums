@@ -1,0 +1,17 @@
+tester:
+  username: tester
+  email: tester@example.com
+  password_digest: <%= BCrypt::Password.create("Password1!") %>
+  role: 0
+  reputation: 0
+  posts_count: 0
+  email_verified_at: <%= Time.current %>
+
+staff:
+  username: staffmod
+  email: staff@example.com
+  password_digest: <%= BCrypt::Password.create("Password1!") %>
+  role: 1
+  reputation: 50
+  posts_count: 0
+  email_verified_at: <%= Time.current %>

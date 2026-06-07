@@ -16,6 +16,7 @@ Rails.application.routes.draw do
   # Forum
   get "downloads", to: "downloads#index", as: :downloads
   get "leaderboard", to: "leaderboards#index", as: :leaderboard
+  get "milestones", to: "milestones#index", as: :milestones
   resources :categories, only: %i[index show]
 
   resources :subforums, only: %i[show] do
@@ -48,6 +49,14 @@ Rails.application.routes.draw do
 
   resources :reputations, only: %i[create destroy]
   resources :reports, only: %i[new create]
+  resources :user_warnings, only: %i[index], path: "warnings" do
+    member do
+      patch :acknowledge
+    end
+    collection do
+      patch :acknowledge_all
+    end
+  end
   resources :notifications, only: %i[index] do
     collection do
       patch :mark_all_read
@@ -110,6 +119,7 @@ Rails.application.routes.draw do
     patch "bulk_threads", to: "bulk_threads#update", as: :bulk_threads
     get "forums", to: "forums#index", as: :forums
     get "file_leaderboard", to: "file_leaderboard#index", as: :file_leaderboard
+    get "pending_files", to: "pending_files#index", as: :pending_files
   end
 
   resources :password_resets, only: %i[new create edit update]

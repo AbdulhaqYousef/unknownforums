@@ -1,0 +1,49 @@
+<% content_for :title, "Warnings" %>
+<% noindex_page %>
+
+<div class="panel" style="margin-bottom:10px;">
+  <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <span>Your Warnings</span>
+    <% if @warnings.any? { |w| !w.acknowledged? } %>
+      <%= button_to "Acknowledge All", acknowledge_all_user_warnings_path, method: :patch, class: "btn btn-sm" %>
+    <% end %>
+  </div>
+  <div class="panel-body" style="font-size:12px; color:#aaa;">
+    Staff warnings stay visible until you acknowledge them. Severe warnings may affect your account.
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-body" style="padding:0;">
+    <% if @warnings.empty? %>
+      <div style="padding:20px; text-align:center; color:#666; font-size:12px;">You have no active warnings.</div>
+    <% else %>
+      <% @warnings.each_with_index do |warning, i| %>
+        <div style="padding:10px 12px; border-top:<%= i.zero? ? 'none' : '1px solid #333' %>; background:<%= warning.acknowledged? ? '#202020' : '#2a2218' %>;">
+          <div style="display:flex; justify-content:space-between; gap:8px; align-items:flex-start;">
+            <div>
+              <div style="font-size:12px; font-weight:bold; color:<%= warning.severe? ? '#f08080' : warning.moderate? ? '#f0c060' : '#cfcfcf' %>;">
+                <%= warning.severity.capitalize %> warning
+                <% unless warning.acknowledged? %>
+                  <span style="font-size:9px; background:#6a3a00; border:1px solid #8a5a00; color:#f0c060; padding:1px 5px; margin-left:4px;">NEW</span>
+                <% end %>
+              </div>
+              <div style="font-size:11px; color:#cfcfcf; margin-top:4px;"><%= warning.reason %></div>
+              <div style="font-size:10px; color:#666; margin-top:4px;">
+                From <%= warning.warned_by.username %> &mdash; <%= warning.created_at.strftime("%m/%d/%Y %I:%M %p") %>
+                <% if warning.expires_at.present? %>
+                  &middot; expires <%= warning.expires_at.strftime("%m/%d/%Y") %>
+                <% end %>
+              </div>
+            </div>
+            <% unless warning.acknowledged? %>
+              <%= button_to "Acknowledge", acknowledge_user_warning_path(warning), method: :patch, class: "btn btn-sm" %>
+            <% else %>
+              <span style="font-size:10px; color:#666;">Acknowledged</span>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>

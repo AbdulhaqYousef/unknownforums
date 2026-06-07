@@ -3,10 +3,46 @@
 <div class="panel" style="margin-bottom:10px;">
   <div class="panel-body">
     <%= form_with url: search_path, method: :get do |f| %>
-      <div style="display:flex; gap:8px; align-items:center;">
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
         <%= f.text_field :q, value: @query, placeholder: "Search threads and posts…",
               style: "flex:1; font-size:13px;", autofocus: true %>
         <%= f.submit "Search", class: "btn btn-primary" %>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; font-size:11px;">
+        <div>
+          <label style="display:block; color:#888; margin-bottom:3px;">Subforum</label>
+          <%= f.select :subforum_id,
+                options_from_collection_for_select(@subforums, :id, ->(sf) { "#{sf.category.name} / #{sf.name}" }, @filters&.dig(:subforum_id)),
+                { include_blank: "Any subforum" },
+                style: "width:100%;" %>
+        </div>
+        <div>
+          <label style="display:block; color:#888; margin-bottom:3px;">Author username</label>
+          <%= f.text_field :author, value: params[:author], placeholder: "exact username", style: "width:100%;" %>
+        </div>
+        <div>
+          <label style="display:block; color:#888; margin-bottom:3px;">Posts with files only</label>
+          <label style="display:flex; align-items:center; gap:6px; color:#aaa; margin-top:6px;">
+            <%= f.check_box :with_attachments, { checked: @filters&.dig(:with_attachments) }, "1", "0" %>
+            Only posts that have attachments
+          </label>
+        </div>
+        <div>
+          <label style="display:block; color:#888; margin-bottom:3px;">From date</label>
+          <%= f.date_field :from, value: params[:from], style: "width:100%;" %>
+        </div>
+        <div>
+          <label style="display:block; color:#888; margin-bottom:3px;">To date</label>
+          <%= f.date_field :to, value: params[:to], style: "width:100%;" %>
+        </div>
+      </div>
+      <div style="font-size:10px; color:#666; margin-top:8px;">
+        Typo-tolerant search is enabled. Try site shortcuts:
+        <strong style="color:#888;">forums</strong>,
+        <strong style="color:#888;">unknown forums</strong>,
+        <strong style="color:#888;">unknownforums</strong>,
+        <strong style="color:#888;">downloads</strong>.
       </div>
     <% end %>
   </div>
@@ -16,9 +52,20 @@
   <div style="color:#888; font-size:12px; padding:10px;">Please enter at least 2 characters.</div>
 <% end %>
 
-<% if @threads %>
+<% if @query.present? && @query.length >= 2 %>
 
-  <!-- Thread results -->
+  <% if @featured&.any? %>
+    <div class="panel" style="margin-bottom:10px; border-color:#2a4a4a;">
+      <div class="panel-header" style="color:#8fd0d8;">Quick Links</div>
+      <% @featured.each do |item| %>
+        <div style="padding:10px 12px; border-top:1px solid #333;">
+          <a href="<%= item[:url] %>" style="font-size:13px; font-weight:bold; color:#8fd0d8;"><%= item[:title] %></a>
+          <div style="font-size:10px; color:#666; margin-top:3px;"><%= item[:description] %></div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
   <div class="panel" style="margin-bottom:10px;">
     <div class="panel-header">
       Threads &mdash; <span style="color:#888; font-weight:normal;"><%= @threads.size %> result<%= @threads.size == 1 ? "" : "s" %></span>
@@ -37,7 +84,6 @@
     <% end %>
   </div>
 
-  <!-- Post results -->
   <div class="panel">
     <div class="panel-header">
       Posts &mdash; <span style="color:#888; font-weight:normal;"><%= @posts.size %> result<%= @posts.size == 1 ? "" : "s" %></span>
@@ -50,6 +96,9 @@
             in
             <a href="<%= forum_thread_path(p.thread, anchor: "post-#{p.id}") %>"><%= p.thread.title.truncate(60) %></a>
             &mdash; <%= p.created_at.strftime("%m/%d/%Y") %>
+            <% if p.attachments.any? %>
+              <span style="color:#7aabde;">&middot; has file<%= p.attachments.size == 1 ? "" : "s" %></span>
+            <% end %>
           </div>
           <div style="font-size:12px; color:#cfcfcf;">
             <%= highlight(truncate(p.body, length: 200), @query) %>

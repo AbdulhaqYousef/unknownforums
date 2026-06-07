@@ -105,6 +105,9 @@
     </div>
     <a href="<%= attachment_path(attachment) %>" class="btn btn-sm">Details</a>
     <a href="<%= download_attachment_path(attachment) %>" class="btn btn-sm" data-turbo="false">Download</a>
+    <% if logged_in? && current_user != attachment.user %>
+      <a href="<%= new_report_path(reportable_type: 'Attachment', reportable_id: attachment.id) %>" class="btn btn-sm" style="color:#c08080;">Report</a>
+    <% end %>
     <% if logged_in? && (current_user == attachment.root_attachment.user || moderator_or_admin?) %>
       <a href="<%= new_version_attachment_path(attachment.root_attachment) %>" class="btn btn-sm">Upload version</a>
     <% end %>

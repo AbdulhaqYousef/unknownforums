@@ -26,18 +26,22 @@
     <table style="border:1px solid var(--border); border-radius:3px; overflow:hidden;" id="cat-table-<%= category.id %>">
       <tr style="background:var(--bg4);">
         <td colspan="4" style="padding:0; border-bottom:1px solid var(--border); border-left:3px solid var(--accent);">
-          <button
-            data-category-id="<%= category.id %>"
-            style="width:100%; background:none; border:none; cursor:pointer; padding:8px 12px; display:flex; align-items:center; justify-content:space-between; gap:8px; text-align:left;"
-          >
-            <span style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:13px; font-weight:bold; color:var(--text-bright);"><%= category.name %></span>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 12px;">
+            <span style="display:flex; align-items:center; gap:8px; min-width:0;">
+              <a href="<%= category_path(category) %>" style="font-size:13px; font-weight:bold; color:var(--text-bright); text-decoration:none;"><%= category.name %></a>
               <% if category.description.present? %>
                 <span style="font-size:10px; color:var(--text-dim); font-weight:normal;"><%= category.description %></span>
               <% end %>
             </span>
-            <svg id="cat-chevron-<%= category.id %>" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; transition:transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
+            <button
+              type="button"
+              data-category-id="<%= category.id %>"
+              style="background:none; border:none; cursor:pointer; padding:0; display:flex; align-items:center;"
+              aria-label="Toggle <%= category.name %>"
+            >
+              <svg id="cat-chevron-<%= category.id %>" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; transition:transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
         </td>
       </tr>
       <tbody id="cat-body-<%= category.id %>">

@@ -5,6 +5,7 @@ class ReportsController < ApplicationController
     @report = Report.new
     @reportable_type = params[:reportable_type]
     @reportable_id = params[:reportable_id]
+    @reportable = load_reportable
   end
 
   def create
@@ -22,11 +23,19 @@ class ReportsController < ApplicationController
     else
       @reportable_type = params[:report][:reportable_type]
       @reportable_id = params[:report][:reportable_id]
+      @reportable = reportable
       render :new, status: :unprocessable_entity
     end
   end
 
   private
+
+  def load_reportable
+    klass = Report::REPORTABLE_TYPES.find { |k| k == @reportable_type }
+    return unless klass
+
+    klass.constantize.find_by(id: @reportable_id)
+  end
 
   def report_params
     params.require(:report).permit(:reason, screenshots: [])

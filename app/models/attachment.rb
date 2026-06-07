@@ -50,7 +50,10 @@ class Attachment < ApplicationRecord
   has_many   :file_comments, dependent: :destroy
   has_many   :file_tags, dependent: :destroy
   has_many   :download_histories, dependent: :destroy
-  has_one_attached :file
+  has_many   :reports, as: :reportable, dependent: :destroy
+  has_one_attached :file, dependent: :purge_later
+
+  before_destroy :abort_incomplete_multipart_upload
 
   validates :filename, presence: true
   validate :content_type_is_allowed
@@ -144,6 +147,15 @@ class Attachment < ApplicationRecord
   end
 
   private
+
+  def abort_incomplete_multipart_upload
+    return unless file.attached?
+
+    upload_id = file.blob.metadata&.fetch("multipart_upload_id", nil)
+    return if upload_id.blank?
+
+    R2MultipartUpload.abort_upload(key: file.blob.key, upload_id: upload_id)
+  end
 
   def byte_size_within_limit
     return if byte_size.blank?

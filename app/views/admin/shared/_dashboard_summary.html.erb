@@ -21,8 +21,8 @@
       <div class="admin-stat-label">Pending Reports</div>
     </div>
     <div class="admin-stat-card">
-      <div class="admin-stat-value"><%= @admin_summary[:files] %></div>
-      <div class="admin-stat-label">Files</div>
+      <div class="admin-stat-value" style="color:<%= @admin_summary[:pending_files] > 0 ? '#f0c060' : '#80c080' %>;"><%= @admin_summary[:pending_files] %></div>
+      <div class="admin-stat-label">Pending Files</div>
     </div>
   </div>
 
@@ -34,6 +34,7 @@
     <a href="<%= downloads_path %>" class="btn <%= active_admin_section == 'downloads' ? 'btn-primary' : '' %>">Downloads</a>
     <a href="<%= admin_users_path %>" class="btn <%= active_admin_section == 'users' ? 'btn-primary' : '' %>">Manage Users</a>
     <a href="<%= admin_reports_path %>" class="btn <%= active_admin_section == 'reports' ? 'btn-primary' : (@admin_summary[:pending_reports] > 0 ? 'btn-danger' : '') %>">Reports</a>
+    <a href="<%= admin_pending_files_path %>" class="btn <%= active_admin_section == 'pending_files' ? 'btn-primary' : (@admin_summary[:pending_files] > 0 ? 'btn-danger' : '') %>">Pending Files</a>
     <a href="<%= admin_attack_events_path %>" class="btn <%= active_admin_section == 'attack_events' ? 'btn-primary' : '' %>">Attack Events</a>
     <a href="<%= admin_file_leaderboard_path %>" class="btn <%= active_admin_section == 'file_leaderboard' ? 'btn-primary' : '' %>">File Leaderboard</a>
     <a href="<%= admin_site_pages_path %>" class="btn <%= active_admin_section == 'site_pages' ? 'btn-primary' : '' %>">Edit Rules / Terms</a>

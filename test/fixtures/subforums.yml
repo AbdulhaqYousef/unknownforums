@@ -1,0 +1,7 @@
+lounge:
+  name: General Lounge
+  description: Off-topic chat
+  category: general
+  position: 0
+  threads_count: 1
+  posts_count: 1
