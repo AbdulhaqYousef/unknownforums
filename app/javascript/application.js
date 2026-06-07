@@ -402,10 +402,40 @@ function csrfToken() {
 
 function maybeSubmitAfterUpload(input) {
   const form = input.closest("form")
-  if (form?._awaitingSubmit && directUploadState().pending === 0 && directUploadState().errors.length === 0) {
+  const state = directUploadState()
+  if (form?._awaitingSubmit && state.pending === 0) {
     form._awaitingSubmit = false
     form.requestSubmit()
   }
+}
+
+function syncUploadStatus(state = directUploadState()) {
+  if (!state.enabled) return
+
+  if (state.pending > 0) {
+    setUploadStatus("Uploading to storage…", "info")
+    return
+  }
+
+  if (state.signedIds.length && state.errors.length) {
+    setUploadStatus(
+      `${state.signedIds.length} file${state.signedIds.length === 1 ? "" : "s"} ready · ${state.errors.length} failed and will be skipped`,
+      "info"
+    )
+    return
+  }
+
+  if (state.signedIds.length) {
+    setUploadStatus("Files uploaded — ready to post.", "info")
+    return
+  }
+
+  if (state.errors.length) {
+    setUploadStatus("All selected file uploads failed. You can still post without them.", "error")
+    return
+  }
+
+  setUploadStatus("", "info")
 }
 
 function markUploadError(zone, key, input, message) {
@@ -414,6 +444,7 @@ function markUploadError(zone, key, input, message) {
   entry.status = "error"
   entry.error = message
   renderFilePreview(input.files)
+  maybeSubmitAfterUpload(input)
 }
 
 async function uploadFileMultipart(file, zone, key, input) {
@@ -525,7 +556,6 @@ async function uploadFileMultipart(file, zone, key, input) {
     entry.progress = 1
     entry.signedId = completeData.signed_id
     renderFilePreview(input.files)
-    setUploadStatus("Files uploaded — ready to post.", "info")
     maybeSubmitAfterUpload(input)
   } catch (err) {
     if (uploadId && objectKey) {
@@ -541,7 +571,6 @@ async function uploadFileMultipart(file, zone, key, input) {
       }).catch(() => {})
     }
     markUploadError(zone, key, input, err.message || "Multipart upload failed")
-    setUploadStatus(err.message || "Multipart upload failed", "error")
   }
 }
 
@@ -712,10 +741,6 @@ function initFileUploadForms() {
 
       event.preventDefault()
       const state = directUploadState()
-      if (state.errors.length) {
-        setUploadStatus("Some files failed to upload. Remove them and try again.", "error")
-        return
-      }
       if (state.pending > 0) {
         form._awaitingSubmit = true
         setUploadStatus("Still uploading to storage — please wait…", "info")
@@ -779,10 +804,13 @@ function renderFilePreview(files) {
       }
       errBox.innerHTML = html
     }
-    if (form) form.querySelectorAll("[type=submit]").forEach(btn => { btn.disabled = true; btn._fileSizeBlock = true })
-  } else if (!uploads.enabled || uploads.pending === 0) {
-    if (form) form.querySelectorAll("[type=submit]").forEach(btn => {
-      if (btn._fileSizeBlock) { btn.disabled = false; delete btn._fileSizeBlock }
+  }
+
+  if (form) {
+    const waiting = uploads.enabled && uploads.pending > 0
+    form.querySelectorAll("[type=submit]").forEach(btn => {
+      btn.disabled = waiting
+      if (!waiting) delete btn._fileSizeBlock
     })
   }
 
@@ -791,13 +819,10 @@ function renderFilePreview(files) {
   if (oversized.length) labelText += ` · ${oversized.length} too large`
   if (blocked.length) labelText += ` · ${blocked.length} blocked type`
   if (uploads.enabled && uploads.pending > 0) labelText += ` · uploading ${uploads.pending}…`
+  if (uploads.enabled && uploads.errors.length) labelText += ` · ${uploads.errors.length} upload failed`
   label.textContent = labelText
 
-  if (uploads.enabled && uploads.pending > 0) {
-    setUploadStatus("Uploading to storage…", "info")
-  } else if (uploads.enabled && ok.length && uploads.errors.length === 0) {
-    setUploadStatus("Files uploaded — ready to post.", "info")
-  }
+  syncUploadStatus(uploads)
 
   const zone = document.getElementById("file-drop-zone")
   Array.from(files).forEach(file => {
