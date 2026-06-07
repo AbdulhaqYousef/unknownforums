@@ -1,0 +1,16 @@
+<div style="margin-bottom:12px; font-size:11px; color:#9ab;">
+  Higher levels unlock profile perks. Upload tiers use the best tier the user qualifies for, capped by the forum/site limit.
+</div>
+<div style="margin-bottom:10px;">
+  <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Custom badge GIF unlock level:</label>
+  <%= number_field_tag :custom_badge_min_level, custom_badge_min_level, min: 1, style: "width:100px;" %>
+</div>
+<div style="margin-bottom:10px;">
+  <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Animated profile picture (GIF) unlock level:</label>
+  <%= number_field_tag :gif_avatar_min_level, gif_avatar_min_level, min: 1, style: "width:100px;" %>
+</div>
+<div style="margin-bottom:10px;">
+  <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Upload size tiers (one per line: level,max_gb):</label>
+  <%= text_area_tag :upload_tiers_text, upload_tiers_text, rows: 5, style: "width:100%; font-family:monospace; font-size:11px;" %>
+  <div style="font-size:10px; color:#666; margin-top:3px;">Example: <code>1,0.1</code> = level 1+ can upload up to 100 MB. Use higher levels for larger caps.</div>
+</div>

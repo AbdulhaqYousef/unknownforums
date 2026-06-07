@@ -30,7 +30,7 @@
           <%= f.text_area :body, rows: 10, style: "width:100%; resize:vertical;" %>
         </div>
         <div style="margin-bottom:10px;">
-          <%= render "shared/file_upload_field", direct_upload: false, upload_rules: UploadLimits.global_rules %>
+          <%= render "shared/file_upload_field", direct_upload: false, upload_rules: UploadLimits.global_rules(user: current_user) %>
         </div>
         <div style="display:flex; gap:8px;">
           <%= f.submit "Send Message", class: "btn btn-primary" %>

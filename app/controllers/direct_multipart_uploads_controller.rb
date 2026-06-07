@@ -52,6 +52,10 @@ class DirectMultipartUploadsController < ApplicationController
 
   def upload_limit_bytes
     subforum = Subforum.find_by(id: params[:subforum_id])
-    subforum ? UploadLimits.max_bytes_for_subforum(subforum) : UploadLimits.global_max_bytes
+    if subforum
+      UploadLimits.max_bytes_for_subforum(subforum, user: current_user)
+    else
+      LevelPerks.max_upload_bytes_for(current_user)
+    end
   end
 end

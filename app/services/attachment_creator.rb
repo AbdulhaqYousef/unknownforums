@@ -2,7 +2,7 @@ require "securerandom"
 
 class AttachmentCreator
   def self.attach(attachable:, user:, files:, signed_ids: nil)
-    allowed_rules = AllowedFileTypes.rules_for_attachable(attachable)
+    allowed_rules = UploadLimits.rules_for_attachable(attachable, user: user)
     allowed_types = allowed_rules[:types]
     if signed_ids.present?
       attach_from_signed_ids(attachable: attachable, user: user, signed_ids: signed_ids, allowed_rules: allowed_rules)
@@ -22,8 +22,8 @@ class AttachmentCreator
       end
       label = blob.filename.to_s
 
-      if blob.byte_size > UploadLimits.max_bytes_for_attachable(attachable)
-        limit = UploadLimits.max_bytes_for_attachable(attachable)
+      if blob.byte_size > UploadLimits.max_bytes_for_attachable(attachable, user: user)
+        limit = UploadLimits.max_bytes_for_attachable(attachable, user: user)
         errors << "#{label}: file is too large — maximum upload size is #{UploadLimits.label_for(limit)}"
         blob.purge_later
         next
@@ -52,7 +52,7 @@ class AttachmentCreator
         byte_size: blob.byte_size,
         is_video: content_type.start_with?("video/"),
         allowed_content_types: allowed_types,
-        max_byte_size: UploadLimits.max_bytes_for_attachable(attachable)
+        max_byte_size: UploadLimits.max_bytes_for_attachable(attachable, user: user)
       )
       attachment.file.attach(blob)
       finalize_attachment(attachment, label, errors)
@@ -88,7 +88,7 @@ class AttachmentCreator
         byte_size: file.size,
         is_video: content_type.start_with?("video/"),
         allowed_content_types: allowed_types,
-        max_byte_size: UploadLimits.max_bytes_for_attachable(attachable)
+        max_byte_size: UploadLimits.max_bytes_for_attachable(attachable, user: user)
       )
       attach_file(attachment, io, attachable, user, content_type)
       finalize_attachment(attachment, file.original_filename, errors)

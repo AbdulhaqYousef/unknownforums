@@ -9,13 +9,6 @@ module ApplicationHelper
     image_tag rails_blob_path(user.avatar, only_path: true), options.merge(style: style)
   end
 
-  def profile_gif_tag(user, **options)
-    return unless user.profile_gif.attached?
-
-    style = options.delete(:style).presence || "max-width:100%; max-height:120px; object-fit:contain;"
-    image_tag rails_blob_path(user.profile_gif, only_path: true), options.merge(style: style, alt: "#{user.username} profile GIF")
-  end
-
   def custom_badge_image_tag(user, size: 32, **options)
     return unless user.custom_badge.attached?
 

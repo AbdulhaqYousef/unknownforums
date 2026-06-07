@@ -27,13 +27,10 @@ class User < ApplicationRecord
   has_many :download_histories, dependent: :destroy
 
   has_one_attached :avatar
-  has_one_attached :profile_gif
   has_one_attached :custom_badge
 
   AVATAR_TYPES = %w[image/jpeg image/png image/gif image/webp].freeze
   AVATAR_MAX_SIZE = 10.megabytes
-  PROFILE_GIF_TYPES = %w[image/gif].freeze
-  PROFILE_GIF_MAX_SIZE = 15.megabytes
   CUSTOM_BADGE_TYPES = %w[image/gif].freeze
   CUSTOM_BADGE_MAX_SIZE = 15.megabytes
   MAX_LOGIN_ATTEMPTS = 5
@@ -56,8 +53,9 @@ class User < ApplicationRecord
   validate :password_complexity, if: -> { password.present? }
   validate :password_not_pwned,  if: -> { password.present? }
   validate :avatar_format, if: -> { avatar.attached? }
-  validate :profile_gif_format, if: -> { profile_gif.attached? }
   validate :custom_badge_format, if: -> { custom_badge.attached? }
+  validate :gif_avatar_level_allowed, if: -> { avatar.attached? && avatar.content_type == "image/gif" && avatar.attachment&.changed? }
+  validate :custom_badge_level_allowed, if: -> { custom_badge.attached? && custom_badge.attachment&.new_record? }
   before_validation :normalize_registration_fields
   before_update :clear_email_verification_on_email_change, if: :will_save_change_to_email?
   before_update :track_previous_username, if: :will_save_change_to_username?
@@ -289,15 +287,6 @@ class User < ApplicationRecord
     end
   end
 
-  def profile_gif_format
-    unless PROFILE_GIF_TYPES.include?(profile_gif.content_type)
-      errors.add(:profile_gif, "must be a GIF")
-    end
-    if profile_gif.byte_size > PROFILE_GIF_MAX_SIZE
-      errors.add(:profile_gif, "must be smaller than 15MB")
-    end
-  end
-
   def custom_badge_format
     unless CUSTOM_BADGE_TYPES.include?(custom_badge.content_type)
       errors.add(:custom_badge, "must be a GIF")
@@ -305,6 +294,18 @@ class User < ApplicationRecord
     if custom_badge.byte_size > CUSTOM_BADGE_MAX_SIZE
       errors.add(:custom_badge, "must be smaller than 15MB")
     end
+  end
+
+  def gif_avatar_level_allowed
+    return if LevelPerks.gif_avatar_allowed?(self)
+
+    errors.add(:avatar, LevelPerks.unlock_message(self, :gif_avatar))
+  end
+
+  def custom_badge_level_allowed
+    return if LevelPerks.custom_badge_allowed?(self)
+
+    errors.add(:custom_badge, LevelPerks.unlock_message(self, :custom_badge))
   end
 
   def has_display_badges?

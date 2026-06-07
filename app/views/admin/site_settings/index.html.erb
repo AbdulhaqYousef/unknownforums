@@ -24,6 +24,20 @@
     </div>
   </div>
 
+  <div class="panel" style="margin-bottom:12px;">
+    <div class="panel-header">Level Perks</div>
+    <div class="panel-body">
+      <%= form_with url: admin_site_settings_path, method: :patch, data: { turbo: false } do |f| %>
+        <%= hidden_field_tag :save_level_perks, "1" %>
+        <%= render "admin/shared/level_perks_settings",
+              custom_badge_min_level: @custom_badge_min_level,
+              gif_avatar_min_level: @gif_avatar_min_level,
+              upload_tiers_text: @upload_tiers_text %>
+        <%= f.submit "Save Level Perks", class: "btn btn-primary" %>
+      <% end %>
+    </div>
+  </div>
+
   <div class="panel">
     <div class="panel-header">Maintenance Mode</div>
     <div class="panel-body">

@@ -40,7 +40,7 @@ class AttachmentsController < ApplicationController
   def new_version
     require_login
     require_owner_or_moderator(@attachment.root_attachment.user)
-    @allowed_types = UploadLimits.rules_for_attachable(@attachment.root_attachment.attachable)
+    @allowed_types = UploadLimits.rules_for_attachable(@attachment.root_attachment.attachable, user: current_user)
   end
 
   def upload_version
@@ -54,7 +54,7 @@ class AttachmentsController < ApplicationController
     end
 
     content_type = file.content_type.presence || "application/octet-stream"
-    allowed_rules = UploadLimits.rules_for_attachable(root.attachable)
+    allowed_rules = UploadLimits.rules_for_attachable(root.attachable, user: current_user)
     allowed_types = allowed_rules[:types]
     max_bytes = allowed_rules[:max_bytes]
     if file.size > max_bytes

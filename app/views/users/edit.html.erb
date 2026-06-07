@@ -1,5 +1,8 @@
 <% content_for :title, "Edit Profile" %>
 <% noindex_page %>
+<% gif_avatar_allowed = LevelPerks.gif_avatar_allowed?(@user) %>
+<% custom_badge_allowed = LevelPerks.custom_badge_allowed?(@user) %>
+<% avatar_accept = gif_avatar_allowed ? "image/jpeg,image/png,image/gif,image/webp" : "image/jpeg,image/png,image/webp" %>
 
 <div style="max-width:500px;">
   <div style="background:#242424; border:1px solid #444;">
@@ -15,8 +18,14 @@
         </div>
       <% end %>
 
+      <div style="background:#1a242a; border:1px solid #2a3a44; padding:8px 10px; margin-bottom:12px; font-size:11px; color:#9ab;">
+        <div style="font-weight:bold; color:#c8d8e8; margin-bottom:4px;">Level <%= user_level(@user) %> perks</div>
+        <% LevelPerks.perks_summary_for(@user).each do |line| %>
+          <div><%= line %></div>
+        <% end %>
+      </div>
+
       <%= form_with model: @user, url: user_path(@user), method: :patch, multipart: true do |f| %>
-        <!-- Avatar section -->
         <div style="margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #333;">
           <label style="display:block; font-size:11px; color:#888; margin-bottom:6px;">Profile Picture:</label>
           <div style="display:flex; align-items:center; gap:12px;">
@@ -28,9 +37,15 @@
               <% end %>
             </div>
             <div>
-              <%= f.file_field :avatar, accept: "image/jpeg,image/png,image/gif,image/webp",
-                style: "font-size:11px; color:#888;" %>
-              <div style="font-size:10px; color:#666; margin-top:3px;">JPEG, PNG, GIF or WebP &mdash; max 10MB. GIF avatars animate in posts and on your profile.</div>
+              <%= f.file_field :avatar, accept: avatar_accept, style: "font-size:11px; color:#888;" %>
+              <div style="font-size:10px; color:#666; margin-top:3px;">
+                JPEG, PNG<%= ", GIF" if gif_avatar_allowed %> or WebP &mdash; max 10MB.
+                <% unless gif_avatar_allowed %>
+                  Animated GIF profile pictures unlock at level <%= LevelPerks.gif_avatar_min_level %>.
+                <% else %>
+                  GIF avatars animate on your profile and posts.
+                <% end %>
+              </div>
               <% if @user.avatar.attached? %>
                 <label style="display:flex; align-items:center; gap:4px; margin-top:6px; font-size:11px; color:#c08080; cursor:pointer;">
                   <input type="checkbox" name="user[remove_avatar]" value="1" style="width:12px; height:12px;">
@@ -42,48 +57,34 @@
         </div>
 
         <div style="margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #333;">
-          <label style="display:block; font-size:11px; color:#888; margin-bottom:6px;">Profile GIF (optional banner):</label>
-          <div style="display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap;">
-            <% if @user.profile_gif.attached? %>
-              <div style="background:#303030; border:1px solid #444; padding:6px; max-width:200px;">
-                <%= profile_gif_tag @user, style: "max-width:180px; max-height:100px; object-fit:contain;" %>
-              </div>
-            <% end %>
-            <div>
-              <%= f.file_field :profile_gif, accept: "image/gif", style: "font-size:11px; color:#888;" %>
-              <div style="font-size:10px; color:#666; margin-top:3px;">Animated GIF only &mdash; max 15MB. Shown on your profile above your avatar.</div>
-              <% if @user.profile_gif.attached? %>
-                <label style="display:flex; align-items:center; gap:4px; margin-top:6px; font-size:11px; color:#c08080; cursor:pointer;">
-                  <input type="checkbox" name="user[remove_profile_gif]" value="1" style="width:12px; height:12px;">
-                  Remove profile GIF
-                </label>
-              <% end %>
-            </div>
-          </div>
-        </div>
-
-        <div style="margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #333;">
           <label style="display:block; font-size:11px; color:#888; margin-bottom:6px;">Your Badge GIF:</label>
-          <div style="display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap;">
-            <% if @user.custom_badge.attached? %>
-              <div style="background:#303030; border:1px solid #444; padding:6px; max-width:200px;">
-                <%= custom_badge_image_tag @user, size: 120, style: "border-radius:4px; border:1px solid #555; background:#111; padding:2px; box-sizing:border-box;" %>
-              </div>
-            <% end %>
-            <div>
-              <%= f.file_field :custom_badge, accept: "image/gif", style: "font-size:11px; color:#888;" %>
-              <div style="font-size:10px; color:#666; margin-top:3px;">Upload your own animated GIF badge &mdash; max 15MB. Shown on your profile and posts. Admins can still award special badges separately.</div>
+          <% if custom_badge_allowed %>
+            <div style="display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap;">
               <% if @user.custom_badge.attached? %>
-                <label style="display:flex; align-items:center; gap:4px; margin-top:6px; font-size:11px; color:#c08080; cursor:pointer;">
-                  <input type="checkbox" name="user[remove_custom_badge]" value="1" style="width:12px; height:12px;">
-                  Remove badge GIF
-                </label>
+                <div style="background:#303030; border:1px solid #444; padding:6px; max-width:200px;">
+                  <%= custom_badge_image_tag @user, size: 120, style: "border-radius:4px; border:1px solid #555; background:#111; padding:2px; box-sizing:border-box;" %>
+                </div>
               <% end %>
+              <div>
+                <%= f.file_field :custom_badge, accept: "image/gif", style: "font-size:11px; color:#888;" %>
+                <div style="font-size:10px; color:#666; margin-top:3px;">Animated GIF only &mdash; max 15MB. Shown on your profile and posts.</div>
+                <% if @user.custom_badge.attached? %>
+                  <label style="display:flex; align-items:center; gap:4px; margin-top:6px; font-size:11px; color:#c08080; cursor:pointer;">
+                    <input type="checkbox" name="user[remove_custom_badge]" value="1" style="width:12px; height:12px;">
+                    Remove badge GIF
+                  </label>
+                <% end %>
+              </div>
             </div>
-          </div>
+          <% else %>
+            <div style="font-size:11px; color:#888; background:#1e1e1e; border:1px solid #333; padding:8px 10px;">
+              <%= LevelPerks.unlock_message(@user, :custom_badge) %>
+            </div>
+          <% end %>
         </div>
 
         <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Email: <span style="color:#f08080;">*</span></label>
           <%= f.email_field :email, style: "width:100%;" %>
         </div>
         <div style="margin-bottom:12px; background:#1e1e1e; border:1px solid #333; padding:10px;">

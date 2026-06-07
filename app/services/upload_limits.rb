@@ -24,8 +24,9 @@ class UploadLimits
       label_for(global_max_bytes)
     end
 
-    def global_rules
-      AllowedFileTypes.global_rules.merge(limit_payload(global_max_bytes))
+    def global_rules(user: nil)
+      max_bytes = user ? [global_max_bytes, LevelPerks.max_upload_bytes_for(user)].min : global_max_bytes
+      AllowedFileTypes.global_rules.merge(limit_payload(max_bytes))
     end
 
     def max_bytes_for_category(category)
@@ -36,37 +37,36 @@ class UploadLimits
       cap(category.max_upload_bytes)
     end
 
-    def max_bytes_for_subforum(subforum)
-      return global_max_bytes unless subforum
-      return max_bytes_for_category(subforum.category) unless upload_limit_column?(subforum)
-      return max_bytes_for_category(subforum.category) if subforum.max_upload_bytes.blank?
-
-      cap(subforum.max_upload_bytes)
+    def max_bytes_for_subforum(subforum, user: nil)
+      apply_user_cap(raw_max_bytes_for_subforum(subforum), user)
     end
 
-    def max_bytes_for_thread(thread)
+    def max_bytes_for_thread(thread, user: nil)
       return global_max_bytes unless thread&.subforum
 
-      max_bytes_for_subforum(thread.subforum)
+      max_bytes_for_subforum(thread.subforum, user: user)
     end
 
-    def max_bytes_for_attachable(attachable)
-      case attachable
+    def max_bytes_for_attachable(attachable, user: nil)
+      forum_max = case attachable
       when Post
-        max_bytes_for_thread(attachable.thread)
+        max_bytes_for_thread(attachable.thread, user: user)
       when ForumThread
-        max_bytes_for_thread(attachable)
+        max_bytes_for_thread(attachable, user: user)
       else
         global_max_bytes
       end
+      apply_user_cap(forum_max, user)
     end
 
-    def rules_for_subforum(subforum)
-      AllowedFileTypes.rules_for_subforum(subforum).merge(limit_payload(max_bytes_for_subforum(subforum)))
+    def rules_for_subforum(subforum, user: nil)
+      max_bytes = max_bytes_for_subforum(subforum, user: user)
+      AllowedFileTypes.rules_for_subforum(subforum).merge(limit_payload(max_bytes))
     end
 
-    def rules_for_attachable(attachable)
-      AllowedFileTypes.rules_for_attachable(attachable).merge(limit_payload(max_bytes_for_attachable(attachable)))
+    def rules_for_attachable(attachable, user: nil)
+      max_bytes = max_bytes_for_attachable(attachable, user: user)
+      AllowedFileTypes.rules_for_attachable(attachable).merge(limit_payload(max_bytes))
     end
 
     def limit_payload(max_bytes)
@@ -130,6 +130,20 @@ class UploadLimits
     end
 
     private
+
+    def raw_max_bytes_for_subforum(subforum)
+      return global_max_bytes unless subforum
+      return max_bytes_for_category(subforum.category) unless upload_limit_column?(subforum)
+      return max_bytes_for_category(subforum.category) if subforum.max_upload_bytes.blank?
+
+      cap(subforum.max_upload_bytes)
+    end
+
+    def apply_user_cap(forum_max, user)
+      return forum_max unless user
+
+      [forum_max, LevelPerks.max_upload_bytes_for(user)].min
+    end
 
     def upload_limit_column?(record)
       record.class.column_names.include?("max_upload_bytes")

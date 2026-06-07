@@ -23,9 +23,6 @@
         <%= @user.username %>
       </div>
       <div style="padding:10px; text-align:center;">
-        <% if @user.profile_gif.attached? %>
-          <div style="margin-bottom:8px;"><%= profile_gif_tag @user %></div>
-        <% end %>
         <div style="width:80px; height:80px; background:#303030; border:1px solid #444; margin:0 auto 8px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
           <% if @user.avatar.attached? %>
             <%= avatar_image_tag @user, size: 80 %>
@@ -35,7 +32,7 @@
         </div>
         <div style="font-size:11px; color:#888; margin-bottom:4px;"><%= role_badge(@user) %></div>
         <div style="font-size:11px; color:#888; margin-bottom:4px;">Reputation Rank: <%= @user.reputation_rank %></div>
-        <div style="font-size:11px; color:#888; margin-bottom:4px;">Level <%= user_level(@user) %> &middot; <%= @user.experience_points %> XP</div>
+        <div style="font-size:11px; color:#888; margin-bottom:4px;">Level <%= user_level(@user) %> &middot; <%= @user.experience_points %> XP &middot; Uploads: <%= LevelPerks.upload_limit_label_for(@user) %></div>
         <div style="font-size:12px; margin-bottom:6px;">
           Rep: <%= rep_label(@user.reputation) %>
         </div>

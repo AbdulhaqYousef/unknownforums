@@ -6,12 +6,28 @@ class Admin::SiteSettingsController < ApplicationController
     @maintenance_message = SiteSetting.maintenance_message
     @selected_file_type_groups = SiteSetting.selected_file_type_groups
     @site_upload_max_gb = SiteSetting.upload_max_gb_input
+    @custom_badge_min_level = LevelPerks.custom_badge_min_level
+    @gif_avatar_min_level = LevelPerks.gif_avatar_min_level
+    @upload_tiers_text = LevelPerks.upload_tiers_text
   end
 
   def update
     if params[:save_maintenance] == "1"
       SiteSetting.set(SiteSetting::MAINTENANCE_KEY, params[:maintenance_mode] == "1" ? "true" : "false")
       SiteSetting.set(SiteSetting::MAINTENANCE_MESSAGE_KEY, params[:maintenance_message].to_s.strip)
+    end
+
+    if params[:save_level_perks] == "1"
+      begin
+        LevelPerks.save!(
+          custom_badge_min_level: params[:custom_badge_min_level],
+          gif_avatar_min_level: params[:gif_avatar_min_level],
+          upload_tiers_text: params[:upload_tiers_text]
+        )
+      rescue ArgumentError => e
+        redirect_to admin_site_settings_path, alert: e.message
+        return
+      end
     end
 
     if params[:save_upload_types] == "1"

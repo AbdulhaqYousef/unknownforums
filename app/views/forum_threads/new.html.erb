@@ -39,7 +39,7 @@
 
       <!-- File attachments -->
       <div style="margin-bottom:12px;">
-        <%= render "shared/file_upload_field", subforum: @subforum, upload_rules: UploadLimits.rules_for_subforum(@subforum) %>
+        <%= render "shared/file_upload_field", subforum: @subforum, upload_rules: UploadLimits.rules_for_subforum(@subforum, user: current_user) %>
       </div>
 
       <div style="display:flex; gap:8px; align-items:center;">
