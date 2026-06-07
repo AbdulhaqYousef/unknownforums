@@ -23,9 +23,6 @@
         <%= @user.username %>
       </div>
       <div style="padding:10px; text-align:center;">
-        <% if @badges.any? %>
-          <%= render "shared/user_badges", badges: @badges, size: 160, featured: true %>
-        <% end %>
         <% if @user.profile_gif.attached? %>
           <div style="margin-bottom:8px;"><%= profile_gif_tag @user %></div>
         <% end %>
@@ -50,6 +47,9 @@
             Presence hidden
           <% end %>
         </div>
+        <% if @badges.any? %>
+          <%= render "shared/user_badges", badges: @badges, size: 160, featured: true %>
+        <% end %>
         <table style="font-size:10px; color:#666; width:100%; text-align:left;">
           <tr><td>Posts:</td><td><strong><%= @user.post_count %></strong></td></tr>
           <tr><td>Threads:</td><td><strong><%= @user.forum_threads.count %></strong></td></tr>

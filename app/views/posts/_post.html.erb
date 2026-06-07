@@ -4,11 +4,6 @@
 
 <div id="post-<%= post.id %>" class="uc-post">
   <div class="uc-post-user">
-    <% if post.user.badges.any? %>
-      <div class="uc-badges">
-        <%= render "shared/user_badges", badges: post.user.badges.includes(image_attachment: :blob).ordered, size: 180, featured: true %>
-      </div>
-    <% end %>
     <div class="uc-username">
       <a href="<%= user_path(post.user) %>"><%= post.user.username %></a>
     </div>
@@ -21,6 +16,12 @@
         <span style="color:#555; font-size:28px;">&#128100;</span>
       <% end %>
     </div>
+
+    <% if post.user.badges.any? %>
+      <div class="uc-badges">
+        <%= render "shared/user_badges", badges: post.user.badges.includes(image_attachment: :blob).ordered, size: 180, featured: true %>
+      </div>
+    <% end %>
 
     <div class="uc-info-row">
       <span class="uc-info-label">Join Date:</span>
