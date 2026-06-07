@@ -26,6 +26,7 @@ class UsersController < ApplicationController
     require_owner_or_moderator(@user)
     @user.avatar.purge if params[:user][:remove_avatar] == "1"
     @user.profile_gif.purge if params[:user][:remove_profile_gif] == "1"
+    @user.custom_badge.purge if params[:user][:remove_custom_badge] == "1"
     changing_password = user_params[:password].present?
     changing_email    = user_params[:email].present? && user_params[:email] != @user.email
     if @user.update(user_params)
@@ -54,7 +55,7 @@ class UsersController < ApplicationController
   end
 
   def user_params
-    permitted = params.require(:user).permit(:email, :email_two_factor_enabled, :show_presence, :email_on_reply, :email_on_mention, :email_on_thread_reply, :signature, :password, :password_confirmation, :avatar, :profile_gif)
+    permitted = params.require(:user).permit(:email, :email_two_factor_enabled, :show_presence, :email_on_reply, :email_on_mention, :email_on_thread_reply, :signature, :password, :password_confirmation, :avatar, :profile_gif, :custom_badge)
     if permitted[:password].blank?
       permitted.delete(:password)
       permitted.delete(:password_confirmation)

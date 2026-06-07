@@ -28,11 +28,14 @@ class User < ApplicationRecord
 
   has_one_attached :avatar
   has_one_attached :profile_gif
+  has_one_attached :custom_badge
 
   AVATAR_TYPES = %w[image/jpeg image/png image/gif image/webp].freeze
   AVATAR_MAX_SIZE = 10.megabytes
   PROFILE_GIF_TYPES = %w[image/gif].freeze
   PROFILE_GIF_MAX_SIZE = 15.megabytes
+  CUSTOM_BADGE_TYPES = %w[image/gif].freeze
+  CUSTOM_BADGE_MAX_SIZE = 15.megabytes
   MAX_LOGIN_ATTEMPTS = 5
   LOCKOUT_DURATION = 15.minutes
   ONLINE_WINDOW = 10.minutes
@@ -54,6 +57,7 @@ class User < ApplicationRecord
   validate :password_not_pwned,  if: -> { password.present? }
   validate :avatar_format, if: -> { avatar.attached? }
   validate :profile_gif_format, if: -> { profile_gif.attached? }
+  validate :custom_badge_format, if: -> { custom_badge.attached? }
   before_validation :normalize_registration_fields
   before_update :clear_email_verification_on_email_change, if: :will_save_change_to_email?
   before_update :track_previous_username, if: :will_save_change_to_username?
@@ -292,5 +296,18 @@ class User < ApplicationRecord
     if profile_gif.byte_size > PROFILE_GIF_MAX_SIZE
       errors.add(:profile_gif, "must be smaller than 15MB")
     end
+  end
+
+  def custom_badge_format
+    unless CUSTOM_BADGE_TYPES.include?(custom_badge.content_type)
+      errors.add(:custom_badge, "must be a GIF")
+    end
+    if custom_badge.byte_size > CUSTOM_BADGE_MAX_SIZE
+      errors.add(:custom_badge, "must be smaller than 15MB")
+    end
+  end
+
+  def has_display_badges?
+    custom_badge.attached? || badges.exists?
   end
 end

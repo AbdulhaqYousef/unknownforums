@@ -74,4 +74,24 @@ class LevelsAndBadgesTest < ActionDispatch::IntegrationTest
     assert_equal 2, user.level
     assert_equal 0, user.level_progress_percent
   end
+
+  test "user profile edit includes custom badge upload" do
+    user = users(:tester)
+    sign_in_as(user)
+
+    get edit_user_path(user)
+    assert_response :success
+    assert_match(/Your Badge GIF/, response.body)
+
+    user.custom_badge.attach(
+      io: StringIO.new("GIF89a"),
+      filename: "mine.gif",
+      content_type: "image/gif"
+    )
+    assert user.has_display_badges?
+
+    get user_path(user)
+    assert_response :success
+    assert_match(/mine\.gif|user-badge-img/, response.body)
+  end
 end

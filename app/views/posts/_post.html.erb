@@ -48,9 +48,9 @@
       </div>
     </div>
 
-    <% if post.user.badges.any? %>
+    <% if post.user.has_display_badges? %>
       <div class="uc-badges" style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border-dim);">
-        <%= render "shared/user_badges", badges: post.user.badges.includes(image_attachment: :blob).ordered, size: 180, featured: true %>
+        <%= render "shared/user_badges", user: post.user, badges: post.user.badges.includes(image_attachment: :blob).ordered, size: 180, featured: true %>
       </div>
     <% end %>
   </div>

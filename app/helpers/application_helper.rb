@@ -16,6 +16,16 @@ module ApplicationHelper
     image_tag rails_blob_path(user.profile_gif, only_path: true), options.merge(style: style, alt: "#{user.username} profile GIF")
   end
 
+  def custom_badge_image_tag(user, size: 32, **options)
+    return unless user.custom_badge.attached?
+
+    extra_style = options.delete(:style).to_s
+    style = "width:#{size}px; height:#{size}px; min-width:#{size}px; min-height:#{size}px; max-width:none; object-fit:contain; display:block; margin:0 auto;"
+    style = "#{style} #{extra_style}" if extra_style.present?
+    image_tag rails_blob_path(user.custom_badge, only_path: true),
+      options.merge(class: [ options[:class], "user-badge-img" ].compact.join(" "), style: style, alt: "#{user.username} badge", title: "Custom badge")
+  end
+
   def badge_image_tag(badge, size: 32, **options)
     return unless badge.image.attached?
 

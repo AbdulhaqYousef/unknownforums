@@ -55,9 +55,9 @@
           <tr><td>Downloads:</td><td><strong><%= @user.downloaded_files_count %></strong></td></tr>
           <tr><td>Joined:</td><td><strong><%= @user.created_at.strftime("%m/%d/%Y") %></strong></td></tr>
         </table>
-        <% if @badges.any? %>
+        <% if @user.has_display_badges? %>
           <div style="margin-top:10px; padding-top:10px; border-top:1px solid #333;">
-            <%= render "shared/user_badges", badges: @badges, size: 160, featured: true %>
+            <%= render "shared/user_badges", user: @user, badges: @badges, size: 160, featured: true %>
           </div>
         <% end %>
       </div>
