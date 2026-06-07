@@ -305,7 +305,7 @@ function initVideoJS() {
 function maxFileBytes() {
   const zone = document.getElementById("file-drop-zone")
   const raw  = zone ? parseInt(zone.dataset.maxBytes, 10) : NaN
-  return Number.isFinite(raw) && raw > 0 ? raw : 100 * 1024 * 1024 * 1024
+  return Number.isFinite(raw) && raw > 0 ? raw : 350 * 1024 * 1024 * 1024
 }
 
 function multipartThresholdBytes() {

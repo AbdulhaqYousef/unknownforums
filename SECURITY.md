@@ -61,7 +61,7 @@ Scanner: Brakeman 8.0.4 · Bundler-Audit (ruby-advisory-db 2026-03-30)
 
 ### File Upload Security
 - **MIME type whitelist**: Only allowed types accepted (`ALLOWED_TYPES` constant)
-- **Size limit**: Configurable per site, category, and subforum (hard ceiling 100 GB); files over 5 GB use R2 multipart direct upload
+- **Size limit**: Configurable per site, category, and subforum (hard ceiling 350 GB); files over 5 GB use R2 multipart direct upload
 - **VirusTotal scanning**: All zip, pdf, torrent, executable, and script uploads scanned before approval
 - **Download warning**: Files with `suspicious`, `malicious`, `pending`, or `skipped` VT status show interstitial warning before download
 - **DM files**: Private message attachments stored under separate R2 key prefix (`dmfile/`), accessible only to sender/recipient/moderator/admin

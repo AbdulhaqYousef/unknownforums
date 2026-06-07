@@ -98,7 +98,7 @@ unknownforums.fun, www.unknownforums.fun {
 
 Forum uploads go **directly to Cloudflare R2** from the browser (not through Caddy). Files over 5 GB use R2 multipart upload automatically. The `request_body` limit only applies to normal form posts (thread text, signed upload IDs, etc.).
 
-For a **100 GB** upload on a 100 Mbps connection, expect roughly 2–3 hours of upload time — keep the tab open until it finishes.
+For a **350 GB** upload on a 100 Mbps connection, expect roughly 8–10 hours of upload time — keep the tab open until it finishes.
 
 Configure R2 CORS on your bucket:
 

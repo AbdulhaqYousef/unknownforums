@@ -16,7 +16,7 @@ class Attachment < ApplicationRecord
 
   attr_accessor :allowed_content_types, :max_byte_size
 
-  MAX_SIZE = 100.gigabytes
+  MAX_SIZE = 350.gigabytes
   MULTIPART_THRESHOLD = 5.gigabytes
 
   def self.max_size_label
