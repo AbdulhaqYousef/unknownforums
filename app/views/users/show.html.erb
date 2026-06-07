@@ -23,6 +23,9 @@
         <%= @user.username %>
       </div>
       <div style="padding:10px; text-align:center;">
+        <% if @badges.any? %>
+          <%= render "shared/user_badges", badges: @badges, size: 52 %>
+        <% end %>
         <% if @user.profile_gif.attached? %>
           <div style="margin-bottom:8px;"><%= profile_gif_tag @user %></div>
         <% end %>
@@ -36,13 +39,6 @@
         <div style="font-size:11px; color:#888; margin-bottom:4px;"><%= role_badge(@user) %></div>
         <div style="font-size:11px; color:#888; margin-bottom:4px;">Reputation Rank: <%= @user.reputation_rank %></div>
         <div style="font-size:11px; color:#888; margin-bottom:4px;">Level <%= user_level(@user) %> &middot; <%= @user.experience_points %> XP</div>
-        <% if @badges.any? %>
-          <div style="display:flex; flex-wrap:wrap; gap:4px; justify-content:center; margin-bottom:6px;">
-            <% @badges.each do |badge| %>
-              <span title="<%= badge.description.presence || badge.name %>"><%= badge_image_tag badge, size: 22 %></span>
-            <% end %>
-          </div>
-        <% end %>
         <div style="font-size:12px; margin-bottom:6px;">
           Rep: <%= rep_label(@user.reputation) %>
         </div>
@@ -84,6 +80,12 @@
 
   <!-- Activity -->
   <div style="flex:1;">
+    <% if @badges.any? %>
+      <div style="background:#242424; border:1px solid #444; padding:10px 12px; margin-bottom:8px;">
+        <div style="font-size:10px; color:#666; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.05em;">Badges</div>
+        <%= render "shared/user_badges", badges: @badges, size: 56, show_names: true %>
+      </div>
+    <% end %>
     <% if @trophies.any? %>
       <div style="background:#242424; border:1px solid #444; padding:8px 10px; margin-bottom:8px;">
         <div style="font-size:10px; color:#666; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Trophies</div>

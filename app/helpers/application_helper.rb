@@ -16,7 +16,7 @@ module ApplicationHelper
     image_tag rails_blob_path(user.profile_gif, only_path: true), options.merge(style: style, alt: "#{user.username} profile GIF")
   end
 
-  def badge_image_tag(badge, size: 24, **options)
+  def badge_image_tag(badge, size: 32, **options)
     return unless badge.image.attached?
 
     style = "width:#{size}px; height:#{size}px; object-fit:contain; vertical-align:middle;"

@@ -4,17 +4,15 @@
 
 <div id="post-<%= post.id %>" class="uc-post">
   <div class="uc-post-user">
+    <% if post.user.badges.any? %>
+      <div class="uc-badges" style="margin-bottom:6px;">
+        <%= render "shared/user_badges", badges: post.user.badges.includes(image_attachment: :blob).ordered, size: 44 %>
+      </div>
+    <% end %>
     <div class="uc-username">
       <a href="<%= user_path(post.user) %>"><%= post.user.username %></a>
     </div>
     <div class="uc-rank"><%= role_badge(post.user) %></div>
-    <% if post.user.badges.any? %>
-      <div class="uc-badges" style="display:flex; flex-wrap:wrap; gap:3px; justify-content:center; margin:4px 0;">
-        <% post.user.badges.includes(image_attachment: :blob).ordered.each do |badge| %>
-          <%= badge_image_tag badge, size: 18 %>
-        <% end %>
-      </div>
-    <% end %>
 
     <div class="uc-avatar">
       <% if post.user.avatar.attached? %>
