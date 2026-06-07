@@ -93,7 +93,11 @@ module ApplicationHelper
   end
 
   def markdown_post_body(body)
-    markdown = normalize_markdown_tables(normalize_markdown_fences(body.to_s))
+    markdown = body.to_s.gsub("\r\n", "\n").tr("\r", "\n")
+    markdown = normalize_markdown_fences(markdown)
+    markdown = autolink_bare_urls(markdown)
+    markdown = preserve_markdown_line_breaks(markdown)
+    markdown = normalize_markdown_tables(markdown)
     html = Kramdown::Document.new(markdown, hard_wrap: true, syntax_highlighter: nil).to_html
     html = html.gsub(/@([A-Za-z0-9_\-]{3,30})/) do
       username = $1
@@ -103,6 +107,34 @@ module ApplicationHelper
     sanitize html,
       tags: %w[p br strong em b i u a span ul ol li blockquote code pre hr h1 h2 h3 h4 h5 h6 table thead tbody tr th td],
       attributes: %w[href title class]
+  end
+
+  def autolink_bare_urls(markdown)
+    process_outside_code_fences(markdown) do |segment|
+      segment.gsub(/(`[^`]*`|(?<![\[(<"'])https?:\/\/[^\s<>\[\]()]+[^\s<>\[\]().,;:!?'"])/i) do |part|
+        part.start_with?("`") ? part : "<#{part}>"
+      end
+    end
+  end
+
+  def preserve_markdown_line_breaks(markdown)
+    process_outside_code_fences(markdown) do |segment|
+      lines = segment.split("\n", -1)
+      lines.each_with_index.map do |line, index|
+        next line if line.strip.empty?
+        next line if index == lines.length - 1
+        next line if lines[index + 1].strip.empty?
+
+        "#{line.rstrip}  "
+      end.join("\n")
+    end
+  end
+
+  def process_outside_code_fences(markdown)
+    parts = markdown.split(/(```[\s\S]*?```|~~~[\s\S]*?~~~)/m)
+    parts.each_with_index.map do |part, index|
+      index.odd? ? part : yield(part)
+    end.join
   end
 
   def normalize_markdown_fences(markdown)

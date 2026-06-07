@@ -29,7 +29,7 @@
         <label style="display:block; font-size:11px; color:#888; margin-bottom:3px;">Message:</label>
         <textarea name="post[body]" rows="12" style="width:100%; resize:vertical;"
           placeholder="Write your post here..."><%= @post.body %></textarea>
-        <div style="font-size:10px; color:#666; margin-top:3px;">Markdown supported: **bold**, *italic*, `code`, lists, links, quotes, headings.</div>
+        <div style="font-size:10px; color:#666; margin-top:3px;">Press Enter for a new line. Plain URLs become clickable links. Markdown supported: **bold**, *italic*, `code`, lists, links.</div>
         <% if @post.errors[:body].any? %>
           <ul class="error-list">
             <% @post.errors[:body].each do |err| %><li><%= err %></li><% end %>

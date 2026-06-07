@@ -147,7 +147,7 @@
         <%= f.hidden_field :quote_post_id, id: "quote_post_id_field" %>
         <div id="quote-preview" style="display:none; background:#1e1e1e; border-left:3px solid #444; padding:6px 8px; margin-bottom:8px; font-size:11px; color:#888;"></div>
         <%= f.text_area :body, rows: 8, style: "width:100%; resize:vertical;", placeholder: "Write your reply here..." %>
-        <div style="font-size:10px; color:#666; margin-top:3px;">Markdown supported: **bold**, *italic*, `code`, lists, links, quotes, headings.</div>
+        <div style="font-size:10px; color:#666; margin-top:3px;">Press Enter for a new line. Plain URLs become clickable links. Markdown supported: **bold**, *italic*, `code`, lists, links.</div>
         <div style="margin-top:8px;">
           <%= render "shared/file_upload_field", subforum: @thread.subforum, upload_rules: UploadLimits.rules_for_subforum(@thread.subforum) %>
         </div>
