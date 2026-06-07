@@ -24,7 +24,7 @@ class ForumThreadsController < ApplicationController
     @thread_attachments = Attachment.where(attachable_type: "Post", attachable_id: @thread.posts.visible.select(:id))
                                     .includes(:file_tags)
     @thread_file_tags = @thread_attachments.flat_map { |attachment| attachment.file_tags.map(&:tag) }.uniq
-    @subscription = logged_in? && ThreadSubscription.find_by(user: current_user, forum_thread: @thread)
+    @subscription = ThreadSubscription.find_by(user: current_user, forum_thread: @thread) if logged_in?
     @subscription&.mark_read!
   end
 
