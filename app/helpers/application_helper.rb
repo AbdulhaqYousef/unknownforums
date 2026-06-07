@@ -77,7 +77,7 @@ module ApplicationHelper
   end
 
   def user_points(user)
-    user.experience_points
+    user.xp_value
   end
 
   def level_progress(user)

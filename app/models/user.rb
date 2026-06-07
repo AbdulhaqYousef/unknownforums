@@ -47,8 +47,8 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: { case_sensitive: false }
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: -> { email.present? }
   validates :reputation, numericality: { only_integer: true }
-  validates :experience_points, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
-  validates :level_override, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
+  validates :experience_points, numericality: { only_integer: true, greater_than_or_equal_to: 0 }, if: -> { has_attribute?(:experience_points) }
+  validates :level_override, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true, if: -> { has_attribute?(:level_override) }
   validates :password, length: { minimum: 8 }, if: -> { password.present? }
   validate :password_complexity, if: -> { password.present? }
   validate :password_not_pwned,  if: -> { password.present? }
@@ -309,6 +309,9 @@ class User < ApplicationRecord
   end
 
   def has_display_badges?
-    custom_badge.attached? || badges.exists?
+    custom = custom_badge.attached?
+    return custom unless self.class.connection.data_source_exists?("user_badges")
+
+    custom || badges.exists?
   end
 end

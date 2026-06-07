@@ -64,18 +64,21 @@ class LevelPerks
     end
 
     def custom_badge_allowed?(user)
+      return false unless user
       return true if bypass?(user)
 
       user.level >= custom_badge_min_level
     end
 
     def gif_avatar_allowed?(user)
+      return false unless user
       return true if bypass?(user)
 
       user.level >= gif_avatar_min_level
     end
 
     def max_upload_bytes_for(user)
+      return UploadLimits.global_max_bytes unless user
       return UploadLimits.global_max_bytes if bypass?(user)
 
       tier = applicable_upload_tier(user.level)
@@ -84,10 +87,14 @@ class LevelPerks
     end
 
     def upload_limit_label_for(user)
+      return UploadLimits.global_label unless user
+
       UploadLimits.label_for(max_upload_bytes_for(user))
     end
 
     def unlock_message(user, feature)
+      return "Sign in to unlock this feature." unless user
+
       required = case feature
       when :custom_badge then custom_badge_min_level
       when :gif_avatar then gif_avatar_min_level
@@ -97,6 +104,8 @@ class LevelPerks
     end
 
     def perks_summary_for(user)
+      return [] unless user
+
       lines = []
       lines << "Upload limit: #{upload_limit_label_for(user)}"
       lines << "GIF profile picture: #{gif_avatar_allowed?(user) ? 'Unlocked' : "Locked until level #{gif_avatar_min_level}"}"
