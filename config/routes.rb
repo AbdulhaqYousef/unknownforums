@@ -130,6 +130,7 @@ Rails.application.routes.draw do
   get "privacy", to: "pages#privacy", as: :privacy
   get "rules",   to: "pages#rules",  as: :rules
 
-  get "sitemap.xml", to: "sitemaps#show", as: :sitemap, defaults: { format: :xml }
+  get "sitemap_index.xml", to: "sitemaps#show", as: :sitemap, defaults: { format: :xml }
+  get "sitemap.xml", to: redirect("/sitemap_index.xml", status: 301)
   get "up", to: "rails/health#show", as: :rails_health_check
 end

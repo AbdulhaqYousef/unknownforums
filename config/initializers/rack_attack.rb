@@ -12,7 +12,7 @@ class Rack::Attack
   end if Rails.env.development?
 
   safelist("allow-static-and-health") do |req|
-    req.path.start_with?("/assets/", "/favis/", "/up") || req.path.in?(%w[/robots.txt /sitemap.xml])
+    req.path.start_with?("/assets/", "/favis/", "/up") || req.path.in?(%w[/robots.txt /sitemap.xml /sitemap_index.xml])
   end
 
   def self.write_request?(req)
@@ -124,7 +124,7 @@ class Rack::Attack
   end
 
   blocklist("block-no-user-agent") do |req|
-    req.user_agent.to_s.blank? && !req.path.start_with?("/up") && !req.path.in?(%w[/robots.txt /sitemap.xml])
+    req.user_agent.to_s.blank? && !req.path.start_with?("/up") && !req.path.in?(%w[/robots.txt /sitemap.xml /sitemap_index.xml])
   end
 
   ### --- Response ---

@@ -12,4 +12,4 @@ Disallow: /attachments/*/approve
 Disallow: /attachments/*/unapprove
 
 # Sitemap
-Sitemap: https://unknownforums.fun/sitemap.xml
+Sitemap: https://unknownforums.fun/sitemap_index.xml

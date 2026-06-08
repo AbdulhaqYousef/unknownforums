@@ -160,4 +160,9 @@ class NewFeaturesTest < ActionDispatch::IntegrationTest
     assert_match(/public/, response.headers["Cache-Control"])
     assert_equal response.body.bytesize.to_s, response.headers["Content-Length"]
   end
+
+  test "legacy sitemap.xml redirects to sitemap_index.xml" do
+    get "/sitemap.xml"
+    assert_redirected_to "/sitemap_index.xml"
+  end
 end
