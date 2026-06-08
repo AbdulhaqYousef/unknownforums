@@ -160,6 +160,14 @@ class NewFeaturesTest < ActionDispatch::IntegrationTest
     assert_match %r{<loc>https?://[^<]+</loc>}, response.body
     assert_match(/public/, response.headers["Cache-Control"])
     assert_nil response.headers["Set-Cookie"]
+    assert_nil response.headers["ETag"]
+  end
+
+  test "sitemap returns full body even with if-none-match" do
+    get sitemap_path(format: :xml), headers: { "If-None-Match" => 'W/"stale-etag"' }
+    assert_response :success
+    assert_match(/<urlset/, response.body)
+    assert_operator response.body.bytesize, :>, 1000
   end
 
   test "legacy sitemap urls redirect to forums-sitemap.xml" do

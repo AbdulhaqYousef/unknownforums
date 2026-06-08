@@ -31,7 +31,11 @@ Rails.application.configure do
   # HSTS: 1 year, include subdomains
   config.ssl_options = {
     hsts: { subdomains: true, preload: true, expires: 1.year },
-    redirect: { exclude: ->(request) { request.path == "/up" } }
+    redirect: {
+      exclude: ->(request) {
+        request.path == "/up" || request.path.end_with?("-sitemap.xml", "sitemap.xml", "sitemap_index.xml")
+      }
+    }
   }
 
   # Log to STDOUT with the current request id as a default log tag.
@@ -95,8 +99,12 @@ Rails.application.configure do
     "www.unknownforums.fun",
     /.*\.unknownforums\.fun/
   ]
-  # Skip DNS rebinding protection for the default health check endpoint.
-  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # Skip DNS rebinding protection for health check and sitemap crawlers.
+  config.host_authorization = {
+    exclude: ->(request) {
+      request.path == "/up" || request.path.end_with?("-sitemap.xml", "sitemap.xml", "sitemap_index.xml")
+    }
+  }
 
   # Active Storage — use Cloudflare R2 in production
   config.active_storage.service = :cloudflare_r2
