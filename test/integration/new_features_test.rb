@@ -155,14 +155,18 @@ class NewFeaturesTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.media_type, "xml"
     assert_operator response.body.bytesize, :>, 1000
-    assert_match(/urlset/, response.body)
+    assert_match(/<urlset/, response.body)
+    refute_match(/<sitemapindex/, response.body)
     assert_match %r{<loc>https?://[^<]+</loc>}, response.body
     assert_match(/public/, response.headers["Cache-Control"])
     assert_nil response.headers["Set-Cookie"]
   end
 
-  test "legacy sitemap.xml redirects to sitemap_index.xml" do
+  test "legacy sitemap urls redirect to forums-sitemap.xml" do
     get "/sitemap.xml"
-    assert_redirected_to "/sitemap_index.xml"
+    assert_redirected_to "/forums-sitemap.xml"
+
+    get "/sitemap_index.xml"
+    assert_redirected_to "/forums-sitemap.xml"
   end
 end

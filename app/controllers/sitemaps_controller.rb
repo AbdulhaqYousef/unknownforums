@@ -25,6 +25,7 @@ class SitemapsController < ApplicationController
     xml = render_to_string(formats: [ :xml ], layout: false)
     response.headers["Content-Type"] = "application/xml; charset=utf-8"
     response.headers["Cache-Control"] = "public, max-age=3600, s-maxage=86400"
+    response.headers.delete("Content-Security-Policy")
     render plain: xml, content_type: "application/xml"
   end
 
