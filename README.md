@@ -227,7 +227,7 @@ docker compose logs --tail=100 worker
 
 ```bash
 curl https://unknownforums.fun/up
-curl https://unknownforums.fun/forums-sitemap.xml
+curl https://unknownforums.fun/sitemap.xml
 curl -I https://unknownforums.fun/
 ```
 

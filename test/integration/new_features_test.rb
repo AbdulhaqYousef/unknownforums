@@ -170,11 +170,8 @@ class NewFeaturesTest < ActionDispatch::IntegrationTest
     assert_operator response.body.bytesize, :>, 1000
   end
 
-  test "legacy sitemap urls redirect to forums-sitemap.xml" do
-    get "/sitemap.xml"
-    assert_redirected_to "/forums-sitemap.xml"
-
+  test "legacy sitemap urls redirect to sitemap.xml" do
     get "/sitemap_index.xml"
-    assert_redirected_to "/forums-sitemap.xml"
+    assert_redirected_to "/sitemap.xml"
   end
 end
