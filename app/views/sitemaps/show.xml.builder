@@ -32,7 +32,8 @@ xml.tag! "urlset", "xmlns" => "http://www.sitemaps.org/schemas/sitemap/0.9" do  
 
   # Subforums
   @subforums.each do |subforum|
-    xml.url do      xml.loc subforum_url(subforum)
+    xml.url do
+      xml.loc subforum_url(subforum)
       xml.changefreq "daily"
       xml.priority "0.8"
     end
