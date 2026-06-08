@@ -158,6 +158,7 @@ class NewFeaturesTest < ActionDispatch::IntegrationTest
     assert_match(/urlset/, response.body)
     assert_match %r{<loc>https?://[^<]+</loc>}, response.body
     assert_match(/public/, response.headers["Cache-Control"])
+    assert_nil response.headers["Set-Cookie"]
   end
 
   test "legacy sitemap.xml redirects to sitemap_index.xml" do

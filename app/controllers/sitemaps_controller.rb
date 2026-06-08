@@ -1,7 +1,12 @@
 class SitemapsController < ApplicationController
   skip_before_action :check_maintenance_mode
   skip_before_action :check_ip_banned
+  skip_before_action :check_banned
+  skip_before_action :track_current_user_activity
+  skip_before_action :set_admin_summary
+  skip_before_action :set_active_warnings
 
+  before_action :disable_session
   before_action :set_sitemap_url_options
 
   def show
@@ -24,6 +29,10 @@ class SitemapsController < ApplicationController
   end
 
   private
+
+  def disable_session
+    request.session_options[:skip] = true
+  end
 
   def set_sitemap_url_options
     opts = {
