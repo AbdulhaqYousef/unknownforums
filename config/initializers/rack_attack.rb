@@ -18,7 +18,7 @@ class Rack::Attack
   end if Rails.env.development?
 
   safelist("allow-static-and-health") do |req|
-    req.path.start_with?("/assets/", "/favis/", "/up") || self.class.public_crawler_path?(req.path)
+    req.path.start_with?("/assets/", "/favis/", "/up") || Rack::Attack.public_crawler_path?(req.path)
   end
 
   def self.write_request?(req)
@@ -130,7 +130,7 @@ class Rack::Attack
   end
 
   blocklist("block-no-user-agent") do |req|
-    req.user_agent.to_s.blank? && !req.path.start_with?("/up") && !self.class.public_crawler_path?(req.path)
+    req.user_agent.to_s.blank? && !req.path.start_with?("/up") && !Rack::Attack.public_crawler_path?(req.path)
   end
 
   ### --- Response ---
