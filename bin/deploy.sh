@@ -78,6 +78,10 @@ echo "🗄️  Running database migrations..."
 docker compose exec web bin/rails db:migrate
 echo ""
 
+echo "🗺️  Refreshing static sitemap files..."
+docker compose exec web bin/rails sitemap:refresh
+echo ""
+
 echo "🔄 Reloading app after migrations..."
 docker compose restart web worker 2>/dev/null || docker compose restart web
 echo ""

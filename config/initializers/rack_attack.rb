@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
 class Rack::Attack
+  PUBLIC_CRAWLER_PATHS = %w[/robots.txt].freeze
+
+  def self.public_crawler_path?(path)
+    path == "/robots.txt" || path.end_with?("sitemap.xml")
+  end
+
   ### --- Cache store ---
   # Keep rate-limit state isolated from the app database/cache tables.
   Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
@@ -12,7 +18,7 @@ class Rack::Attack
   end if Rails.env.development?
 
   safelist("allow-static-and-health") do |req|
-    req.path.start_with?("/assets/", "/favis/", "/up") || req.path.in?(%w[/robots.txt /sitemap.xml /sitemap_index.xml /forums-sitemap.xml])
+    req.path.start_with?("/assets/", "/favis/", "/up") || self.class.public_crawler_path?(req.path)
   end
 
   def self.write_request?(req)
@@ -124,7 +130,7 @@ class Rack::Attack
   end
 
   blocklist("block-no-user-agent") do |req|
-    req.user_agent.to_s.blank? && !req.path.start_with?("/up") && !req.path.in?(%w[/robots.txt /sitemap.xml /sitemap_index.xml /forums-sitemap.xml])
+    req.user_agent.to_s.blank? && !req.path.start_with?("/up") && !self.class.public_crawler_path?(req.path)
   end
 
   ### --- Response ---

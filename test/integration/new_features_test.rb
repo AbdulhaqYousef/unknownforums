@@ -151,7 +151,8 @@ class NewFeaturesTest < ActionDispatch::IntegrationTest
   end
 
   test "sitemap returns valid xml" do
-    get sitemap_path(format: :xml)
+    SitemapGenerator.refresh!
+    get "/site-sitemap.xml"
     assert_response :success
     assert_includes response.media_type, "xml"
     assert_operator response.body.bytesize, :>, 1000
@@ -164,7 +165,8 @@ class NewFeaturesTest < ActionDispatch::IntegrationTest
   end
 
   test "sitemap returns full body even with if-none-match" do
-    get sitemap_path(format: :xml), headers: { "If-None-Match" => 'W/"stale-etag"' }
+    SitemapGenerator.refresh!
+    get "/site-sitemap.xml", headers: { "If-None-Match" => 'W/"stale-etag"' }
     assert_response :success
     assert_match(/<urlset/, response.body)
     assert_operator response.body.bytesize, :>, 1000

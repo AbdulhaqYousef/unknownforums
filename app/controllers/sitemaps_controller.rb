@@ -15,17 +15,11 @@ class SitemapsController < ApplicationController
   after_action :strip_sitemap_cache_validators
 
   def show
-    @subforums = readable_subforums.includes(:category).order(:position, :name)
-    @threads = ForumThread.joins(:subforum)
-                          .where(subforum_id: @subforums.select(:id))
-                          .includes(:subforum)
-                          .order(updated_at: :desc)
-                          .limit(5000)
-    @users = User.where(banned: false).order(updated_at: :desc).limit(2000)
-    @attachments = readable_attachments
-                     .where(parent_attachment_id: nil)
-                     .order(updated_at: :desc)
-                     .limit(5000)
+    assigns = SitemapData.load
+    @subforums = assigns[:subforums]
+    @threads = assigns[:threads]
+    @users = assigns[:users]
+    @attachments = assigns[:attachments]
 
     xml = render_to_string(formats: [ :xml ], layout: false)
     response.headers["Content-Type"] = "application/xml; charset=utf-8"
@@ -56,22 +50,5 @@ class SitemapsController < ApplicationController
     }
     Rails.application.routes.default_url_options.merge!(opts)
     @default_url_options = opts
-  end
-
-  def readable_subforums
-    return Subforum.publicly_readable if subforum_access_columns?
-
-    Subforum.all
-  end
-
-  def readable_attachments
-    scope = Attachment.approved.public_downloads
-    return scope.in_readable_subforums(nil) if subforum_access_columns?
-
-    scope
-  end
-
-  def subforum_access_columns?
-    Subforum.column_names.include?("public_read") && Category.column_names.include?("public_read")
   end
 end
